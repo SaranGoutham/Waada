@@ -1,13 +1,35 @@
 // Baselines + compare (M05, card 002): the honest competitor stand-ins.
 // baselineCrm and baselineSummary must never touch memory; compare isolates
 // failures per column instead of failing the whole run.
-import { describe, expect, it } from "vitest";
+import { mkdtemp, rm } from "node:fs/promises";
+import { tmpdir } from "node:os";
+import { join } from "node:path";
+import { afterEach, beforeEach, describe, expect, it, vi } from "vitest";
 import { SUMMARY_BUDGET_CHARS, truncateForBudget } from "../src/agent/baselines.ts";
 import { baselineCrm, baselineSummary, compare } from "../src/agent/index.ts";
 import { BRIEF_SYSTEM } from "../src/agent/prompts.ts";
 import type { Memory } from "../src/memory/index.ts";
 import type { MemoryHit } from "../src/models.ts";
-import { FakeLLM, FakeMemory } from "./fakes.ts";
+import { writeJson } from "../src/store.ts";
+import { FakeLLM, FakeMemory, sampleInteractions } from "./fakes.ts";
+
+let dir: string;
+
+beforeEach(async () => {
+  dir = await mkdtemp(join(tmpdir(), "waada-baselines-"));
+  vi.stubEnv("WAADA_DATA_DIR", dir);
+  await writeJson("interactions/acme.json", sampleInteractions());
+  await writeJson("crm/acme.json", {
+    account: "Acme Corp",
+    amount_usd: 86000,
+    stage: "Evaluation",
+  });
+});
+
+afterEach(async () => {
+  vi.unstubAllEnvs();
+  await rm(dir, { recursive: true, force: true });
+});
 
 const TRANSCRIPT_METADATA = [
   {
@@ -62,7 +84,7 @@ describe("baselineCrm", () => {
     await baselineCrm("acme", { memory: new FakeMemory(), llm });
     const { system, user } = chatCall(llm);
     expect(system).toBe(BRIEF_SYSTEM);
-    expect(user).toContain("86000"); // amount_usd from seed/acme/crm.json
+    expect(user).toContain("86000");
     expect(user).toContain("Evaluation"); // stage
     expect(user).not.toContain("SOC 2"); // no interaction content leaks in
     expect(user).not.toContain("Meenakshi");
@@ -76,18 +98,23 @@ describe("baselineSummary", () => {
     expect(mem.calls).toEqual([]);
   });
 
-  it("parses the seed folder and keeps the most recent raw text within budget", async () => {
-    const llm = seedLlm(["# summary"]);
+  it("reads imported interactions and keeps the raw text within budget", async () => {
+    const llm = new FakeLLM({ chat: ["# summary"] });
     const markdown = await baselineSummary("acme", { memory: new FakeMemory(), llm });
     expect(markdown).toBe("# summary");
     const { system, user } = chatCall(llm);
     expect(system).toBe(BRIEF_SYSTEM);
-    // Acme's full text (~30k chars) exceeds the free-tier budget, so the oldest
-    // history is cut and the omission is labelled; the recent tail stays ordered.
-    expect(user).toMatch(/omitted/i);
+    expect(user).toContain("SOC 2 Type II report");
     expect(user.length).toBeLessThanOrEqual(SUMMARY_BUDGET_CHARS + 500);
-    const late = user.indexOf("tomorrow is my last day"); // email-0925, Sep 25
-    expect(late).toBeGreaterThanOrEqual(0);
+  });
+
+  it("uses friendly messages when an account has no imported data", async () => {
+    await expect(baselineCrm("missing", { llm: new FakeLLM() })).rejects.toThrow(
+      "No CRM record imported for this account. Add crm.json on the Import page.",
+    );
+    await expect(baselineSummary("missing", { llm: new FakeLLM() })).rejects.toThrow(
+      "Nothing imported for this account yet.",
+    );
   });
 });
 
