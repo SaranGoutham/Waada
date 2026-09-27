@@ -76,5 +76,5 @@ Agents **append** here when they need a stack addition (AGENTS.md rule 3), a con
   - C. **Import the existing Codex CLI login** (read `~/.codex/auth.json` after the user runs `codex login`). No port 1455 listener, but it reads another app's credential file and shares its single-use refresh tokens, so Waada and Codex would log each other out.
 - Recommendation: **A (defer).** The MVP goal is a simple working prototype, and this feature carries terms-of-service and account risk for the user with no demo value that OpenRouter doesn't already give. If you want it anyway, B, not C.
 - Blocks: M02b Part 2 only. Part 1 (OpenRouter) goes ahead regardless.
-- **Status:** open
-- Human answer:
+- **Status:** approved: A (defer past the MVP)
+- Human answer: defer; build nothing for ChatGPT login in the MVP (2026-09-27). ADR: [0001](0001-defer-chatgpt-login.md)
