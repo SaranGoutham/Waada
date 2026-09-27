@@ -4,6 +4,26 @@ The build is split into **modules** that different agents (Claude Code, Codex, O
 
 > Read `AGENTS.md` fully, then `tasks/<MODULE>.md`. Follow the Superpowers workflow in AGENTS.md §4. Update your row in `docs/PROGRESS.md`. Do not choose any stack item that isn't Approved in AGENTS.md §5. Ask via `docs/decisions/PROPOSALS.md` instead.
 
+## Today's target (2026-09-27): first working UI
+
+By end of day, this must work on `localhost`, with the real core wherever it's already built:
+
+1. `pnpm --filter web dev` starts the web app.
+2. **Settings → LLM:** paste a Groq key, click **Test**, and it says OK.
+3. **Accounts:** create "Acme Corp".
+4. **Import:** drag in the files from `seed/acme` → preview table → **Import** → IngestReport (real M03 + M01 → Hindsight).
+5. **Brief:** open commitments and landmines tables plus the brief text. Real M05 if it has landed; otherwise fake data with a visible "sample data" banner.
+6. **Ask:** a question returns an answer with citations (real once M05's `ask` lands).
+
+| Who | Today |
+|---|---|
+| **Codex: M06** | Code **now** (exception to the wave gate, see AGENTS.md §4): scaffold, Settings→LLM, Accounts, Import (real), then Brief and Ask pages, first on fakes, then swapped to real functions as M05 lands |
+| **OpenCode: M05** | `brief` (commitment ledger + landmines) and `ask` first; `compare` and baselines after. Push each function as soon as its tests pass, so M06 can wire it |
+| **Claude Code** | Fix the failing M00 test, then write `packages/core/test/e2e.live.test.ts` early (M10 scope) so "does the real flow work?" can be checked tonight |
+| **You** | Review the Acme data (M04), add a Groq key, mark M01–M04 `done` if their reports look right |
+
+Compare page, eval and docs are tomorrow.
+
 ## MVP scope (decided 2026-09-27)
 
 **Must-have only.** The MVP is a simple working prototype; see [AGENTS.md §1a](AGENTS.md) for the goal, the 5 success criteria and the tier rules.

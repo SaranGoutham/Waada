@@ -54,8 +54,8 @@ Agents **append** here when they need a stack addition (AGENTS.md rule 3), a con
   - Node built-ins only: Node 22 has no unzip; would mean shelling out to a system `unzip` (not portable, breaks the Windows dev setup).
 - Recommendation: `yauzl` (smallest surface for read-only extraction) — but only if the human wants direct `.zip` upload in the MVP; otherwise keep the extract-first error.
 - Blocks: nothing (MVP works with extracted channel-day `.json`).
-- **Status:** open
-- Human answer:
+- **Status:** deferred (post-MVP)
+- Human answer: Slack `.zip` upload is in the "later" tier of the MVP scope (AGENTS.md §1a, decided 2026-09-27). Keep the extract-first message for now.
 
 ## P-004 — Experimental "Sign in with ChatGPT" (M02b Part 2)
 - Raised by: M02b (Claude Code) · 2026-09-27

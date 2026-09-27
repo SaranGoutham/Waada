@@ -132,7 +132,7 @@ When your module reaches `review` or `done` (report written, pushed), don't stop
 
 1. Open `TASKS.md` (Module map, Hand-out waves) and `docs/PROGRESS.md`.
 2. Choose the **first module in map order** whose Owner is `—`, whose wave is open, **and whose tier is allowed (§1a)**: must-have first; should-have only once all must-have modules are `done`; never a "later" module.
-   - **Wave 0** is open from the start. **Wave 1** is open once M00 is `done`. **Wave 2** (M06) is open once M01, M02, M03 and M05 are `done`. **Wave 3** (M10) is open once M06 is `done`. **Should-have** (M07, M02b Part 1) opens once M10's MVP checks pass.
+   - **Wave 0** is open from the start. **Wave 1** is open once M00 is `done`. **Wave 2** (M06) is open once M01, M02, M03 and M05 are `done`. **Exception (human, 2026-09-27):** M06 may write code now: build against the real M01–M03 functions and use `WAADA_FAKE_CORE=1` fakes for `brief` / `ask` / `compare` until M05 lands, then switch to the real ones. Show a visible "sample data" banner whenever fakes are active. **Wave 3** (M10) is open once M06 is `done`. **Should-have** (M07, M02b Part 1) opens once M10's MVP checks pass.
    - A module in the **next** wave (not yet open) may be taken for **brainstorming and planning only**: write the spec and plan, then set status `planning (waiting for wave)` and write no code until the wave opens.
 3. **Reserve it:** set that row's Owner to `<your tool name> (next)`, then commit and push `docs/PROGRESS.md` alone right away. This stops two agents picking the same module. Re-read the file first; if someone else reserved it in the meantime, pick the next one.
 4. Reply to the human with a ready-to-paste prompt in one code block, then stop:
