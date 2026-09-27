@@ -2,11 +2,13 @@ import { existsSync } from "node:fs";
 import { mkdtemp, readdir, rm, writeFile } from "node:fs/promises";
 import { tmpdir } from "node:os";
 import { join } from "node:path";
-import { afterEach, beforeEach, describe, expect, it, vi } from "vitest";
+import type * as Pkg from "@waada/core";
+import { afterEach, beforeEach, describe, expect, expectTypeOf, it, vi } from "vitest";
 import { z } from "zod";
 import { Account, listAccounts, upsertAccount } from "../src/accounts.ts";
 import { bankIdFor, findProjectRoot, getEnv, requireEnv, slugify } from "../src/config.ts";
 import { ConfigError, ExternalServiceError, WaadaError } from "../src/errors.ts";
+import { LlmSettings } from "../src/llm/index.ts";
 import { createLogger, log } from "../src/log.ts";
 import {
   Answer,
@@ -263,5 +265,50 @@ describe("accounts", () => {
       upsertAccount({ name: "Initech" }),
     ]);
     expect((await listAccounts()).map((a) => a.slug).sort()).toEqual(["globex-eu", "initech"]);
+  });
+});
+
+describe("public index", () => {
+  it("exports the contract names, with stubs for unbuilt modules", async () => {
+    const core = await import("../src/index.ts");
+    for (const name of [
+      "Interaction",
+      "createMemory",
+      "createLLM",
+      "LlmSettings",
+      "ingest",
+      "parseFiles",
+      "brief",
+      "commitmentLedger",
+      "compare",
+      "getEnv",
+      "readJson",
+      "upsertAccount",
+      "log",
+    ]) {
+      expect(core, name).toHaveProperty(name);
+    }
+    expect(() => core.createMemory()).toThrow("not implemented: memory");
+    await expect(core.createLLM()).rejects.toThrow("not implemented: llm");
+    await expect(core.ingest([])).rejects.toThrow("not implemented: ingest");
+    await expect(core.brief("acme")).rejects.toThrow("not implemented: agent");
+  });
+
+  it("LlmSettings accepts the default Groq settings", () => {
+    const s = {
+      provider: "groq",
+      model: "openai/gpt-oss-120b",
+      fallbackModel: "qwen/qwen3-32b",
+      credentials: { groq: { apiKey: "gsk_x" }, ollama: { baseUrl: "http://localhost:11434/v1" } },
+    };
+    expect(LlmSettings.parse(s)).toEqual(s);
+  });
+
+  it("type-checks when imported by package name (verified by pnpm check)", () => {
+    expectTypeOf<Pkg.Interaction>().toEqualTypeOf<Interaction>();
+    expectTypeOf<typeof Pkg.createMemory>().returns.toEqualTypeOf<Pkg.Memory>();
+    expectTypeOf<typeof Pkg.createLLM>().returns.toEqualTypeOf<Promise<Pkg.LLM>>();
+    expectTypeOf<typeof Pkg.ingest>().returns.toEqualTypeOf<Promise<Pkg.IngestReport>>();
+    expectTypeOf<typeof Pkg.brief>().returns.toEqualTypeOf<Promise<Pkg.Brief>>();
   });
 });
