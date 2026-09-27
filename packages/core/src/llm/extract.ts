@@ -3,6 +3,7 @@ import { z } from "zod";
 import { ExternalServiceError } from "../errors.ts";
 import { log } from "../log.ts";
 import { createLanguageModel } from "./providers.ts";
+import { withRateLimitRetry } from "./retry.ts";
 import type { LlmSettings } from "./settings.ts";
 
 type ExtractArgs<T> = {
@@ -40,17 +41,34 @@ function externalFailure(error: unknown): ExternalServiceError {
 
 export async function extract<T>(settings: LlmSettings, args: ExtractArgs<T>): Promise<T | null> {
   const model = createLanguageModel(settings);
+  // maxRetries: 0 on every SDK call: llm/retry.ts is the single retry layer
+  // (429 → retry-after wait, ≤ 2 retries, never 413), not the SDK on top.
+  const objectCall = (prompt: string) =>
+    withRateLimitRetry(() =>
+      generateObject({
+        model,
+        schema: args.schema,
+        schemaName: args.name,
+        schemaDescription: args.description,
+        system: args.system,
+        prompt,
+        temperature: args.temperature,
+        maxRetries: 0,
+      }),
+    );
+  const textCall = (prompt: string) =>
+    withRateLimitRetry(() =>
+      generateText({
+        model,
+        system: args.system,
+        prompt,
+        temperature: args.temperature,
+        maxRetries: 0,
+      }),
+    );
   let validationDetail = "The response did not match the requested schema.";
   try {
-    const result = await generateObject({
-      model,
-      schema: args.schema,
-      schemaName: args.name,
-      schemaDescription: args.description,
-      system: args.system,
-      prompt: args.user,
-      temperature: args.temperature,
-    });
+    const result = await objectCall(args.user);
     const parsed = args.schema.safeParse(result.object);
     if (parsed.success) return parsed.data;
     validationDetail = parsed.error.message;
@@ -59,15 +77,7 @@ export async function extract<T>(settings: LlmSettings, args: ExtractArgs<T>): P
     validationDetail = error.message;
   }
   try {
-    const result = await generateObject({
-      model,
-      schema: args.schema,
-      schemaName: args.name,
-      schemaDescription: args.description,
-      system: args.system,
-      prompt: repairPrompt(args, validationDetail),
-      temperature: args.temperature,
-    });
+    const result = await objectCall(repairPrompt(args, validationDetail));
     const parsed = args.schema.safeParse(result.object);
     if (parsed.success) return parsed.data;
   } catch (error) {
@@ -75,12 +85,9 @@ export async function extract<T>(settings: LlmSettings, args: ExtractArgs<T>): P
   }
   let plainText: string;
   try {
-    const result = await generateText({
-      model,
-      system: args.system,
-      prompt: `${args.user}\n\nReturn only valid JSON for ${args.name}; no Markdown or explanation.`,
-      temperature: args.temperature,
-    });
+    const result = await textCall(
+      `${args.user}\n\nReturn only valid JSON for ${args.name}; no Markdown or explanation.`,
+    );
     plainText = result.text;
   } catch (error) {
     throw externalFailure(error);

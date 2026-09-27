@@ -4,6 +4,7 @@ import type { z } from "zod";
 import { ConfigError, ExternalServiceError } from "../errors.ts";
 import { extract as extractObject } from "./extract.ts";
 import { createLanguageModel, createTranscriptionModel } from "./providers.ts";
+import { withRateLimitRetry } from "./retry.ts";
 import { getLlmSettings } from "./settings.ts";
 
 export * from "./providers.ts";
@@ -35,12 +36,18 @@ export async function createLLM(): Promise<LLM> {
       let lastError: unknown;
       for (const modelId of models) {
         try {
-          const result = await generateText({
-            model: createLanguageModel(settings, modelId),
-            system,
-            prompt: user,
-            temperature,
-          });
+          // Single retry layer: the SDK default (maxRetries: 2) is disabled so
+          // 429s are retried exactly as llm/retry.ts specifies (retry-after,
+          // capped 60 s, at most 2 retries, never 413) instead of twice over.
+          const result = await withRateLimitRetry(() =>
+            generateText({
+              model: createLanguageModel(settings, modelId),
+              system,
+              prompt: user,
+              temperature,
+              maxRetries: 0,
+            }),
+          );
           return result.text;
         } catch (error) {
           if (error instanceof ConfigError) throw error;
