@@ -5,7 +5,7 @@ One row per module. **Each agent edits only its own row** (AGENTS.md §4). All w
 | Module | Owner (agent) | Status | Plan | Note (one line, latest first) | Updated |
 |---|---|---|---|---|---|
 | M00 Foundation | Claude Code | done | [plan](superpowers/plans/2026-09-27-m00-foundation.md) | done; report docs/reports/m00-foundation.md. Human: install pnpm 12 globally (corepack on Node 22.15 fails) | 2026-09-27 |
-| M01 Memory | Claude Code (next) | not started | — | — | — |
+| M01 Memory | Claude Code | planning | — | spec docs/superpowers/specs/2026-09-27-m01-memory-design.md; writing plan. Live tests target Hindsight Cloud | 2026-09-27 |
 | M02 LLM core | Codex | planning | [plan](superpowers/plans/2026-09-27-m02-llm-core.md) | Design and test-first plan complete; waiting for M00 Foundation `done` before code. | 2026-09-27 |
 | M02b LLM sign-in | — | not started | — | — | — |
 | M03 Ingest | — | not started | — | — | — |
