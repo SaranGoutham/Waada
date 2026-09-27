@@ -1,5 +1,10 @@
-import { describe, expect, it } from "vitest";
+import { existsSync } from "node:fs";
+import { tmpdir } from "node:os";
+import { join } from "node:path";
+import { afterEach, describe, expect, it, vi } from "vitest";
+import { bankIdFor, findProjectRoot, getEnv, requireEnv, slugify } from "../src/config.ts";
 import { ConfigError, ExternalServiceError, WaadaError } from "../src/errors.ts";
+import { createLogger, log } from "../src/log.ts";
 import {
   Answer,
   Brief,
@@ -85,5 +90,86 @@ describe("errors", () => {
     expect(e.message).toBe("Missing HINDSIGHT_BASE_URL");
     expect(new ExternalServiceError("x")).toBeInstanceOf(WaadaError);
     expect(new WaadaError("x").name).toBe("WaadaError");
+  });
+});
+
+describe("config", () => {
+  afterEach(() => {
+    vi.unstubAllEnvs();
+  });
+
+  it("bankIdFor slugifies account names", () => {
+    expect(bankIdFor("Acme Corp")).toBe("waada-acme-corp");
+    expect(bankIdFor("acme")).toBe("waada-acme");
+    expect(bankIdFor("  ACME--corp!! ")).toBe("waada-acme-corp");
+    expect(bankIdFor("Café Säo 2")).toBe("waada-cafe-sao-2");
+    expect(slugify("Globex, Inc.")).toBe("globex-inc");
+  });
+
+  it("bankIdFor rejects names without letters or digits", () => {
+    expect(() => bankIdFor("!!!")).toThrow(WaadaError);
+    expect(() => bankIdFor("")).toThrow(WaadaError);
+  });
+
+  it("requireEnv lists every missing variable", () => {
+    vi.stubEnv("WAADA_T_PRESENT", "yes");
+    vi.stubEnv("WAADA_T_EMPTY", "");
+    expect(() => requireEnv("WAADA_T_PRESENT")).not.toThrow();
+    let err: unknown;
+    try {
+      requireEnv("WAADA_T_PRESENT", "WAADA_T_MISSING", "WAADA_T_EMPTY");
+    } catch (e) {
+      err = e;
+    }
+    expect(err).toBeInstanceOf(ConfigError);
+    expect((err as Error).message).toContain("WAADA_T_MISSING");
+    expect((err as Error).message).toContain("WAADA_T_EMPTY");
+    expect((err as Error).message).not.toContain("WAADA_T_PRESENT");
+  });
+
+  it("getEnv resolves dataDir against the project root", () => {
+    const root = findProjectRoot();
+    expect(existsSync(join(root, "pnpm-workspace.yaml"))).toBe(true);
+    vi.stubEnv("WAADA_DATA_DIR", "");
+    expect(getEnv().dataDir).toBe(join(root, ".waada"));
+    vi.stubEnv("WAADA_DATA_DIR", "some/rel");
+    expect(getEnv().dataDir).toBe(join(root, "some", "rel"));
+    const abs = join(tmpdir(), "waada-abs");
+    vi.stubEnv("WAADA_DATA_DIR", abs);
+    expect(getEnv().dataDir).toBe(abs);
+  });
+
+  it("getEnv maps env vars to fields", () => {
+    vi.stubEnv("HINDSIGHT_BASE_URL", "http://localhost:8888");
+    vi.stubEnv("SLACK_BOT_TOKEN", "");
+    const env = getEnv();
+    expect(env.hindsightBaseUrl).toBe("http://localhost:8888");
+    expect(env.slackBotToken).toBeUndefined();
+  });
+});
+
+describe("log", () => {
+  afterEach(() => {
+    vi.restoreAllMocks();
+    vi.unstubAllEnvs();
+  });
+
+  it("writes to stderr only, redacts secrets, and respects the level", () => {
+    const err = vi.spyOn(process.stderr, "write").mockImplementation(() => true);
+    const out = vi.spyOn(process.stdout, "write").mockImplementation(() => true);
+    vi.stubEnv("WAADA_LOG_LEVEL", "info");
+    createLogger("memory").info("bank ready", { bank: "waada-acme", apiKey: "sk-secret" });
+    log.debug("hidden");
+    expect(out).not.toHaveBeenCalled();
+    expect(err).toHaveBeenCalledTimes(1);
+    const line = String(err.mock.calls[0]?.[0]);
+    expect(line).toContain("INFO");
+    expect(line).toContain("[memory]");
+    expect(line).toContain("waada-acme");
+    expect(line).not.toContain("sk-secret");
+    expect(line).toContain("[redacted]");
+    vi.stubEnv("WAADA_LOG_LEVEL", "debug");
+    log.debug("shown");
+    expect(err).toHaveBeenCalledTimes(2);
   });
 });
