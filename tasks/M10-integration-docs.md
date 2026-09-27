@@ -12,6 +12,10 @@ docs/reports/m10-integration.md
 ```
 You may **read** everything. Code changes in other modules go back to their owner as a note in `docs/PROGRESS.md`, or as a small fix PR the human approves.
 
+## MVP scope (AGENTS.md §1a)
+
+M10 proves the **5 MVP success criteria** and documents the MVP. Connectors, Meet capture, MCP and sign-in are post-MVP. Document them as roadmap, and include the MCP demo step only if M07 is `done`.
+
 ## Build
 
 1. **End-to-end test** (`e2e.live.test.ts`): fresh bank → `parseFiles(seed/acme)` + `ingest` → `brief` → assert against `EXPECTED.md` (first item = open Sep 2 commitment; pricing landmine present) → `ask("What changed since July?")` mentions Q4 → `compare` returns three non-empty columns → `deleteBank`.

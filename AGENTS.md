@@ -8,6 +8,27 @@ Waada is built **in parallel by several agents** (Claude Code, Codex, OpenCode).
 
 A deal-continuity agent. Sales interactions (emails, Slack, call and meeting transcripts) are stored in a **per-account Hindsight memory bank**. When a sales rep leaves, the new owner gets a briefing that leads with **open commitments** (the promise ledger) and **landmines** (resolved objections not to re-open). Background: [README.md](README.md), [MARKET_ANALYSIS.md](MARKET_ANALYSIS.md).
 
+## 1a. MVP goals (decided by the human, 2026-09-27). Read before choosing any work
+
+**The MVP is a simple working prototype. Improve later.** Build the must-have tier first, and nothing outside it until it works.
+
+> **Goal:** A new sales rep opens the Waada web app, imports a departed rep's exported emails, Slack and call transcripts for one account, and within a minute sees a brief that leads with **open commitments** and **landmines**, stored in and recalled from Hindsight.
+
+**Success criteria (all must pass):**
+1. On `seed/acme`, the brief's **first item is the open Sep 2 commitment**, and the **pricing landmine** is present.
+2. `ask("acme", "What changed since July?")` returns the Q3 → Q4 move.
+3. The Compare page shows Waada vs the CRM-only and summary-only baselines; the evaluation result (`docs/decisions/llm/evals.md`) is recorded honestly, even if unflattering.
+4. Fresh clone → working brief in **under 30 minutes** with **one** LLM key (Groq).
+5. The demo runs start to finish with no crash and no stack trace.
+
+| Tier | Modules / scope | Rule |
+|---|---|---|
+| **Must-have (the MVP)** | M00–M05 · **M06** limited to Import, Brief, Commitments, Ask, Compare, Settings→LLM (API key) · **M10** limited to MVP docs, e2e test and demo | Work on these first |
+| **Should-have** | **M07** MCP server · **M02b** OpenRouter sign-in · M05 `report()` with `reflect()` · M06 Report page | Only after every must-have module is `done` |
+| **Later (post-MVP)** | **M08a/b/c** connectors · **M09** Meet capture · M06 Connectors page · Slack `.zip` (P-003) · ChatGPT login (deferred, ADR 0001) | Don't start. Don't reserve. |
+
+Anything not needed for the success criteria is out of MVP scope, even inside a must-have module. When unsure, build the simpler version and note the fuller one as a follow-up in your report.
+
 ## 2. Hard rules
 
 1. **Stay in your lane.** Only create or edit files listed under "Files you own" in your brief (plus your own docs under §4 paths). Need something from another module that isn't built yet? Code against the **contract in §6** and test with the fakes in `packages/core/test/fakes.ts`.
@@ -18,6 +39,8 @@ A deal-continuity agent. Sales interactions (emails, Slack, call and meeting tra
 6. **No secrets in code or git.** Hindsight settings come from `.env`; LLM keys and tokens live in `.waada/` (gitignored). Never log a key.
 7. **No invented facts about external APIs.** Check official docs (links in your brief) for Hindsight, the AI SDK, OpenRouter, Gmail, Slack, HubSpot, MCP, WXT, and TanStack. If you can't verify something, leave a `// VERIFY:` comment and list it in your report.
 8. **Friendly failures.** Web UI, MCP and API routes never show a stack trace. Core code throws `WaadaError` subclasses (safe messages); surfaces catch them and show the message.
+9. **Say your dependencies up front.** At the start of every chat, before writing code, tell the human in one short list which other modules your work depends on, whether each is `done` (check `docs/PROGRESS.md`), and what you'll do meanwhile (fakes, spec/plan only, or wait). Repeat it whenever a dependency blocks you.
+10. **End every finished chat with the next prompt.** When a chat's task is done (module finished, checkpoint, or waiting on the human), the last thing in your reply is exactly one ready-to-paste prompt for the next chat (§4).
 
 ## 3. Conventions
 
@@ -108,8 +131,8 @@ Then stop. Don't start new work in the old chat.
 When your module reaches `review` or `done` (report written, pushed), don't stop silently. Pick up the next piece of work:
 
 1. Open `TASKS.md` (Module map, Hand-out waves) and `docs/PROGRESS.md`.
-2. Choose the **first module in map order** whose Owner is `—` and whose wave is open:
-   - **Wave 0** is open from the start. **Wave 1** is open once M00 is `done`. **Wave 2** is open once M01, M02, M03 and M05 are `done`. **Wave 3** is open once M06 is `done`.
+2. Choose the **first module in map order** whose Owner is `—`, whose wave is open, **and whose tier is allowed (§1a)**: must-have first; should-have only once all must-have modules are `done`; never a "later" module.
+   - **Wave 0** is open from the start. **Wave 1** is open once M00 is `done`. **Wave 2** (M06) is open once M01, M02, M03 and M05 are `done`. **Wave 3** (M10) is open once M06 is `done`. **Should-have** (M07, M02b Part 1) opens once M10's MVP checks pass.
    - A module in the **next** wave (not yet open) may be taken for **brainstorming and planning only**: write the spec and plan, then set status `planning (waiting for wave)` and write no code until the wave opens.
 3. **Reserve it:** set that row's Owner to `<your tool name> (next)`, then commit and push `docs/PROGRESS.md` alone right away. This stops two agents picking the same module. Re-read the file first; if someone else reserved it in the meantime, pick the next one.
 4. Reply to the human with a ready-to-paste prompt in one code block, then stop:

@@ -11,6 +11,11 @@ apps/web/**   except  apps/web/src/routes/api/auth/**   (M02b)
 ```
 Dependencies: TanStack Start (and what its official scaffold installs), Tailwind CSS, shadcn/ui components (S6, S17). Anything else (charts, markdown renderer, drag-and-drop, icons) → **proposal first** (AGENTS.md rule 3).
 
+## MVP scope (AGENTS.md §1a)
+
+**Build for the MVP:** `/`, `/accounts/$slug` (Brief), `/accounts/$slug/commitments`, `/accounts/$slug/import` (file upload only; no connector Sync buttons), `/accounts/$slug/ask`, `/accounts/$slug/compare`, `/settings/llm` (API keys only; no sign-in buttons).
+**Should-have, later:** `/accounts/$slug/report`, sign-in button slots for M02b. **Post-MVP:** `/settings/connectors`, connector Sync buttons.
+
 ## Pages
 
 | Route | Content |

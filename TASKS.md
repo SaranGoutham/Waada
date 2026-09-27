@@ -4,6 +4,16 @@ The build is split into **modules** that different agents (Claude Code, Codex, O
 
 > Read `AGENTS.md` fully, then `tasks/<MODULE>.md`. Follow the Superpowers workflow in AGENTS.md §4. Update your row in `docs/PROGRESS.md`. Do not choose any stack item that isn't Approved in AGENTS.md §5. Ask via `docs/decisions/PROPOSALS.md` instead.
 
+## MVP scope (decided 2026-09-27)
+
+**Must-have only.** The MVP is a simple working prototype; see [AGENTS.md §1a](AGENTS.md) for the goal, the 5 success criteria and the tier rules.
+
+| Tier | Modules |
+|---|---|
+| **Must-have (MVP)** | M00, M01, M02, M03, M04, M05, M06 (MVP pages only), M10 (MVP docs + e2e + demo) |
+| **Should-have** (after the MVP works) | M07 MCP server, M02b OpenRouter sign-in, `report()` + Report page |
+| **Later** (post-MVP) | M08a Slack, M08b Gmail, M08c HubSpot, M09 Meet capture, Slack `.zip` (P-003), ChatGPT login (deferred) |
+
 ## Module map
 
 | ID | Module | Brief | Needs to run for real | Size | Day |
@@ -47,8 +57,10 @@ Every module codes against the contracts in AGENTS.md §6 and tests with fakes, 
 |---|---|---|
 | **0** | M00 (one agent, small, first) · M04 (no code; can start now) | M00 `done` on `dev`: `pnpm install && pnpm check && pnpm test` green |
 | **1** | M01 · M02 · M03 · M05 | Live smoke test passes against Hindsight; `seed/acme` ingests; `brief("acme")` lists the Sep 2 commitment as **open** |
-| **2** | M06 · M07 · M08a · M08b · M02b | The web app and MCP show the same brief as `brief("acme")` |
-| **3** | M08c · M09 · M10 | M10 demo checklist passes end to end |
+| **2** | M06 (MVP pages) | The web app shows the same brief as `brief("acme")` |
+| **3** | M10 (MVP scope) | All 5 success criteria in AGENTS.md §1a pass → **MVP done** |
+| *should-have* | M07 · M02b (OpenRouter) | Only after the MVP is done |
+| *later* | M08a · M08b · M08c · M09 | Post-MVP; not scheduled |
 
 ## Branch & milestone merges
 
@@ -62,8 +74,9 @@ Every module codes against the contracts in AGENTS.md §6 and tests with fakes, 
 |---|---|---|
 | **MS0: foundation** | M00, M04 | You reviewed the Acme data |
 | **MS1: core works** | M01, M02, M03, M05 | Live smoke test passes; `brief("acme")` shows the Sep 2 commitment open; M05 eval recorded |
-| **MS2: usable product** | M06, M07, M08a, M08b, M02b | Web app and MCP show the same brief |
-| **MS3: MVP** | M08c, M09, M10 | M10 end-to-end test and robustness checklist pass |
+| **MS2: web app** | M06 | Web app shows the same brief as `brief("acme")` |
+| **MS3: MVP** | M10 | All 5 success criteria in AGENTS.md §1a pass |
+| **MS4: should-have** | M07, M02b | MCP and OpenRouter sign-in work (after the MVP) |
 
 `dev` may also contain partly-built work of later modules at merge time. That's acceptable because every commit on `dev` must keep checks green.
 
@@ -95,4 +108,4 @@ git checkout dev                               # back to dev before agents resum
 
 ## Definition of done (whole MVP)
 
-A stranger clones the repo, follows SETUP.md in under 30 minutes, picks an LLM provider in Settings, imports `seed/acme` through the web app, and sees a brief whose **first item is the undelivered Sep 2 security-docs commitment**, with a landmine saying **not to re-open pricing**. The Compare view shows the CRM-only and summary-only baselines missing or burying those items. The same brief is available to Claude Code, Codex or OpenCode through the MCP server.
+All 5 success criteria in [AGENTS.md §1a](AGENTS.md) pass, checked by M10's end-to-end test and demo run. Connectors, Meet capture, MCP and sign-in are **not** part of MVP done.
