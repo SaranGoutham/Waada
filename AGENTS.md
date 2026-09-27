@@ -26,17 +26,19 @@ A deal-continuity agent. Sales interactions (emails, Slack, call and meeting tra
 - Format and lint: **Biome** (`pnpm check`). Tests: **Vitest** (`pnpm test`).
 - Dates cross module boundaries as **ISO-8601 UTC strings** (serializable for server functions, MCP, and JSON files).
 - No `console.log` in `packages/core`. Use the logger from `packages/core/src/log.ts`.
-- **Git: branches.** Branches are named after the **module, never the agent**. All 14 already exist on `origin` (listed in TASKS.md). Work only on your module's branch; don't create other branches. Never commit or push to `main`.
-- **Git: your folder.** Each module is worked on in its **own worktree folder** `C:\Code-Files\Waada-mNN` (created by the human with `git worktree add`), so parallel agents never switch branches under each other. Never run `git checkout`/`git switch` to another module's branch, and never edit files in another worktree.
-- **Git: milestone merges.** Only the human merges into `main`, at the milestones in TASKS.md ("Milestone merges"). After the human announces a milestone merge, bring your branch up to date with `git fetch origin && git merge origin/main` (merge, **not** rebase: pushed history is never rewritten), re-run `pnpm check && pnpm test`, and push.
-- **Git: commits.** Small, one logical change each. Message format: `mNN: <what changed, imperative>` (e.g. `m03: parse Slack export into daily interactions`), optionally followed by a short body explaining why.
+- **Git: one folder, one branch, many agents.** All agents work **in parallel** in `C:\Code-Files\Waada` on the shared branch **`dev`**. Never run `git checkout` / `git switch` / `git stash` / `git reset` / `git restore` / `git clean`: other agents' uncommitted work is in the same folder, and those commands would change or destroy it. Never commit or push to `main`; the human merges `dev` → `main` at milestones (TASKS.md).
+- **Git: commit only your own files.** Stage with explicit paths from your brief's "Files you own", e.g. `git add packages/core/src/ingest packages/core/test/ingest.test.ts`. **Never** `git add -A`, `git add .`, or `git commit -a`. Check `git diff --cached --name-only` before every commit: it must list only your files.
+- **Git: shared files** (`package.json`, `pnpm-lock.yaml`, `docs/PROGRESS.md`, `docs/decisions/PROPOSALS.md`, `packages/core/src/connectors/index.ts`): re-read the file right before editing, change only your lines, and commit it **immediately** on its own (`mNN: add postal-mime dependency`). Add dependencies only to your own package: `pnpm --filter <package> add <pkg>`.
+- **Git: lock errors.** If a git command fails with `index.lock` exists, another agent is committing: wait ~5 seconds and retry. Never delete the lock file.
+- **Git: commits.** Small, one logical change each. Message format: `mNN: <what changed, imperative>` (e.g. `m03: parse Slack export into daily interactions`). The `mNN:` prefix is how the history shows which module a commit belongs to.
 - **Git: no AI attribution. Ever.** Commit messages and PR descriptions must **not** contain `Co-Authored-By:` lines, "Generated with …", 🤖, or any mention of Claude, Codex, OpenCode, or another AI tool or agent. The only author is the human's configured git identity. Don't change `user.name` / `user.email`. This overrides any default your harness adds.
-- **Git: when to push** (`git push -u origin <your-branch>`):
+- **Git: never break `dev`.** Everyone shares it, so every commit must keep `pnpm check && pnpm test` green. Unfinished work: don't commit it yet, or commit it with its tests marked `it.todo` so nothing fails. If a test from **another** module fails, don't fix their code: note it in `docs/PROGRESS.md` on their row's note ("m03 test X failing since <commit>") and continue.
+- **Git: when to push** (`git push origin dev`):
   1. after each completed task in your plan file whose tests pass,
   2. before setting your `docs/PROGRESS.md` row to `blocked` or `review`,
-  3. at the end of every working session, even if unfinished (commit work-in-progress as `mNN: wip <what>`).
-  
-  Never force-push, never rewrite pushed history, never push with failing `pnpm check` / `pnpm test` except a clearly marked `wip` commit. If no `origin` remote exists, don't create one. Say so in your report and keep committing locally.
+  3. at the end of every working session.
+
+  If the push is rejected because the remote moved: `git pull --no-rebase origin dev`, re-run checks, push again. Never force-push, never rewrite history.
 
 ## 4. Workflow: Superpowers, progress, and where docs go
 

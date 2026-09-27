@@ -20,7 +20,7 @@ Do **not** scaffold `apps/web`, `apps/extension` or `packages/mcp`. Those belong
 
 ## Build
 
-1. The repo already exists (remote `origin`, branch `main`, docs committed by the human). Create branch `m00-foundation` from the latest `main` and work there. `.gitignore` exists but is empty; fill it (step 3).
+1. The repo already exists (remote `origin`, branches `main` and `dev`). Work on **`dev`** in `C:\Code-Files\Waada`, following the AGENTS.md §3 git rules. `.gitignore` exists but is empty; fill it (step 3).
 2. Root `package.json` (private) with scripts: `check` (biome check), `format` (biome format --write), `test` (vitest run, all packages), `test:live` (runs only `*.live.test.ts`). `pnpm-workspace.yaml` with `apps/*`, `packages/*`.
 3. `.gitignore`: `node_modules/ .env .waada/ dist/ .output/ .wxt/ coverage/ credentials*.json token*.json`
 4. `.env.example`: `HINDSIGHT_BASE_URL`, `HINDSIGHT_API_KEY`, `SLACK_BOT_TOKEN`, `HUBSPOT_TOKEN`, `GOOGLE_CREDENTIALS_PATH`, `WAADA_DATA_DIR=.waada`, each with a one-line comment. LLM keys are **not** env vars; they're set in the web app's Settings (S3, S13).

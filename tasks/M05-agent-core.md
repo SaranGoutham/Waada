@@ -55,7 +55,7 @@ Write the results with date and model to `docs/decisions/llm/evals.md`. **If the
 ## Acceptance
 
 - [ ] Unit tests with `FakeMemory` + `FakeLLM`: query sets, sort order, `null` handling, markdown section order, baselines never call `memory`
-- [ ] Eval run pasted in the report (needs M01, M02, M03, M04 merged)
+- [ ] Eval run pasted in the report (needs M01, M02, M03, M04 done on `dev`)
 
 ## References
 

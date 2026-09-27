@@ -35,7 +35,7 @@ Dependencies: TanStack Start (and what its official scaffold installs), Tailwind
 
 ## Acceptance
 
-- [ ] `pnpm --filter web dev` → import `seed/acme` through the UI → the Brief page's first row is the open Sep 2 commitment (with M01–M05 merged). Screenshots in your report.
+- [ ] `pnpm --filter web dev` → import `seed/acme` through the UI → the Brief page's first row is the open Sep 2 commitment (with M01–M05 done on `dev`). Screenshots in your report.
 - [ ] Works with the fakes when core isn't ready: a dev flag `WAADA_FAKE_CORE=1` wires `FakeMemory`/`FakeLLM` with sample data, so UI work isn't blocked
 - [ ] `pnpm check` clean; component tests for the commitments table and import preview (Vitest + Testing Library only if approved via proposal; otherwise test pure formatting functions)
 

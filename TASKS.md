@@ -45,47 +45,40 @@ Every module codes against the contracts in AGENTS.md §6 and tests with fakes, 
 
 | Wave | Start together | Gate before the next wave |
 |---|---|---|
-| **0** | M00 (one agent, small, first) · M04 (no code; can start now) | M00 merged: `pnpm install && pnpm check && pnpm test` green |
+| **0** | M00 (one agent, small, first) · M04 (no code; can start now) | M00 `done` on `dev`: `pnpm install && pnpm check && pnpm test` green |
 | **1** | M01 · M02 · M03 · M05 | Live smoke test passes against Hindsight; `seed/acme` ingests; `brief("acme")` lists the Sep 2 commitment as **open** |
 | **2** | M06 · M07 · M08a · M08b · M02b | The web app and MCP show the same brief as `brief("acme")` |
 | **3** | M08c · M09 · M10 | M10 demo checklist passes end to end |
 
-## Branches, folders & milestone merges
+## Branch & milestone merges
 
-**Branches:** one per module, named after the module (never the agent). All created on `origin` on 2026-09-27:
-`m00-foundation · m01-memory · m02-llm · m02b-llm-signin · m03-ingest · m04-data · m05-agent · m06-web · m07-mcp · m08a-slack · m08b-gmail · m08c-hubspot · m09-capture · m10-integration`
+**One folder, one shared branch.** All agents work in parallel in `C:\Code-Files\Waada` on branch **`dev`** (created on `origin` 2026-09-27). There are no per-module branches; each commit's `mNN:` prefix shows which module it belongs to (`git log --oneline --grep "^m03:"`). Agents follow AGENTS.md §3: they stage only their own files, never switch branches, and never break `pnpm check && pnpm test`.
 
-**One folder per running agent (git worktree).** Run this from `C:\Code-Files\Waada` before starting an agent on a module, then open the agent's chat **in that folder**:
+**Your folder stays on `dev`** while agents run. Don't check out `main` in it while any agent is working; do milestone merges when agents are idle (or merge on GitHub, see below).
 
-```bash
-git worktree add ../Waada-m03 m03-ingest      # folder name = module, branch = module branch
-git worktree list                             # see all folders
-git worktree remove ../Waada-m03              # after the module is merged and finished
-```
+**Milestone merges (you merge `dev` → `main`; agents never touch `main`):**
 
-The main folder `C:\Code-Files\Waada` stays on `main` and is where **you** merge.
-
-**Milestone merges (you merge; agents never touch `main`).** One milestone per wave gate:
-
-| Milestone | Merge these into `main` | Only after |
+| Milestone | Modules that must be `done` in docs/PROGRESS.md | Also check |
 |---|---|---|
-| **MS0: foundation** | `m00-foundation`, `m04-data` | M00's acceptance checks pass; you reviewed the Acme data |
-| **MS1: core works** | `m01-memory`, `m02-llm`, `m03-ingest`, `m05-agent` | Live smoke test + `brief("acme")` shows the Sep 2 commitment open; M05 eval results recorded |
-| **MS2: usable product** | `m06-web`, `m07-mcp`, `m08a-slack`, `m08b-gmail`, `m02b-llm-signin` | Web app and MCP show the same brief |
-| **MS3: MVP** | `m08c-hubspot`, `m09-capture`, `m10-integration` | M10's end-to-end test and robustness checklist pass |
+| **MS0: foundation** | M00, M04 | You reviewed the Acme data |
+| **MS1: core works** | M01, M02, M03, M05 | Live smoke test passes; `brief("acme")` shows the Sep 2 commitment open; M05 eval recorded |
+| **MS2: usable product** | M06, M07, M08a, M08b, M02b | Web app and MCP show the same brief |
+| **MS3: MVP** | M08c, M09, M10 | M10 end-to-end test and robustness checklist pass |
 
-How to merge a milestone (in `C:\Code-Files\Waada`, on `main`):
+`dev` may also contain partly-built work of later modules at merge time. That's acceptable because every commit on `dev` must keep checks green.
+
+**Option A: on GitHub (no folder switching, safe while agents run).** Open a pull request `dev → main` titled `MS0: foundation`, check that CI or your local `pnpm check && pnpm test` is green, merge with "Create a merge commit". Then locally: `git fetch origin`.
+
+**Option B: locally (only when no agent is running):**
 
 ```bash
 git checkout main && git pull
-git merge --no-ff m00-foundation -m "MS0: merge m00-foundation"
-git merge --no-ff m04-data -m "MS0: merge m04-data"
-pnpm install && pnpm check && pnpm test        # must be green before pushing
+git merge --no-ff dev -m "MS0: foundation"
+pnpm install && pnpm check && pnpm test        # must be green
 git push origin main
 git tag ms0 && git push origin ms0             # marks the milestone
+git checkout dev                               # back to dev before agents resume
 ```
-
-Then tell every agent that's still running: *"Milestone MS0 is merged. Run `git fetch origin && git merge origin/main` on your branch, re-run checks, push."* A module that isn't ready simply waits for the next milestone. Merge conflicts in shared files (`docs/PROGRESS.md`, `packages/core/src/connectors/index.ts`, `package.json`): keep both sides.
 
 ## Human checklist (you, not an agent)
 
@@ -98,7 +91,7 @@ Then tell every agent that's still running: *"Milestone MS0 is merged. Run `git 
 - [ ] Before M08b: Google Cloud project, OAuth client, your Gmail added as a test user
 - [ ] Before M08c: HubSpot developer account + private app token
 - [ ] Before M02b: an OpenRouter account (for testing sign-in)
-- [ ] Merge each module branch after its acceptance checks pass; watch `docs/PROGRESS.md`
+- [ ] Merge `dev` → `main` at each milestone (MS0–MS3); watch `docs/PROGRESS.md`
 
 ## Definition of done (whole MVP)
 
