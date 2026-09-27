@@ -78,3 +78,12 @@ Agents **append** here when they need a stack addition (AGENTS.md rule 3), a con
 - Blocks: M02b Part 2 only. Part 1 (OpenRouter) goes ahead regardless.
 - **Status:** approved: A (defer past the MVP)
 - Human answer: defer; build nothing for ChatGPT login in the MVP (2026-09-27). ADR: [0001](0001-defer-chatgpt-login.md)
+
+## P-005 — Replace the Groq fallback model (`qwen/qwen3-32b` is gone)
+- Raised by: master (Claude Code), from card 005's live eval · 2026-09-27
+- Type: stack (S3 names the fallback model)
+- Question / proposal: Groq's `/openai/v1/models` for our key no longer lists `qwen/qwen3-32b` (calls 404). `openai/gpt-oss-120b` is still there. Available replacements: `openai/gpt-oss-20b`, `qwen/qwen3.8-27b`, or no fallback.
+- New packages: none.
+- Blocks: the fallback path in M02 (today every fallback call fails).
+- **Status:** approved: `openai/gpt-oss-20b`
+- Human answer: use `openai/gpt-oss-20b` as the Groq fallback (2026-09-27). AGENTS.md §5 S3 still says `qwen/qwen3-32b`; the human updates §5. Code change: card 006.
