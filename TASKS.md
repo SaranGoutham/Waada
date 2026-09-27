@@ -50,6 +50,43 @@ Every module codes against the contracts in AGENTS.md §6 and tests with fakes, 
 | **2** | M06 · M07 · M08a · M08b · M02b | The web app and MCP show the same brief as `brief("acme")` |
 | **3** | M08c · M09 · M10 | M10 demo checklist passes end to end |
 
+## Branches, folders & milestone merges
+
+**Branches:** one per module, named after the module (never the agent). All created on `origin` on 2026-09-27:
+`m00-foundation · m01-memory · m02-llm · m02b-llm-signin · m03-ingest · m04-data · m05-agent · m06-web · m07-mcp · m08a-slack · m08b-gmail · m08c-hubspot · m09-capture · m10-integration`
+
+**One folder per running agent (git worktree).** Run this from `C:\Code-Files\Waada` before starting an agent on a module, then open the agent's chat **in that folder**:
+
+```bash
+git worktree add ../Waada-m03 m03-ingest      # folder name = module, branch = module branch
+git worktree list                             # see all folders
+git worktree remove ../Waada-m03              # after the module is merged and finished
+```
+
+The main folder `C:\Code-Files\Waada` stays on `main` and is where **you** merge.
+
+**Milestone merges (you merge; agents never touch `main`).** One milestone per wave gate:
+
+| Milestone | Merge these into `main` | Only after |
+|---|---|---|
+| **MS0: foundation** | `m00-foundation`, `m04-data` | M00's acceptance checks pass; you reviewed the Acme data |
+| **MS1: core works** | `m01-memory`, `m02-llm`, `m03-ingest`, `m05-agent` | Live smoke test + `brief("acme")` shows the Sep 2 commitment open; M05 eval results recorded |
+| **MS2: usable product** | `m06-web`, `m07-mcp`, `m08a-slack`, `m08b-gmail`, `m02b-llm-signin` | Web app and MCP show the same brief |
+| **MS3: MVP** | `m08c-hubspot`, `m09-capture`, `m10-integration` | M10's end-to-end test and robustness checklist pass |
+
+How to merge a milestone (in `C:\Code-Files\Waada`, on `main`):
+
+```bash
+git checkout main && git pull
+git merge --no-ff m00-foundation -m "MS0: merge m00-foundation"
+git merge --no-ff m04-data -m "MS0: merge m04-data"
+pnpm install && pnpm check && pnpm test        # must be green before pushing
+git push origin main
+git tag ms0 && git push origin ms0             # marks the milestone
+```
+
+Then tell every agent that's still running: *"Milestone MS0 is merged. Run `git fetch origin && git merge origin/main` on your branch, re-run checks, push."* A module that isn't ready simply waits for the next milestone. Merge conflicts in shared files (`docs/PROGRESS.md`, `packages/core/src/connectors/index.ts`, `package.json`): keep both sides.
+
 ## Human checklist (you, not an agent)
 
 - [ ] **Stack decisions**: done 2026-09-27 (AGENTS.md §5). Answer new entries in `docs/decisions/PROPOSALS.md` as they arrive. **P-001 (.eml library) is open now.**

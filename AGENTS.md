@@ -26,7 +26,9 @@ A deal-continuity agent. Sales interactions (emails, Slack, call and meeting tra
 - Format and lint: **Biome** (`pnpm check`). Tests: **Vitest** (`pnpm test`).
 - Dates cross module boundaries as **ISO-8601 UTC strings** (serializable for server functions, MCP, and JSON files).
 - No `console.log` in `packages/core`. Use the logger from `packages/core/src/log.ts`.
-- **Git: branches.** One branch per module, `mNN-short-name` (e.g. `m03-ingest`). Never commit or push to `main`; the human merges.
+- **Git: branches.** Branches are named after the **module, never the agent**. All 14 already exist on `origin` (listed in TASKS.md). Work only on your module's branch; don't create other branches. Never commit or push to `main`.
+- **Git: your folder.** Each module is worked on in its **own worktree folder** `C:\Code-Files\Waada-mNN` (created by the human with `git worktree add`), so parallel agents never switch branches under each other. Never run `git checkout`/`git switch` to another module's branch, and never edit files in another worktree.
+- **Git: milestone merges.** Only the human merges into `main`, at the milestones in TASKS.md ("Milestone merges"). After the human announces a milestone merge, bring your branch up to date with `git fetch origin && git merge origin/main` (merge, **not** rebase: pushed history is never rewritten), re-run `pnpm check && pnpm test`, and push.
 - **Git: commits.** Small, one logical change each. Message format: `mNN: <what changed, imperative>` (e.g. `m03: parse Slack export into daily interactions`), optionally followed by a short body explaining why.
 - **Git: no AI attribution. Ever.** Commit messages and PR descriptions must **not** contain `Co-Authored-By:` lines, "Generated with …", 🤖, or any mention of Claude, Codex, OpenCode, or another AI tool or agent. The only author is the human's configured git identity. Don't change `user.name` / `user.email`. This overrides any default your harness adds.
 - **Git: when to push** (`git push -u origin <your-branch>`):
