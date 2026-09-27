@@ -68,8 +68,42 @@ Every agent uses the **Superpowers** skills (Claude Code and Codex have them; Op
 | LLM prompt and model choices (prompt versions, which model does which task, eval notes) | `docs/decisions/llm/` | M02 and M05 |
 | Module specs and plans | `docs/superpowers/specs/`, `docs/superpowers/plans/` | Owning agent |
 | Final module report | `docs/reports/mNN-<module>.md` | Owning agent, at the end |
+| Context-checkpoint handoffs | `docs/handoffs/mNN-YYYY-MM-DD-HHMM.md` | Owning agent, at each checkpoint (see below) |
 
 **Final report must contain:** what was built, test commands with real output, anything unverified (`// VERIFY:` list), proposals raised, and follow-ups for other modules.
+
+### Context checkpoints: hand off to a fresh chat
+
+Long sessions degrade. Hand off to a new chat instead of pushing on with a full context.
+
+**When:** any of these, whichever comes first:
+- your harness warns that context is running low, or is about to compact or summarize the conversation;
+- you've finished a plan phase and the conversation is already long (use your judgement; earlier is better than later);
+- the human types **`checkpoint`**.
+
+**What to do, in order:**
+1. Finish or pause the current step at a clean point. Commit everything that passes `pnpm check && pnpm test` (explicit paths only), then `git push origin dev`. **Never delete, stash or reset** unfinished work; leave it in place and list it in the handoff.
+2. Tick completed checkboxes in your plan file.
+3. Update your row in `docs/PROGRESS.md` (note: `checkpoint → see docs/handoffs/<file>`).
+4. Write the handoff file **`docs/handoffs/mNN-YYYY-MM-DD-HHMM.md`** containing:
+   - **Module and goal** (one line) · **Plan file** path · **Spec file** path (if any)
+   - **Done:** completed plan tasks, with commit hashes (`git log --oneline --grep "^mNN:"`)
+   - **Next:** the exact next unchecked plan task, and the first concrete action to take
+   - **Uncommitted work:** file paths left in the folder and their state ("half-written parser, tests not started")
+   - **Decisions made this session** that aren't in the spec or plan, and why
+   - **Open questions / waiting on the human:** with `PROPOSALS.md` IDs
+   - **Gotchas learned:** anything the next session would otherwise rediscover the hard way (API quirks, failing tests that belong to other modules, env setup)
+   - **How to verify the current state:** exact commands and the expected result
+5. Commit the handoff file on its own (`mNN: checkpoint handoff`) and push.
+6. **Reply to the human with a ready-to-paste prompt** in one code block, in this form:
+
+```
+You are <AGENT>, continuing module MNN (<name>) of Waada from a checkpoint. Read AGENTS.md fully, then tasks/MNN-<name>.md, then the handoff docs/handoffs/<file>.md, then the plan <plan path>. Resume at: <next task, in one line>. Work on branch dev with other agents in parallel: never switch branches, and stage only your own files. Update your row in docs/PROGRESS.md. Commits start with "mNN:" and have no AI attribution.
+```
+
+Then stop. Don't start new work in the old chat.
+
+**The new chat's first steps:** read in the order the prompt lists, run the handoff's "How to verify" commands, and confirm the state matches before writing any code. If it doesn't match (e.g. another agent's commit changed something), say so to the human before continuing.
 
 ## 5. Stack decisions (approved by the human, 2026-09-27)
 

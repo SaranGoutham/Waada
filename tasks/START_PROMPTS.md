@@ -5,6 +5,8 @@
 **Order:** Wave 0 → M00 + M04 · Wave 1 (after M00 is done on `dev`) → M01, M02, M03, M05 · Wave 2 → M06, M07, M08a, M08b, M02b · Wave 3 → M08c, M09, M10.
 Milestone merges (`dev` → `main`) are done by you; see TASKS.md "Branch & milestone merges".
 
+**Context checkpoints:** when an agent's context gets full (or you type `checkpoint`), it saves a handoff file in `docs/handoffs/` and gives you a ready-to-paste prompt for a new chat (AGENTS.md §4, "Context checkpoints"). Paste that prompt into a fresh chat; don't reuse these start prompts for a module that's already begun.
+
 ---
 
 ## M00 — Foundation (Wave 0, start first)
