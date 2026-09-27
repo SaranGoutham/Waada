@@ -96,14 +96,20 @@ export const testSettings = createServerFn({ method: "POST" }).handler(async () 
 export const previewImport = createServerFn({ method: "POST" })
   .validator(ImportInput)
   .handler(async ({ data }) => {
-    return invoke(({ parseFiles }) => parseFiles(data.files, data.account));
+    return invoke(async ({ createLLM, parseFiles }) =>
+      parseFiles(data.files, data.account, { llm: await createLLM() }),
+    );
   });
 export const runImport = createServerFn({ method: "POST" })
   .validator(ImportInput)
   .handler(async ({ data }) => {
-    return invoke(async ({ parseFiles, ingest }) => {
-      const parsed = await parseFiles(data.files, data.account);
-      return { parsed, report: await ingest(parsed.interactions) };
+    return invoke(async ({ createLLM, ingest, parseFiles, saveCrmRecord }) => {
+      const crmFiles = data.files.filter(
+        (file) => file.name.replace(/\\/g, "/").split("/").pop()?.toLowerCase() === "crm.json",
+      );
+      for (const file of crmFiles) await saveCrmRecord(data.account, file);
+      const parsed = await parseFiles(data.files, data.account, { llm: await createLLM() });
+      return { parsed, report: await ingest(parsed.interactions), crmSaved: crmFiles.length > 0 };
     });
   });
 

@@ -41,7 +41,7 @@ function ImportPage() {
       const outcome = await runImport({ data: { account: slug, files } });
       setPreview(outcome.parsed);
       setMessage(
-        `Imported ${outcome.report.added}; skipped ${outcome.report.skipped}.${outcome.report.errors.length ? ` ${outcome.report.errors.join(" ")}` : ""}`,
+        `${outcome.crmSaved ? "CRM record saved. " : ""}Imported ${outcome.report.added}; skipped ${outcome.report.skipped}.${outcome.report.errors.length ? ` ${outcome.report.errors.join(" ")}` : ""}`,
       );
     } catch (cause) {
       setError(
