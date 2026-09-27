@@ -31,56 +31,56 @@
 
 **Files:** Create `package.json`, `pnpm-workspace.yaml`, `biome.json`, `tsconfig.base.json`, `.nvmrc`, `packages/core/{package.json,tsconfig.json,vitest.config.ts}`, `packages/core/src/index.ts` (empty export); Modify `.gitignore`, `.env.example`.
 
-- [ ] Root scripts: `check` = `biome check . && pnpm -r --if-present typecheck`, `format` = `biome format --write .`, `test` = `pnpm -r --if-present test`, `test:live` = `pnpm -r --if-present test:live`.
-- [ ] Core scripts: `test` = `vitest run`, `test:live` = `vitest run --mode live --passWithNoTests`, `typecheck` = `tsc --noEmit`. `vitest.config.ts` switches `include` on `mode === "live"` (`test/**/*.live.test.ts`) vs default (`test/**/*.test.ts`, excluding live).
-- [ ] `.gitignore` and `.env.example` per brief step 3–4.
-- [ ] `corepack pnpm install`, then `pnpm check` green.
-- [ ] Commit `m00: scaffold pnpm workspace and core package`.
+- [x] Root scripts: `check` = `biome check . && pnpm -r --if-present typecheck`, `format` = `biome format --write .`, `test` = `pnpm -r --if-present test`, `test:live` = `pnpm -r --if-present test:live`.
+- [x] Core scripts: `test` = `vitest run`, `test:live` = `vitest run --mode live --passWithNoTests`, `typecheck` = `tsc --noEmit`. `vitest.config.ts` switches `include` on `mode === "live"` (`test/**/*.live.test.ts`) vs default (`test/**/*.test.ts`, excluding live).
+- [x] `.gitignore` and `.env.example` per brief step 3–4.
+- [x] `corepack pnpm install`, then `pnpm check` green.
+- [x] Commit `m00: scaffold pnpm workspace and core package`.
 
 ### Task 2: errors + models
 
 **Files:** `src/errors.ts`, `src/models.ts`, `test/foundation.test.ts`.
 **Produces:** §6.1 schemas + `z.infer` types of the same name; `WaadaError`, `ConfigError`, `ExternalServiceError`.
 
-- [ ] Tests: valid `Interaction` parses; bad `type`, non-ISO `date`, missing `sourceId` rejected; `Commitment.status` enum; `FileInput` accepts `Uint8Array`, rejects string; `ConfigError instanceof WaadaError` and keeps `name`.
-- [ ] Run → fail; implement verbatim from §6.1/6.2; run → pass.
-- [ ] Commit `m00: add contract models and errors`.
+- [x] Tests: valid `Interaction` parses; bad `type`, non-ISO `date`, missing `sourceId` rejected; `Commitment.status` enum; `FileInput` accepts `Uint8Array`, rejects string; `ConfigError instanceof WaadaError` and keeps `name`.
+- [x] Run → fail; implement verbatim from §6.1/6.2; run → pass.
+- [x] Commit `m00: add contract models and errors`.
 
 ### Task 3: config + log
 
 **Files:** `src/config.ts`, `src/log.ts`, tests.
 **Produces:** `getEnv()`, `requireEnv(...names)`, `bankIdFor(account)`, `slugify(s)`, `findProjectRoot()`; `log`, `createLogger(scope)`.
 
-- [ ] Tests: `bankIdFor("Acme Corp") === "waada-acme-corp"`, `"  ACME--corp!! "` → `waada-acme-corp`, `"Café Säo"` → `waada-cafe-sao`, `"!!!"` throws `WaadaError`; `requireEnv("WAADA_T_A","WAADA_T_B")` throws `ConfigError` whose message lists both; set var → no throw; relative `WAADA_DATA_DIR` resolves to absolute under project root; default dataDir ends with `.waada`. Logger: writes to stderr (spy `process.stderr.write`), never stdout, redacts `apiKey`, respects level.
-- [ ] Run → fail; implement per spec; run → pass.
-- [ ] Commit `m00: add config and stderr logger`.
+- [x] Tests: `bankIdFor("Acme Corp") === "waada-acme-corp"`, `"  ACME--corp!! "` → `waada-acme-corp`, `"Café Säo"` → `waada-cafe-sao`, `"!!!"` throws `WaadaError`; `requireEnv("WAADA_T_A","WAADA_T_B")` throws `ConfigError` whose message lists both; set var → no throw; relative `WAADA_DATA_DIR` resolves to absolute under project root; default dataDir ends with `.waada`. Logger: writes to stderr (spy `process.stderr.write`), never stdout, redacts `apiKey`, respects level.
+- [x] Run → fail; implement per spec; run → pass.
+- [x] Commit `m00: add config and stderr logger`.
 
 ### Task 4: store + accounts
 
 **Files:** `src/store.ts`, `src/accounts.ts`, tests.
 **Produces:** `readJson(relPath, schema, fallback)`, `writeJson(relPath, value)`, `Account`, `listAccounts()`, `upsertAccount({name, slug?})`.
 
-- [ ] Tests (temp dir via `WAADA_DATA_DIR`): missing file → fallback; write then read round-trip in nested folder; no `.tmp` files left; invalid JSON → `ConfigError`; schema mismatch → `ConfigError`; `../x.json` rejected. Accounts: empty list; upsert returns slug `acme-corp` + ISO `createdAt`; second upsert same slug updates name, keeps `createdAt`; explicit slug honoured; two concurrent upserts both persisted.
-- [ ] Run → fail; implement; run → pass.
-- [ ] Commit `m00: add JSON store and account registry`.
+- [x] Tests (temp dir via `WAADA_DATA_DIR`): missing file → fallback; write then read round-trip in nested folder; no `.tmp` files left; invalid JSON → `ConfigError`; schema mismatch → `ConfigError`; `../x.json` rejected. Accounts: empty list; upsert returns slug `acme-corp` + ISO `createdAt`; second upsert same slug updates name, keeps `createdAt`; explicit slug honoured; two concurrent upserts both persisted.
+- [x] Run → fail; implement; run → pass.
+- [x] Commit `m00: add JSON store and account registry`.
 
 ### Task 5: module stubs + index
 
 **Files:** `src/memory/index.ts`, `src/llm/index.ts`, `src/ingest/index.ts`, `src/agent/index.ts`, `src/index.ts`, `test/exports.test.ts`.
 
-- [ ] Test: `import { Interaction, createMemory, createLLM, ingest, brief } from "../src/index.ts"` — all defined; `createMemory()` throws `not implemented: memory`; `LlmSettings.parse` accepts the default Groq settings.
-- [ ] Implement stubs with exact §6.4–6.6/6.8 signatures; `index.ts` re-exports everything.
-- [ ] `pnpm check` (typecheck proves signatures) + test → pass. Commit `m00: add module stubs and public index`.
+- [x] Test: `import { Interaction, createMemory, createLLM, ingest, brief } from "../src/index.ts"` — all defined; `createMemory()` throws `not implemented: memory`; `LlmSettings.parse` accepts the default Groq settings.
+- [x] Implement stubs with exact §6.4–6.6/6.8 signatures; `index.ts` re-exports everything.
+- [x] `pnpm check` (typecheck proves signatures) + test → pass. Commit `m00: add module stubs and public index`.
 
 ### Task 6: fakes
 
 **Files:** `test/fakes.ts`, tests.
 **Produces:** `FakeMemory`, `FakeLLM`, `sampleInteractions()` (exported as `@waada/core/testing`).
 
-- [ ] Tests: `sampleInteractions()` = 3 valid `Interaction`s for `acme`; FakeMemory remember/search ranks the SOC 2 email first for "SOC 2 report", excludes zero-overlap, `maxResults` honoured, same `sourceId` replaces, `deleteBank` empties, `reflect` fixed string, `.calls` recorded; FakeLLM chat in order then throws when empty, extract by name validated by schema, `null` when empty or invalid, transcribe fixed string, calls recorded.
-- [ ] Run → fail; implement; run → pass. Commit `m00: add FakeMemory, FakeLLM and sample interactions`.
+- [x] Tests: `sampleInteractions()` = 3 valid `Interaction`s for `acme`; FakeMemory remember/search ranks the SOC 2 email first for "SOC 2 report", excludes zero-overlap, `maxResults` honoured, same `sourceId` replaces, `deleteBank` empties, `reflect` fixed string, `.calls` recorded; FakeLLM chat in order then throws when empty, extract by name validated by schema, `null` when empty or invalid, transcribe fixed string, calls recorded.
+- [x] Run → fail; implement; run → pass. Commit `m00: add FakeMemory, FakeLLM and sample interactions`.
 
 ### Task 7: verify, report, progress
 
-- [ ] `corepack pnpm install && pnpm check && pnpm test && pnpm test:live` — capture output.
-- [ ] Write `docs/reports/m00-foundation.md`; update M00 row in `docs/PROGRESS.md` (commit alone); push `dev`.
+- [x] `corepack pnpm install && pnpm check && pnpm test && pnpm test:live` — capture output.
+- [x] Write `docs/reports/m00-foundation.md`; update M00 row in `docs/PROGRESS.md` (commit alone); push `dev`.
