@@ -1,5 +1,6 @@
 import { describe, expect, it } from "vitest";
 import { brief } from "../src/agent/index.ts";
+import { MAX_PROMPT_CHARS } from "../src/llm/budget.ts";
 import type { Commitment, Landmine } from "../src/models.ts";
 import { FakeLLM, FakeMemory, sampleInteractions } from "./fakes.ts";
 
@@ -78,5 +79,38 @@ describe("brief", () => {
     expect(queries).toMatch(/objections the customer raised/);
     expect(queries).toMatch(/stakeholders/);
     expect(queries).toMatch(/what changed recently/);
+  });
+
+  it("runs ledger, then landmines, then the markdown chat, one after another", async () => {
+    const mem = await seededMemory();
+    const llm = makeLlm("# Acme brief");
+    await brief("acme", { memory: mem, llm });
+    // Sequential awaits make this order deterministic (parallel dispatch could
+    // interleave the extracts); live serialized timing is proven by the eval.
+    const order = llm.calls.map((c) =>
+      c.method === "chat" ? "chat" : `extract:${(c.args[0] as { name: string }).name}`,
+    );
+    expect(order).toEqual(["extract:commitments", "extract:landmines", "chat"]);
+  });
+
+  it("caps huge recall context before the markdown chat", async () => {
+    const mem = new FakeMemory();
+    await mem.remember({
+      account: "acme",
+      sourceId: "file:big",
+      type: "call",
+      date: "2026-09-02T10:00:00.000Z",
+      title: "Big call stakeholders sentiment timeline changes promises objections",
+      participants: ["Alex Rivera"],
+      content: `stakeholders sentiment recent changes ${"x".repeat(50_000)}`,
+      source: "transcript",
+    });
+    const llm = makeLlm("# Acme brief");
+    await brief("acme", { memory: mem, llm });
+    const chatCall = llm.calls.find((c) => c.method === "chat");
+    if (!chatCall) throw new Error("expected a chat call");
+    const user = (chatCall.args[0] as { user: string }).user;
+    expect(user).toMatch(/omitted/i);
+    expect(user.length).toBeLessThanOrEqual(MAX_PROMPT_CHARS);
   });
 });

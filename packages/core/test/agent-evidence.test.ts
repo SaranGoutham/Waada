@@ -1,5 +1,7 @@
 import { describe, expect, it } from "vitest";
 import { buildEvidence, EVIDENCE_BUDGET_CHARS } from "../src/agent/evidence.ts";
+import { LEDGER_SYSTEM, ledgerUser } from "../src/agent/prompts.ts";
+import { MAX_PROMPT_CHARS } from "../src/llm/budget.ts";
 import type { MemoryHit } from "../src/models.ts";
 
 function hit(text: string, n: number): MemoryHit {
@@ -36,5 +38,11 @@ describe("buildEvidence", () => {
     expect(text).toMatch(/first query item/);
     expect(text).toMatch(/second query item/);
     expect(text).toMatch(/third query item/);
+  });
+
+  it("keeps a full-size ledger extract prompt inside the per-request budget", () => {
+    const { text } = buildEvidence([[hit("x".repeat(EVIDENCE_BUDGET_CHARS), 1)]]);
+    const prompt = LEDGER_SYSTEM + ledgerUser(text);
+    expect(prompt.length).toBeLessThanOrEqual(MAX_PROMPT_CHARS);
   });
 });

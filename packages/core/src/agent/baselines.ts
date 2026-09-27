@@ -8,6 +8,7 @@ import { z } from "zod";
 import { findProjectRoot } from "../config.ts";
 import { WaadaError } from "../errors.ts";
 import { parseFiles } from "../ingest/parse-files.ts";
+import { truncateForBudget } from "../llm/budget.ts";
 import { createLLM, type LLM } from "../llm/index.ts";
 import { createLogger } from "../log.ts";
 import type { FileInput, Interaction } from "../models.ts";
@@ -17,17 +18,18 @@ import { BRIEF_SYSTEM, baselineCrmUser, baselineSummaryUser } from "./prompts.ts
 
 const log = createLogger("agent");
 
-/** Character budget for the summary baseline (~15k tokens); raw text older than this is dropped. */
-export const SUMMARY_BUDGET_CHARS = 60_000;
+/** Character budget for the summary baseline: raw text older than this is dropped.
+ * Sized for the free Groq tier (card 007): 12,000 chars ≈ 3,000 input tokens,
+ * plus the brief system prompt and one brief of markdown output the request
+ * stays near ~5,000 tokens — under the 8,000 TPM cap. Acme's full text is
+ * ~30,000 chars, so the baseline genuinely sees less than everything; the
+ * comparison stays fair because Waada's own extracts are capped the same way
+ * (see EVIDENCE_BUDGET_CHARS and BRIEF_RECALL_BUDGET_CHARS). */
+export const SUMMARY_BUDGET_CHARS = 12_000;
 
 const CRM_FIELDS = z.record(z.string(), z.unknown());
 
-/** Keeps the most recent `budget` characters and notes what was dropped. */
-export function truncateForBudget(text: string, budget: number): string {
-  if (text.length <= budget) return text;
-  const kept = text.slice(text.length - budget);
-  return `… [showing the most recent ${budget} of ${text.length} characters; earlier text omitted]\n${kept}`;
-}
+export { truncateForBudget };
 
 function seedDir(account: string): string {
   return join(findProjectRoot(), "seed", account);
@@ -134,18 +136,17 @@ export async function baselineSummary(account: string, deps?: AgentDeps): Promis
   return llm.chat({ system: BRIEF_SYSTEM, user: baselineSummaryUser(transcript) });
 }
 
-/** All three briefs in parallel; a failing leg shows its error message in that column
- * instead of failing the whole compare. */
+/** All three briefs one after another (free-tier TPM: parallel legs 429); a
+ * failing leg shows its error message in that column instead of failing the
+ * whole compare. */
 export async function compare(
   account: string,
   deps?: AgentDeps,
 ): Promise<{ crm: string; summary: string; waada: string }> {
   const run = (leg: () => Promise<string>): Promise<string> =>
     leg().catch((err) => (err instanceof Error ? err.message : String(err)));
-  const [crm, summary, waada] = await Promise.all([
-    run(() => baselineCrm(account, deps)),
-    run(() => baselineSummary(account, deps)),
-    run(async () => (await brief(account, deps)).markdown),
-  ]);
+  const crm = await run(() => baselineCrm(account, deps));
+  const summary = await run(() => baselineSummary(account, deps));
+  const waada = await run(async () => (await brief(account, deps)).markdown);
   return { crm, summary, waada };
 }

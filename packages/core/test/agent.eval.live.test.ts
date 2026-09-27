@@ -177,7 +177,9 @@ live("eval: M05 checks on seed/acme (Waada vs baselines)", () => {
   it(
     "EVAL-1: Sep 2 SOC 2 commitment is open and first in the brief",
     async () => {
+      const started = Date.now();
       result = await brief(ACCOUNT, deps());
+      console.info(`brief wall time: ${Math.round((Date.now() - started) / 1000)} s`);
       console.info("commitments:", JSON.stringify(result.commitments, null, 2));
       console.info("brief markdown:\n", result.markdown);
       const first = result.commitments[0];

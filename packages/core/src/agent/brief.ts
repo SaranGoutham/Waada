@@ -1,5 +1,10 @@
-// brief (M05): ledger + landmines in parallel, plus stakeholder and
-// recent-change recalls; llm.chat renders the markdown in contract order.
+// brief (M05): ledger, then landmines, then the markdown chat, one LLM request
+// after another. The free Groq tier allows 8,000 tokens per minute, so parallel
+// extracts (2 × ~4k tokens in the same window) 429; sequential requests plus
+// the llm/retry.ts 429 wait fit the tier. Memory recalls stay parallel: they
+// hit Hindsight, not the LLM token budget.
+
+import { truncateForBudget } from "../llm/budget.ts";
 import { createLLM } from "../llm/index.ts";
 import { createMemory } from "../memory/index.ts";
 import type { Brief as BriefT, MemoryHit } from "../models.ts";
@@ -8,6 +13,14 @@ import type { AgentDeps } from "./index.ts";
 import { landmines } from "./landmines.ts";
 import { commitmentLedger } from "./ledger.ts";
 import { BRIEF_SYSTEM, briefUser } from "./prompts.ts";
+
+/**
+ * Recall context per brief-chat section (4,000 chars ≈ 1,000 tokens each).
+ * Together with the structured commitment/landmine lists and the system prompt
+ * the chat stays inside MAX_PROMPT_CHARS. Hits arrive relevance-ranked, so
+ * tail truncation drops the least-relevant ones.
+ */
+export const BRIEF_RECALL_BUDGET_CHARS = 4_000;
 
 function formatHits(hits: MemoryHit[]): string {
   return hits
@@ -18,9 +31,12 @@ function formatHits(hits: MemoryHit[]): string {
 export async function brief(account: string, deps?: AgentDeps): Promise<BriefT> {
   const memory = deps?.memory ?? createMemory();
   const llm = deps?.llm ?? (await createLLM());
-  const [commitments, mines, stakeholders, recent] = await Promise.all([
-    commitmentLedger(account, { memory, llm }),
-    landmines(account, { memory, llm }),
+  // Sequential LLM requests: ledger extract, then landmines extract. Each
+  // request alone fits the per-request budget; running them back-to-back keeps
+  // the rolling per-minute window drainable via 429 retry-after waits.
+  const commitments = await commitmentLedger(account, { memory, llm });
+  const mines = await landmines(account, { memory, llm });
+  const [stakeholders, recent] = await Promise.all([
     memory.search(account, "stakeholders, their roles, what each cares about, sentiment", {
       budget: "high",
     }),
@@ -31,8 +47,8 @@ export async function brief(account: string, deps?: AgentDeps): Promise<BriefT> 
     user: briefUser({
       commitments,
       landmines: mines,
-      stakeholders: formatHits(stakeholders),
-      recent: formatHits(recent),
+      stakeholders: truncateForBudget(formatHits(stakeholders), BRIEF_RECALL_BUDGET_CHARS),
+      recent: truncateForBudget(formatHits(recent), BRIEF_RECALL_BUDGET_CHARS),
     }),
   });
   return Brief.parse({ account, markdown, commitments, landmines: mines });

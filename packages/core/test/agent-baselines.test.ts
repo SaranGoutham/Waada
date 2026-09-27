@@ -2,7 +2,7 @@
 // baselineCrm and baselineSummary must never touch memory; compare isolates
 // failures per column instead of failing the whole run.
 import { describe, expect, it } from "vitest";
-import { truncateForBudget } from "../src/agent/baselines.ts";
+import { SUMMARY_BUDGET_CHARS, truncateForBudget } from "../src/agent/baselines.ts";
 import { baselineCrm, baselineSummary, compare } from "../src/agent/index.ts";
 import { BRIEF_SYSTEM } from "../src/agent/prompts.ts";
 import type { Memory } from "../src/memory/index.ts";
@@ -76,17 +76,18 @@ describe("baselineSummary", () => {
     expect(mem.calls).toEqual([]);
   });
 
-  it("parses the seed folder and orders the raw text by date", async () => {
+  it("parses the seed folder and keeps the most recent raw text within budget", async () => {
     const llm = seedLlm(["# summary"]);
     const markdown = await baselineSummary("acme", { memory: new FakeMemory(), llm });
     expect(markdown).toBe("# summary");
     const { system, user } = chatCall(llm);
     expect(system).toBe(BRIEF_SYSTEM);
-    const early = user.indexOf("Great connecting at the ops roundtable"); // email-0714, Jul 14
+    // Acme's full text (~30k chars) exceeds the free-tier budget, so the oldest
+    // history is cut and the omission is labelled; the recent tail stays ordered.
+    expect(user).toMatch(/omitted/i);
+    expect(user.length).toBeLessThanOrEqual(SUMMARY_BUDGET_CHARS + 500);
     const late = user.indexOf("tomorrow is my last day"); // email-0925, Sep 25
-    expect(early).toBeGreaterThanOrEqual(0);
     expect(late).toBeGreaterThanOrEqual(0);
-    expect(early).toBeLessThan(late);
   });
 });
 
