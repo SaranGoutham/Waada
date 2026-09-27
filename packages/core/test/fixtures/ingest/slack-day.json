@@ -1,0 +1,30 @@
+[
+  {
+    "text": "Discovery call done. Priya cares about pilot-first and continuity.",
+    "ts": "1784106000.000100",
+    "type": "message",
+    "user": "U01ALEX",
+    "user_profile": { "real_name": "Alex Rivera" }
+  },
+  {
+    "text": "Continuity point taken. Everything lives against the account.",
+    "ts": "1784107500.000200",
+    "type": "message",
+    "subtype": "bot_message",
+    "user": "U03BHAV",
+    "user_profile": { "real_name": "Bhavana Iyer" }
+  },
+  {
+    "text": "Requirements session 29th with Meenakshi.",
+    "ts": "1784109600.000300",
+    "type": "message",
+    "user": "U99MISSING"
+  },
+  {
+    "text": "",
+    "ts": "1784110000.000400",
+    "type": "message",
+    "user": "U01ALEX",
+    "user_profile": { "real_name": "Alex Rivera" }
+  }
+]
