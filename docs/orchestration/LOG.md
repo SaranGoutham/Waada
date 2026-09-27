@@ -2,6 +2,13 @@
 
 Plain-language record of what happened, newest first. Written by the master (Claude Code) for the human.
 
+## 2026-09-27: cards 004 and 005 back; Groq free tier is the blocker
+
+- **Card 004 (Codex, M06): code done** (e9161ec). Compare uses the real core; Settings shows the key comes from `.env`; pages show a friendly error box. Codex's sandbox has no network, so it couldn't run the real flow; the master will.
+- **Card 005 (OpenCode, M05): partial** (d7be835, 02127ab). Import of all 33 Acme items works against real Hindsight; **Ask passed live**. The **Brief never finished**: Groq's free tier allows 8,000 tokens per minute, and the brief's two big requests (about 6,700 tokens each, even after a new evidence cap) run in parallel. Scorecard recorded honestly in `docs/decisions/llm/evals.md`.
+- **Human decision (P-005):** Groq fallback `qwen/qwen3-32b` no longer exists; replaced by `openai/gpt-oss-20b`. Card 006 changes the code.
+- **Open question for the human:** how to make the brief fit (paid Groq tier vs. slower/smaller requests).
+
 ## 2026-09-27: card 003 done (Groq key from .env); cards 004 and 005 started
 
 - **Human decision:** OpenCode uses the Muse free model (`opencode/muse-spark-1.3-contributor-free`) for all cards. The default model (longcat) dropped its connection mid-card.

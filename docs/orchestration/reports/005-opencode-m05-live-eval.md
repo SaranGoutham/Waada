@@ -1,0 +1,12 @@
+WORKER REPORT: card 005, M05
+Status: partial
+Commits: d7be835 m05: cap extract evidence to fit Groq free-tier TPM / 02127ab m05: add live eval harness and record honest eval results
+Files changed: packages/core/src/agent/evidence.ts, packages/core/src/agent/ledger.ts, packages/core/src/agent/landmines.ts, packages/core/test/agent-evidence.test.ts, packages/core/test/agent.eval.live.test.ts, docs/decisions/llm/evals.md, docs/reports/m05-agent-core.md, docs/superpowers/plans/2026-09-27-m05-agent-core.md
+Checks: npx pnpm@12.6.0 check → passes (Biome + typechecks) / npx pnpm@12.6.0 --filter @waada/core test → 19 files, 119 tests, all pass (no network) / test:live agent.eval.live.test.ts → 4 runs: ingest 33/33 green twice, ask EVAL-4 green once (run 2); EVAL-1/2/3/5 never got a clean run (provider TPM, see Blocked)
+Dependencies: M01 Hindsight → available (retains + recalls worked) / M02 Groq primary openai/gpt-oss-120b → available but capped at 8000 TPM free tier (429/413s) / M02 fallback qwen/qwen3-32b → broken (404s on Groq, id invalid there) / M03 parseFiles + M04 seed/acme → available (33/33 parsed) / .env keys → present, never printed
+Blocked: (1) brief's ledger+landmines extracts request ~6.7k tokens each even capped, fired in parallel = never fits 8000 TPM — needs human/master decision (tighter cap, serialize, smaller recalls, or dev-tier key); one fix round used (evidence.ts 12k-char cap), no further product-code changes per card limit. (2) Fallback model id invalid on Groq — M02-owned, §5-approved value, needs human decision. (3) e2e.live.test.ts has the same latent parseFiles-without-{llm} bug my run 1 caught — flagged, not fixed (not my file).
+Unverified: live-model quality judgments (SOC 2 first, delivered status, landmine wording, summary-vs-Waada) — none, no clean brief run exists to judge
+Notes for master: evals.md scorecard + 4-run honest log written; summary-baseline comparison is unmeasurable until brief fits the tier — MVP criterion 3 cannot pass as-is. Suggest next cards: M02 fallback-id decision (human) + brief token-budget decision (human), then re-run this exact eval file. Do not push my commits — master verifies first.
+
+---
+**Master verification (2026-09-27):** commits d7be835, 02127ab touch only card files, no AI attribution. Root `pnpm check` passes; `pnpm test` 119 core + 4 web green. Fallback id: human chose `openai/gpt-oss-20b` (P-005, card 006). Brief token budget: raised to the human.
