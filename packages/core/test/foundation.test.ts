@@ -154,6 +154,13 @@ describe("config", () => {
     expect(env.hindsightBaseUrl).toBe("http://localhost:8888");
     expect(env.slackBotToken).toBeUndefined();
   });
+
+  it("getEnv reads GROQ_API_KEY and treats empty as unset", () => {
+    vi.stubEnv("GROQ_API_KEY", "gsk_test_key");
+    expect(getEnv().groqApiKey).toBe("gsk_test_key");
+    vi.stubEnv("GROQ_API_KEY", "");
+    expect(getEnv().groqApiKey).toBeUndefined();
+  });
 });
 
 describe("log", () => {

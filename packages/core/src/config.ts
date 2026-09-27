@@ -37,6 +37,7 @@ function lookup(root: string): (name: string) => string | undefined {
 export function getEnv(): {
   hindsightBaseUrl?: string;
   hindsightApiKey?: string;
+  groqApiKey?: string;
   slackBotToken?: string;
   hubspotToken?: string;
   googleCredentialsPath?: string;
@@ -48,6 +49,7 @@ export function getEnv(): {
   return {
     hindsightBaseUrl: get("HINDSIGHT_BASE_URL"),
     hindsightApiKey: get("HINDSIGHT_API_KEY"),
+    groqApiKey: get("GROQ_API_KEY"),
     slackBotToken: get("SLACK_BOT_TOKEN"),
     hubspotToken: get("HUBSPOT_TOKEN"),
     googleCredentialsPath: get("GOOGLE_CREDENTIALS_PATH"),

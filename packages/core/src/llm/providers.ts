@@ -5,6 +5,7 @@ import { createOpenAI } from "@ai-sdk/openai";
 import { createOpenAICompatible } from "@ai-sdk/openai-compatible";
 import { createOpenRouter } from "@openrouter/ai-sdk-provider";
 import { generateText, type LanguageModel, type TranscriptionModel } from "ai";
+import { getEnv } from "../config.ts";
 import { ConfigError } from "../errors.ts";
 import type { LlmSettings } from "./settings.ts";
 
@@ -86,13 +87,29 @@ export function providerInfo(id: ProviderId): ProviderInfo {
   return provider;
 }
 
+/**
+ * Groq credential resolution (AGENTS.md §2 rule 6 exception): a key saved in
+ * Settings wins; otherwise fall back to `GROQ_API_KEY` from `.env`.
+ * Never returns an empty string.
+ */
+export function resolveGroqApiKey(settings: LlmSettings): string | undefined {
+  const fromSettings = settings.credentials.groq?.apiKey;
+  if (fromSettings !== undefined && fromSettings.trim() !== "") return fromSettings.trim();
+  return getEnv().groqApiKey;
+}
+
+/** True when a Groq key exists in Settings or in `GROQ_API_KEY`. No key value is exposed. */
+export function isGroqConfigured(settings: LlmSettings): boolean {
+  return resolveGroqApiKey(settings) !== undefined;
+}
+
 export function createLanguageModel(
   settings: LlmSettings,
   modelId = settings.model,
 ): LanguageModel {
   switch (settings.provider) {
     case "groq": {
-      const key = settings.credentials.groq?.apiKey;
+      const key = resolveGroqApiKey(settings);
       if (!key) throw new ConfigError("Add a Groq API key in Settings to use Groq.");
       return createGroq({ apiKey: key })(modelId);
     }
@@ -132,7 +149,7 @@ export function createTranscriptionModel(settings: LlmSettings): TranscriptionMo
   const selection = settings.transcription;
   if (!selection) throw new ConfigError("Add a Groq or OpenAI key in Settings to transcribe audio");
   if (selection.provider === "groq") {
-    const key = settings.credentials.groq?.apiKey;
+    const key = resolveGroqApiKey(settings);
     if (key) return createGroq({ apiKey: key }).transcription(selection.model);
   }
   if (selection.provider === "openai") {

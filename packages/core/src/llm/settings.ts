@@ -1,4 +1,5 @@
 import { z } from "zod";
+import { getEnv } from "../config.ts";
 import { readJson, writeJson } from "../store.ts";
 
 const ApiKey = z.object({ apiKey: z.string().min(1) });
@@ -44,6 +45,11 @@ export function redactedSettings(settings: LlmSettings): LlmSettings {
   const redacted = structuredClone(settings);
   for (const provider of ["groq", "openai", "anthropic", "google"] as const) {
     if (redacted.credentials[provider]) redacted.credentials[provider].apiKey = "[redacted]";
+  }
+  // GROQ_API_KEY env fallback (AGENTS.md §2 rule 6 exception): report Groq as
+  // configured without exposing the key value itself.
+  if (!redacted.credentials.groq && getEnv().groqApiKey) {
+    redacted.credentials.groq = { apiKey: "[redacted]" };
   }
   if (redacted.credentials.openrouter) redacted.credentials.openrouter.apiKey = "[redacted]";
   if (redacted.credentials.chatgpt) redactOpaqueCredentials(redacted.credentials.chatgpt);

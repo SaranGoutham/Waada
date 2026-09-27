@@ -16,6 +16,7 @@ subscription adapter are owned by M02b.
 Security rules:
 
 - Credentials persist only in `.waada/llm.json`, which is gitignored.
+- Exception: `GROQ_API_KEY` in `.env` is accepted as a fallback when no Groq key is saved in Settings; a Settings key wins.
 - UI-facing settings use `redactedSettings()`; API keys are replaced with
   `[redacted]` and are never logged.
 - Provider failures are surfaced as friendly Waada errors without raw provider
