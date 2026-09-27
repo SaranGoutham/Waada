@@ -5,6 +5,7 @@ import { createLogger } from "../log.ts";
 import { createMemory } from "../memory/index.ts";
 import type { Landmine as LandmineT } from "../models.ts";
 import { Landmine } from "../models.ts";
+import { buildEvidence } from "./evidence.ts";
 import type { AgentDeps } from "./index.ts";
 import { LANDMINES_SYSTEM, landminesUser } from "./prompts.ts";
 
@@ -22,17 +23,11 @@ export async function landmines(account: string, deps?: AgentDeps): Promise<Land
   const recalls = await Promise.all(
     LANDMINE_QUERIES.map((query) => memory.search(account, query, { budget: "high" })),
   );
-  const seen = new Set<string>();
-  const evidence: string[] = [];
-  for (const hit of recalls.flat()) {
-    const key = hit.text.trim().toLowerCase();
-    if (seen.has(key)) continue;
-    seen.add(key);
-    evidence.push(`[${hit.date ?? "undated"}] (${hit.context ?? "no context"}): ${hit.text}`);
-  }
+  const { text: evidence, truncated } = buildEvidence(recalls);
+  if (truncated) log.info("landmines: evidence truncated to the budget", { account });
   const result = await llm.extract({
     system: LANDMINES_SYSTEM,
-    user: landminesUser(evidence.join("\n")),
+    user: landminesUser(evidence),
     schema: z.object({ landmines: z.array(Landmine) }),
     name: "landmines",
     description: "Resolved customer objections not to re-open",

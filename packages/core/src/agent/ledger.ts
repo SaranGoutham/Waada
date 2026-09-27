@@ -5,6 +5,7 @@ import { createLogger } from "../log.ts";
 import { createMemory } from "../memory/index.ts";
 import type { Commitment as CommitmentT } from "../models.ts";
 import { Commitment } from "../models.ts";
+import { buildEvidence } from "./evidence.ts";
 import type { AgentDeps } from "./index.ts";
 import { LEDGER_SYSTEM, ledgerUser } from "./prompts.ts";
 
@@ -42,17 +43,11 @@ export async function commitmentLedger(account: string, deps?: AgentDeps): Promi
   const recalls = await Promise.all(
     LEDGER_QUERIES.map((query) => memory.search(account, query, { budget: "high" })),
   );
-  const seen = new Set<string>();
-  const evidence: string[] = [];
-  for (const hit of recalls.flat()) {
-    const key = hit.text.trim().toLowerCase();
-    if (seen.has(key)) continue;
-    seen.add(key);
-    evidence.push(`[${hit.date ?? "undated"}] (${hit.context ?? "no context"}): ${hit.text}`);
-  }
+  const { text: evidence, truncated } = buildEvidence(recalls);
+  if (truncated) log.info("commitmentLedger: evidence truncated to the budget", { account });
   const result = await llm.extract({
     system: LEDGER_SYSTEM,
-    user: ledgerUser(evidence.join("\n")),
+    user: ledgerUser(evidence),
     schema: z.object({ commitments: z.array(Commitment) }),
     name: "commitments",
     description: "Commitments our team made to the customer",
