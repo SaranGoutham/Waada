@@ -6,7 +6,7 @@ One row per module. **Each agent edits only its own row** (AGENTS.md §4). All w
 |---|---|---|---|---|---|
 | M00 Foundation | Claude Code | in progress | [plan](superpowers/plans/2026-09-27-m00-foundation.md) | building scaffold + contracts | 2026-09-27 |
 | M01 Memory | — | not started | — | — | — |
-| M02 LLM core | Codex | not started | — | — | — |
+| M02 LLM core | Codex | planning | [plan](superpowers/plans/2026-09-27-m02-llm-core.md) | Design and test-first plan complete; waiting for M00 Foundation `done` before code. | 2026-09-27 |
 | M02b LLM sign-in | — | not started | — | — | — |
 | M03 Ingest | — | not started | — | — | — |
 | M04 Synthetic data | OpenCode | not started | — | — | — |
