@@ -2,6 +2,12 @@
 
 Plain-language record of what happened, newest first. Written by the master (Claude Code) for the human.
 
+## 2026-09-27: card 003 done (Groq key from .env); cards 004 and 005 started
+
+- **Human decision:** OpenCode uses the Muse free model (`opencode/muse-spark-1.3-contributor-free`) for all cards. The default model (longcat) dropped its connection mid-card.
+- **Card 003 (OpenCode, M02): done** in 6655f23. A Groq key saved in Settings wins; otherwise `GROQ_API_KEY` from `.env` is used. The Settings page shows Groq as configured with only the env key, without exposing it. Checks: `pnpm check` passes; tests 116 core + 2 web.
+- **Started in parallel:** card 004 (Codex: whole flow on real data in the web app + real Compare) and card 005 (OpenCode: live evaluation into `docs/decisions/llm/evals.md`).
+
 ## 2026-09-27: card 002 done (compare and baselines)
 
 - **Card 002 (OpenCode, M05): done** in c2922b7. `compare` now returns three columns: CRM-only (from `seed/<account>/crm.json`), summary-only (all raw seed text, no Hindsight, 60,000-character budget, answer key files skipped) and Waada's brief. A failing column shows its error instead of breaking the page. Checks: `pnpm check` passes; tests 109 core + 2 web.
