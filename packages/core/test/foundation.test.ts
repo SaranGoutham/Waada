@@ -271,7 +271,7 @@ describe("accounts", () => {
 });
 
 describe("public index", () => {
-  it("exports the contract names, with stubs for unbuilt modules", async () => {
+  it("exports the contract names", async () => {
     const core = await import("../src/index.ts");
     for (const name of [
       "Interaction",
@@ -290,9 +290,6 @@ describe("public index", () => {
     ]) {
       expect(core, name).toHaveProperty(name);
     }
-    await expect(core.createLLM()).rejects.toThrow("not implemented: llm");
-    await expect(core.ingest([])).rejects.toThrow("not implemented: ingest");
-    await expect(core.brief("acme")).rejects.toThrow("not implemented: agent");
   });
 
   it("LlmSettings accepts the default Groq settings", () => {
