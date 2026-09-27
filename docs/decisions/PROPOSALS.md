@@ -56,3 +56,25 @@ Agents **append** here when they need a stack addition (AGENTS.md rule 3), a con
 - Blocks: nothing (MVP works with extracted channel-day `.json`).
 - **Status:** open
 - Human answer:
+
+## P-004 — Experimental "Sign in with ChatGPT" (M02b Part 2)
+- Raised by: M02b (Claude Code) · 2026-09-27
+- Type: design (no new package)
+- Question / proposal: should Waada build the experimental ChatGPT-subscription login from S3? Research with sources: [docs/decisions/llm/chatgpt-login.md](llm/chatgpt-login.md).
+- Exact mechanism: reuse the Codex CLI's public OAuth client (`app_EMoamEEZ73f0CkXaXp7hrann`) with PKCE against `https://auth.openai.com/oauth/authorize` and `/oauth/token`. The redirect URI is allow-listed by OpenAI to `http://127.0.0.1:1455/auth/callback` (fallback 1457), so Waada must open a temporary `node:http` listener on 1455 during sign-in, not use a web-app route. Store `{ accessToken, refreshToken, idToken, accountId, expiresAt }` in `credentials.chatgpt`. Call the private `https://chatgpt.com/backend-api/codex` Responses backend through the approved `@ai-sdk/openai` provider (custom `baseURL`, headers, and a `fetch` that refreshes tokens). Everything lives in `packages/core/src/llm/auth/chatgpt.ts` plus its routes, plus one `case "chatgpt"` line in M02's `providers.ts` (needs M02's agreement).
+- Why it's needed: S3 lists it as an optional provider. OpenRouter sign-in (Part 1) already gives users a way to connect without pasting a key.
+- Risks:
+  - **Terms of service:** OpenAI's Terms of Use forbid "programmatically extract data or Output" and circumventing restrictions; no OpenAI program allows third-party use of a subscription.
+  - **Account risk:** the user's own ChatGPT account could be rate-limited or suspended.
+  - **Breakage:** the client ID, redirect allow-list, headers and backend are internal to Codex and change without notice. Request rules (`stream`, `store: false`, `instructions`) are undocumented (`// VERIFY:`).
+  - **Port clash:** port 1455 is also used by `codex login`.
+  - **Missing features:** no transcription; structured output unverified (degrades to JSON parsing).
+- New packages: none (`node:crypto`, `node:http`, `@ai-sdk/openai` already approved).
+- Options considered (with trade-offs):
+  - A. **Defer past the MVP.** Build nothing now; keep M02's "not configured" error and hide the button. Zero risk, zero effort; OpenRouter sign-in covers the "no key" story.
+  - B. **Build it as described**, behind `experimental: true`, with a warning screen that names the risks before sign-in. About 1–1.5 days including a manual test with a real ChatGPT account; fragile.
+  - C. **Import the existing Codex CLI login** (read `~/.codex/auth.json` after the user runs `codex login`). No port 1455 listener, but it reads another app's credential file and shares its single-use refresh tokens, so Waada and Codex would log each other out.
+- Recommendation: **A (defer).** The MVP goal is a simple working prototype, and this feature carries terms-of-service and account risk for the user with no demo value that OpenRouter doesn't already give. If you want it anyway, B, not C.
+- Blocks: M02b Part 2 only. Part 1 (OpenRouter) goes ahead regardless.
+- **Status:** open
+- Human answer:
