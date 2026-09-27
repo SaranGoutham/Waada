@@ -290,7 +290,6 @@ describe("public index", () => {
     ]) {
       expect(core, name).toHaveProperty(name);
     }
-    expect(() => core.createMemory()).toThrow("not implemented: memory");
     await expect(core.createLLM()).rejects.toThrow("not implemented: llm");
     await expect(core.ingest([])).rejects.toThrow("not implemented: ingest");
     await expect(core.brief("acme")).rejects.toThrow("not implemented: agent");

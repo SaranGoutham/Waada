@@ -1,6 +1,7 @@
-import { describe, expect, it, vi } from "vitest";
-import { ExternalServiceError } from "../src/errors.ts";
+import { afterEach, describe, expect, it, vi } from "vitest";
+import { ConfigError, ExternalServiceError } from "../src/errors.ts";
 import { type HindsightApi, HindsightMemory, toIsoOrNull } from "../src/memory/hindsight.ts";
+import { createMemory } from "../src/memory/index.ts";
 import { type Interaction, MemoryHit } from "../src/models.ts";
 
 const BASE_URL = "https://hindsight.example";
@@ -217,5 +218,26 @@ describe("HindsightMemory errors", () => {
       .mockResolvedValueOnce(undefined);
     await memoryWith(fakeApi({ deleteBank })).deleteBank("acme");
     expect(deleteBank).toHaveBeenCalledTimes(2);
+  });
+});
+
+describe("createMemory", () => {
+  afterEach(() => {
+    vi.unstubAllEnvs();
+  });
+
+  it("throws ConfigError naming HINDSIGHT_BASE_URL when it is unset", () => {
+    vi.stubEnv("HINDSIGHT_BASE_URL", ""); // real env wins over .env; empty counts as unset
+    expect(() => createMemory()).toThrow(ConfigError);
+    expect(() => createMemory()).toThrow(/HINDSIGHT_BASE_URL/);
+  });
+
+  it("builds a Memory without touching the network, with or without an API key", () => {
+    vi.stubEnv("HINDSIGHT_BASE_URL", "http://localhost:8888");
+    vi.stubEnv("HINDSIGHT_API_KEY", "");
+    const local = createMemory();
+    expect(typeof local.search).toBe("function");
+    vi.stubEnv("HINDSIGHT_API_KEY", "hs-test");
+    expect(typeof createMemory().reflect).toBe("function");
   });
 });
