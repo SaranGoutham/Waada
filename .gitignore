@@ -3,6 +3,7 @@ node_modules/
 .waada/
 dist/
 .output/
+.tanstack/
 .wxt/
 coverage/
 credentials*.json
