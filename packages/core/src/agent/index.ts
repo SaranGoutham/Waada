@@ -1,17 +1,15 @@
 // STUB (M00). Owned by M05: replace every body. All functions take optional deps last (AGENTS.md §6.8).
 import type { LLM } from "../llm/index.ts";
 import type { Memory } from "../memory/index.ts";
-import type { Answer, Brief, Commitment, Landmine } from "../models.ts";
+import type { Answer, Brief, Landmine } from "../models.ts";
 
 export type AgentDeps = { memory?: Memory; llm?: LLM };
+
+export { commitmentLedger } from "./ledger.ts";
 
 const notImplemented = (): never => {
   throw new Error("not implemented: agent");
 };
-
-export async function commitmentLedger(_account: string, _deps?: AgentDeps): Promise<Commitment[]> {
-  return notImplemented();
-}
 
 export async function landmines(_account: string, _deps?: AgentDeps): Promise<Landmine[]> {
   return notImplemented();
