@@ -19,6 +19,7 @@ import { ask, brief, compare } from "../src/agent/index.ts";
 import { findProjectRoot, getEnv } from "../src/config.ts";
 import { parseFiles } from "../src/ingest/parse-files.ts";
 import { ingest } from "../src/ingest/pipeline.ts";
+import { createLLM, type LLM } from "../src/llm/index.ts";
 import { saveLlmSettings } from "../src/llm/settings.ts";
 import { createMemory, type Memory } from "../src/memory/index.ts";
 import type { Brief, FileInput, Interaction } from "../src/models.ts";
@@ -86,7 +87,8 @@ async function seedFiles(): Promise<FileInput[]> {
 
 live("e2e: seed/acme through real Hindsight + LLM", () => {
   const memory = isolatedMemory(createMemory());
-  const deps = { memory };
+  let llm: LLM;
+  const deps = () => ({ memory, llm });
   let dataDir: string;
   let result: Brief | undefined;
 
@@ -97,7 +99,7 @@ live("e2e: seed/acme through real Hindsight + LLM", () => {
       await saveLlmSettings({
         provider: "groq",
         model: "openai/gpt-oss-120b",
-        fallbackModel: "qwen/qwen3-32b",
+        fallbackModel: "openai/gpt-oss-20b",
         credentials: { groq: { apiKey: groqApiKey } },
       });
       console.info("e2e LLM: Groq via GROQ_API_KEY");
@@ -105,6 +107,7 @@ live("e2e: seed/acme through real Hindsight + LLM", () => {
       await copyFile(savedLlmSettings, join(dataDir, "llm.json"));
       console.info("e2e LLM: saved .waada/llm.json");
     }
+    llm = await createLLM();
     await memory.deleteBank(ACCOUNT).catch(() => {}); // fresh bank, even after a failed run
   }, 2 * MINUTE);
 
@@ -121,12 +124,12 @@ live("e2e: seed/acme through real Hindsight + LLM", () => {
       expect(files).toHaveLength(33);
 
       const started = Date.now();
-      const { interactions, errors } = await parseFiles(files, ACCOUNT);
+      const { interactions, errors } = await parseFiles(files, ACCOUNT, { llm });
       console.info(`parseFiles: ${interactions.length} interactions, errors:`, errors);
       expect(errors).toEqual([]);
       expect(interactions).toHaveLength(33);
 
-      const report = await ingest(interactions, deps);
+      const report = await ingest(interactions, deps());
       console.info(`ingest (${Math.round((Date.now() - started) / 1000)} s):`, report);
       expect(report).toEqual({ added: 33, skipped: 0, errors: [] });
     },
@@ -136,7 +139,7 @@ live("e2e: seed/acme through real Hindsight + LLM", () => {
   it(
     "brief leads with the open Sep 2 SOC 2 commitment and has the pricing landmine",
     async () => {
-      result = await brief(ACCOUNT, deps);
+      result = await brief(ACCOUNT, deps());
       console.info("commitments:", JSON.stringify(result.commitments, null, 2));
       console.info("landmines:", JSON.stringify(result.landmines, null, 2));
       console.info("brief markdown:\n", result.markdown);
@@ -159,7 +162,7 @@ live("e2e: seed/acme through real Hindsight + LLM", () => {
   it(
     'ask "What changed since July?" returns the Q3 → Q4 go-live move',
     async () => {
-      const answer = await ask(ACCOUNT, "What changed since July?", deps);
+      const answer = await ask(ACCOUNT, "What changed since July?", deps());
       console.info("ask:", JSON.stringify(answer, null, 2));
       expect(answer.text).toMatch(/Q4/i);
     },
@@ -169,7 +172,7 @@ live("e2e: seed/acme through real Hindsight + LLM", () => {
   it(
     "compare returns three non-empty columns",
     async () => {
-      const columns = await compare(ACCOUNT, deps);
+      const columns = await compare(ACCOUNT, deps());
       console.info("compare:", JSON.stringify(columns, null, 2));
       for (const key of ["crm", "summary", "waada"] as const) {
         expect(columns[key].trim().length, key).toBeGreaterThan(0);

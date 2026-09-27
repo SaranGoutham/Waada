@@ -27,7 +27,7 @@ export type LlmSettings = z.infer<typeof LlmSettings>;
 export const DEFAULT_LLM_SETTINGS: LlmSettings = {
   provider: "groq",
   model: "openai/gpt-oss-120b",
-  fallbackModel: "qwen/qwen3-32b",
+  fallbackModel: "openai/gpt-oss-20b",
   credentials: { ollama: { baseUrl: "http://localhost:11434/v1" } },
 };
 

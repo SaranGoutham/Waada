@@ -37,7 +37,7 @@ or credential values.
 | --- | --- |
 | provider | `groq` |
 | model | `openai/gpt-oss-120b` |
-| fallbackModel | `qwen/qwen3-32b` |
+| fallbackModel | `openai/gpt-oss-20b` |
 | Ollama base URL | `http://localhost:11434/v1` |
 
 Credentials are per provider and validated without logging their contents.

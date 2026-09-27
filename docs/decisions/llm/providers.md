@@ -5,7 +5,7 @@ subscription adapter are owned by M02b.
 
 | Provider | Auth | Structured output | Transcription | Notes |
 | --- | --- | --- | --- | --- |
-| Groq | API key | Yes, model-dependent | Yes | Default chat: `openai/gpt-oss-120b`; recommended speech model: `whisper-large-v3-turbo`. |
+| Groq | API key | Yes, model-dependent | Yes | Default chat: `openai/gpt-oss-120b`, fallback `openai/gpt-oss-20b`; recommended speech model: `whisper-large-v3-turbo`. |
 | OpenAI | API key | Yes | Yes | The selected transcription model is user-configured; current provider support includes Whisper and GPT-4o transcription models. |
 | Anthropic | API key | Yes | No | No audio route in this module. |
 | Google | API key | Yes | No | No audio route in this module. |

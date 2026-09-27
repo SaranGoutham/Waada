@@ -26,7 +26,7 @@ Dependencies (approved S3/S4): `ai`, `@ai-sdk/groq`, `@ai-sdk/openai`, `@ai-sdk/
                     chatgpt?: {/* owned by M02b; opaque object */} },
      transcription?: { provider: "groq" | "openai", model: string } }
    ```
-   Defaults: `groq`, `openai/gpt-oss-120b`, fallback `qwen/qwen3-32b`, Ollama base URL `http://localhost:11434/v1`. Mark Ollama `supportsTranscription: false` and note in `providers.md` that structured-output quality depends on the local model. Export `getLlmSettings()`, `saveLlmSettings()`, and `redactedSettings()` (keys masked, for the UI).
+   Defaults: `groq`, `openai/gpt-oss-120b`, fallback `openai/gpt-oss-20b`, Ollama base URL `http://localhost:11434/v1`. Mark Ollama `supportsTranscription: false` and note in `providers.md` that structured-output quality depends on the local model. Export `getLlmSettings()`, `saveLlmSettings()`, and `redactedSettings()` (keys masked, for the UI).
 2. **Provider registry**: for each provider: label, suggested models, and flags `supportsStructuredOutput`, `supportsTranscription`, `requiresKey`. Also `testConnection(provider)`, which makes a tiny call and returns ok or a friendly error (the UI's "Test" button). The `chatgpt` entry is a placeholder that M02b fills in; keep it behind a flag `experimental: true`.
 3. **`chat`**: AI SDK text generation with the configured model. On a provider or model error, retry once with `fallbackModel` if set.
 4. **`extract<T>`**: the contract in §6.5, exactly:

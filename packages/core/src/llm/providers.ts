@@ -25,7 +25,7 @@ export const providers: readonly ProviderInfo[] = [
   {
     id: "groq",
     label: "Groq",
-    suggestedModels: ["openai/gpt-oss-120b", "qwen/qwen3-32b"],
+    suggestedModels: ["openai/gpt-oss-120b", "openai/gpt-oss-20b"],
     supportsStructuredOutput: true,
     supportsTranscription: true,
     requiresKey: true,

@@ -137,7 +137,7 @@ live("eval: M05 checks on seed/acme (Waada vs baselines)", () => {
       await saveLlmSettings({
         provider: "groq",
         model: "openai/gpt-oss-120b",
-        fallbackModel: "qwen/qwen3-32b",
+        fallbackModel: "openai/gpt-oss-20b",
         credentials: { groq: { apiKey: groqApiKey } },
       });
       console.info("eval LLM: Groq via GROQ_API_KEY");

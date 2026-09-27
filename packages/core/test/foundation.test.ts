@@ -303,7 +303,7 @@ describe("public index", () => {
     const s = {
       provider: "groq",
       model: "openai/gpt-oss-120b",
-      fallbackModel: "qwen/qwen3-32b",
+      fallbackModel: "openai/gpt-oss-20b",
       credentials: { groq: { apiKey: "gsk_x" }, ollama: { baseUrl: "http://localhost:11434/v1" } },
     };
     expect(LlmSettings.parse(s)).toEqual(s);

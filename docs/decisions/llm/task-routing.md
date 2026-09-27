@@ -1,7 +1,7 @@
 # Task routing — which model settings each task uses
 
 All tasks go through the user's configured LLM settings (`.waada/llm.json`, Settings → LLM).
-Default provider: **Groq**, model `openai/gpt-oss-120b`, fallback `qwen/qwen3-32b`.
+Default provider: **Groq**, model `openai/gpt-oss-120b`, fallback `openai/gpt-oss-20b`.
 No task overrides the model or temperature in the MVP; `chat`/`extract` calls use the
 SDK default temperature unless the call site says otherwise.
 
