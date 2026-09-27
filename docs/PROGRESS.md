@@ -11,7 +11,7 @@
 | M03 Ingest | OpenCode | review | [plan](superpowers/plans/2026-09-27-m03-ingest.md) | pipeline+4 parsers done, 20 tests green, seed 33/33 no errors; [report](reports/m03-ingest.md); other-module note: foundation public-index test fails at createLLM stub assertion (M02 mid-work, theirs) | 2026-09-27 |
 | M04 Synthetic data | OpenCode | review | [plan](superpowers/plans/2026-09-27-m04-synthetic-data.md) | 33 Acme + 6 Nova interactions done, verified; [report](reports/m04-synthetic-data.md); needs human data review | 2026-09-27 |
 | M05 Agent core | OpenCode | in progress | [plan](superpowers/plans/2026-09-27-m05-agent-core.md) | card 007: fits free Groq tier (b5902eb, 745ceaf); live eval 4/6, brief ≈ 63 s; fails: SOC 2 not first, pricing proposal "unclear" (ledger judgement) → next card | 2026-09-27 |
-| M06 Web app | Codex | in progress | [plan](superpowers/plans/2026-09-27-m06-web-app.md) | card 004 done in code (e9161ec): Compare on real core, .env key source shown, error panels; real browser flow not yet run (Codex sandbox has no network; master runs it) | 2026-09-27 |
+| M06 Web app | Codex | in progress | [plan](superpowers/plans/2026-09-27-m06-web-app.md) | master browser run: Test OK, create, import 33/33, Brief, Ask all work on real data; Compare baselines broken (read seed/<slug>) → card 009 (Codex, running); UI polish list in LOG | 2026-09-27 |
 | M07 MCP server | — | not started | — | — | — |
 | M08a Slack connector | — | not started | — | — | — |
 | M08b Gmail connector | — | not started | — | — | — |

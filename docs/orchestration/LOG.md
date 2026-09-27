@@ -2,6 +2,19 @@
 
 Plain-language record of what happened, newest first. Written by the master (Claude Code) for the human.
 
+## 2026-09-27: today's target run for real in the browser
+
+- **Master ran the whole flow on localhost** with the real core, Hindsight Cloud and the free Groq key from `.env`:
+  1. Settings → Test: "Connection test returned: OK". ✅
+  2. Created "Acme Corp" (slug `acme-corp`); the empty brief shows "none" everywhere, no crash. ✅
+  3. Imported all of `seed/acme`: preview of 33 interactions, then "Imported 33; skipped 0." ✅
+  4. Brief (about a minute): SOC 2 promise listed as open, pricing landmine present. ⚠️ SOC 2 is third, not first; the Q3 → Q4 move is missing from "Recent changes".
+  5. Ask "What changed since July?": correct Q3 → Q4 answer with sources. ✅ (MVP criterion 2)
+  6. Compare: Waada column fills; both baselines say "not found" because they read `seed/acme-corp/`. ❌
+- **Also seen:** two header-less transcripts got today's date (metadata extraction failed, no reason logged); Slack items titled `#unknown`; brief and answer markdown shown as raw text; the account heading shows the slug; Ask lists about 100 sources with duplicates.
+- **Human decisions:** P-006, baselines read what the user imported (saved in `.waada/`), §6.8 note updated. Card 008 (ledger judgement + Q4 in recent changes) moved from OpenCode to Codex because OpenCode's free Muse model stayed rate-limited.
+- **Running:** card 009 (Codex): baselines from imported data, CRM file upload, Slack channel names, transcript metadata. Then card 008 (Codex). The master runs the live eval after both.
+
 ## 2026-09-27: card 007 done: the brief works on a free Groq key
 
 - **Human decisions:** OpenCode uses the Muse free model; AGENTS.md §5 S3 updated by the master with permission (fallback `openai/gpt-oss-20b`).
