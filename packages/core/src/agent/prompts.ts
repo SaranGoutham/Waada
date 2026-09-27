@@ -51,3 +51,13 @@ For temporal questions, trust the recall results; do not re-filter by date.`;
 export function askUser(question: string, excerpts: string[]): string {
   return `Answer only from these memory excerpts. Question: ${question}\n${excerpts.map((e) => `- ${e}`).join("\n")}`;
 }
+
+// Baselines (card 002): same system prompt (BRIEF_SYSTEM) and output format as the
+// brief, but the user message makes clear what little evidence is available.
+export function baselineCrmUser(fields: string): string {
+  return `Write the brief using ONLY these CRM record fields. No emails, calls or messages are available to you:\n${fields}`;
+}
+
+export function baselineSummaryUser(transcript: string): string {
+  return `Write the brief using ONLY the raw interaction text below (oldest first, possibly truncated). No search, highlights or memory are available to you:\n${transcript}`;
+}
