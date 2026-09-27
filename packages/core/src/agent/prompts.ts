@@ -43,3 +43,11 @@ export function briefUser(a: {
       .join("\n") || "none";
   return `Write the brief with these sections in order: open commitments, landmines, people, deal story (4 sentences or fewer), recent changes, customer words to lead with.\n\nOpen commitments:\n${commitments}\n\nLandmines:\n${mines}\n\nPeople:\n${a.stakeholders || "none"}\n\nRecent changes:\n${a.recent || "none"}`;
 }
+
+export const ASK_SYSTEM = `You answer the rep's question using ONLY the recalled memory excerpts below.
+Cite the sources in your answer. If the excerpts do not contain the answer, say it is not in memory instead of guessing.
+For temporal questions, trust the recall results; do not re-filter by date.`;
+
+export function askUser(question: string, excerpts: string[]): string {
+  return `Answer only from these memory excerpts. Question: ${question}\n${excerpts.map((e) => `- ${e}`).join("\n")}`;
+}
