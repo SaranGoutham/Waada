@@ -3,6 +3,7 @@
 // filename + current time with a warning. Also handles .vtt cue files.
 import { z } from "zod";
 import type { LLM } from "../llm/index.ts";
+import { createLogger } from "../log.ts";
 import { type FileInput, type Interaction, InteractionType } from "../models.ts";
 import { fileHash } from "./eml.ts";
 
@@ -13,6 +14,9 @@ const TranscriptMeta = z.object({
   type: InteractionType,
 });
 type TranscriptMeta = z.infer<typeof TranscriptMeta>;
+const TranscriptMetaPartial = TranscriptMeta.partial();
+type TranscriptMetaPartial = z.infer<typeof TranscriptMetaPartial>;
+const log = createLogger("ingest");
 
 export type TranscriptResult = {
   interactions: Interaction[];
@@ -102,7 +106,7 @@ export async function parseTranscript(
   const rawText = new TextDecoder().decode(file.data);
   const text = file.name.toLowerCase().endsWith(".vtt") ? vttToText(rawText) : rawText;
   const header = parseFrontMatter(text);
-  let meta: TranscriptMeta | null = null;
+  let meta: TranscriptMetaPartial | null = null;
   let body = text.trim();
   if (header?.meta.title && header.meta.date) {
     meta = {
@@ -117,22 +121,29 @@ export async function parseTranscript(
       system:
         "Extract meeting metadata as JSON with keys date (UTC ISO-8601), title, participants (names), type (call, meeting, email, slack or note).",
       user: text.slice(0, 2000),
-      schema: TranscriptMeta,
+      schema: TranscriptMetaPartial,
       name: "transcript-metadata",
       description: "Date, title, participants and type of a sales transcript",
     });
-    if (extracted) meta = extracted;
+    if (extracted) {
+      meta = extracted;
+    } else {
+      log.warn("transcript metadata extraction did not return valid metadata", {
+        file: file.name,
+        reason: deps?.llm ? "no-valid-result" : "no-llm-configured",
+      });
+    }
   }
   const warnings: string[] = [];
-  const resolved: TranscriptMeta = meta ?? {
-    date: new Date().toISOString(),
-    title: baseName(file.name),
-    participants: [],
-    type: "call",
+  const resolved: TranscriptMeta = {
+    date: meta?.date ?? new Date().toISOString(),
+    title: meta?.title ?? baseName(file.name),
+    participants: meta?.participants ?? [],
+    type: meta?.type ?? "call",
   };
-  if (!meta) {
+  if (!meta?.date || !meta.title) {
     warnings.push(
-      `${file.name}: no header and metadata extraction failed; used the file name and current time.`,
+      `${file.name}: no header and metadata extraction was incomplete; used available values and file-name/current-time fallbacks.`,
     );
   }
   return {

@@ -10,6 +10,7 @@ import { readJson, writeJson } from "../store.ts";
 const log = createLogger("ingest");
 
 const MANIFEST_FILE = "manifest.json";
+const StoredInteractions = Interaction.array();
 
 /** account → sourceIds already stored in memory. */
 export const Manifest = z.record(z.string(), z.array(z.string()));
@@ -47,16 +48,23 @@ export async function ingest(
 
   let memory = deps?.memory;
   if (memory === undefined) {
-    if (!valid.some(isNew)) return { added: 0, skipped: 0, errors };
+    if (!valid.some(isNew)) {
+      // Already in memory: still save them, so baselines see a re-import (P-006).
+      await persistInteractions(valid, { replace: false });
+      return { added: 0, skipped: 0, errors };
+    }
     memory = createMemory();
   }
 
   let added = 0;
   let skipped = 0;
+  const persisted: InteractionT[] = [];
+  const alreadyStored: InteractionT[] = [];
   const banked = new Set<string>();
   for (const item of valid) {
     if (!isNew(item)) {
       skipped += 1;
+      alreadyStored.push(item);
       continue;
     }
     try {
@@ -78,7 +86,31 @@ export async function ingest(
     ids.add(item.sourceId);
     manifest[item.account] = [...ids];
     await writeJson(MANIFEST_FILE, manifest);
+    persisted.push(item);
     log.debug("ingested interaction", { account: item.account, sourceId: item.sourceId });
   }
+  await persistInteractions(persisted, { replace: true });
+  await persistInteractions(alreadyStored, { replace: false });
   return { added, skipped, errors };
+}
+
+/**
+ * Merges interactions (by sourceId) into `.waada/interactions/<account>.json` for the baselines (P-006).
+ * `replace: false` only fills gaps, so a re-imported duplicate never overwrites what memory holds.
+ */
+async function persistInteractions(
+  items: InteractionT[],
+  opts: { replace: boolean },
+): Promise<void> {
+  const byAccount = new Map<string, InteractionT[]>();
+  for (const item of items)
+    byAccount.set(item.account, [...(byAccount.get(item.account) ?? []), item]);
+  for (const [account, newItems] of byAccount) {
+    const existing = await readJson(`interactions/${account}.json`, StoredInteractions, []);
+    const merged = new Map(existing.map((item) => [item.sourceId, item]));
+    for (const item of newItems) {
+      if (opts.replace || !merged.has(item.sourceId)) merged.set(item.sourceId, item);
+    }
+    await writeJson(`interactions/${account}.json`, [...merged.values()]);
+  }
 }

@@ -5,6 +5,8 @@ import { z } from "zod";
 import { WaadaError } from "../errors.ts";
 import type { FileInput, Interaction } from "../models.ts";
 
+export type SlackMetadata = { channelFallback?: string; users?: Record<string, string> };
+
 const SlackMessage = z.object({
   text: z.string().nullish(),
   ts: z.string().nullish(),
@@ -46,7 +48,11 @@ function channelFromName(name: string, payloadChannel?: string | null): string {
   return "unknown";
 }
 
-export async function parseSlackExport(file: FileInput, account: string): Promise<Interaction[]> {
+export async function parseSlackExport(
+  file: FileInput,
+  account: string,
+  metadata: SlackMetadata = {},
+): Promise<Interaction[]> {
   let raw: unknown;
   try {
     raw = JSON.parse(new TextDecoder().decode(file.data));
@@ -60,12 +66,13 @@ export async function parseSlackExport(file: FileInput, account: string): Promis
   const payload = parsed.data;
   const messages = Array.isArray(payload) ? payload : payload.messages;
   const channel = Array.isArray(payload)
-    ? channelFromName(file.name)
+    ? channelFromName(file.name, metadata.channelFallback)
     : channelFromName(file.name, payload.channel);
 
   const nameOf = (m: SlackMessage): string =>
     m.user_profile?.real_name?.trim() ||
     m.user_profile?.display_name?.trim() ||
+    (m.user ? metadata.users?.[m.user]?.trim() : undefined) ||
     m.user?.trim() ||
     "unknown";
 
@@ -92,7 +99,7 @@ export async function parseSlackExport(file: FileInput, account: string): Promis
       sourceId: `slack:${channel}:${day}`,
       type: "slack",
       date: new Date(earliest).toISOString(),
-      title: `#${channel} — ${day}`,
+      title: channel === "unknown" ? `Slack — ${day}` : `#${channel} — ${day}`,
       participants,
       content: lines.join("\n"),
       source: "slack_export",

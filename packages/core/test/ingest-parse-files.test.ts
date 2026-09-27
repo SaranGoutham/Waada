@@ -2,8 +2,10 @@ import { readFile } from "node:fs/promises";
 import { dirname, join } from "node:path";
 import { fileURLToPath } from "node:url";
 import { describe, expect, it } from "vitest";
+import { CrmRecord, saveCrmRecord } from "../src/ingest/index.ts";
 import { parseFiles } from "../src/ingest/parse-files.ts";
 import type { FileInput } from "../src/models.ts";
+import { readJson } from "../src/store.ts";
 import { FakeLLM } from "./fakes.ts";
 
 const DIR = join(dirname(fileURLToPath(import.meta.url)), "fixtures", "ingest");
@@ -82,5 +84,54 @@ describe("parseFiles", () => {
     );
     expect(interactions).toEqual([]);
     expect(errors).toEqual(["call.mp3: transcription needs a configured LLM; set one up first."]);
+  });
+
+  it("uses flat-upload Slack metadata without treating it as message files", async () => {
+    const { interactions, errors } = await parseFiles(
+      [
+        {
+          name: "channels.json",
+          data: new TextEncoder().encode('[{"id":"C1","name":"deal-acme"}]'),
+        },
+        {
+          name: "users.json",
+          data: new TextEncoder().encode('[{"id":"U1","real_name":"Alex Rivera"}]'),
+        },
+        {
+          name: "2026-07-15.json",
+          data: new TextEncoder().encode('[{"ts":"1784106000.000100","user":"U1","text":"Hello"}]'),
+        },
+      ],
+      "acme",
+    );
+    expect(errors).toEqual([]);
+    expect(interactions[0]?.title).toBe("#deal-acme — 2026-07-15");
+    expect(interactions[0]?.participants).toEqual(["Alex Rivera"]);
+  });
+
+  it("saves a crm.json upload as a flat CRM record", async () => {
+    const file = {
+      name: "crm.json",
+      data: new TextEncoder().encode('{"stage":"Evaluation","amount_usd":86000}'),
+    };
+    await saveCrmRecord("acme", file);
+    expect(await readJson("crm/acme.json", CrmRecord, {})).toEqual({
+      stage: "Evaluation",
+      amount_usd: 86000,
+    });
+  });
+
+  it("keeps partial transcript metadata while filling missing fields", async () => {
+    const llm = new FakeLLM({
+      extract: { "transcript-metadata": [{ date: "2026-08-20T10:00:00.000Z" }] },
+    });
+    const { interactions, errors } = await parseFiles(
+      [await fixture("no-header.txt", "call-04-pilot-scoping.txt")],
+      "acme",
+      { llm },
+    );
+    expect(interactions[0]?.date).toBe("2026-08-20T10:00:00.000Z");
+    expect(interactions[0]?.title).toBe("call-04-pilot-scoping");
+    expect(errors).toHaveLength(1);
   });
 });

@@ -3,7 +3,8 @@ import { tmpdir } from "node:os";
 import { join } from "node:path";
 import { afterEach, beforeEach, describe, expect, it, vi } from "vitest";
 import { ingest } from "../src/ingest/pipeline.ts";
-import type { Interaction } from "../src/models.ts";
+import { Interaction, type Interaction as InteractionT } from "../src/models.ts";
+import { readJson } from "../src/store.ts";
 import { FakeMemory, sampleInteractions } from "./fakes.ts";
 
 let dir: string;
@@ -21,7 +22,7 @@ afterEach(async () => {
 function rememberDates(mem: FakeMemory): string[] {
   return mem.calls
     .filter((c) => c.method === "remember")
-    .map((c) => (c.args[0] as Interaction).date);
+    .map((c) => (c.args[0] as InteractionT).date);
 }
 
 describe("ingest pipeline", () => {
@@ -40,7 +41,7 @@ describe("ingest pipeline", () => {
 
   it("records one error per failing item and continues with the rest", async () => {
     const mem = new FakeMemory();
-    const [first, second] = sampleInteractions() as [Interaction, Interaction, Interaction];
+    const [first, second] = sampleInteractions() as [InteractionT, InteractionT, InteractionT];
     const bad = { ...first, date: "not-a-date" };
     const report = await ingest([bad, second], { memory: mem });
     expect(report.added).toBe(1);
@@ -52,9 +53,31 @@ describe("ingest pipeline", () => {
 
   it("keeps per-account manifests separate", async () => {
     const mem = new FakeMemory();
-    const [first] = sampleInteractions() as [Interaction, Interaction, Interaction];
+    const [first] = sampleInteractions() as [InteractionT, InteractionT, InteractionT];
     await ingest([first], { memory: mem });
     const rerun = await ingest([{ ...first, account: "globex" }], { memory: mem });
     expect(rerun).toEqual({ added: 1, skipped: 0, errors: [] });
+  });
+
+  it("persists successfully ingested interactions per account and dedupes by source ID", async () => {
+    const mem = new FakeMemory();
+    const [first, second] = sampleInteractions() as [InteractionT, InteractionT, InteractionT];
+    await ingest([first, second], { memory: mem });
+    await ingest([{ ...first, title: "Updated title" }], { memory: mem });
+
+    const saved = await readJson("interactions/acme.json", Interaction.array(), []);
+    expect(saved).toEqual([second, first]);
+  });
+
+  it("saves re-imported items that were already in memory before the file existed", async () => {
+    const mem = new FakeMemory();
+    const [first, second] = sampleInteractions() as [InteractionT, InteractionT, InteractionT];
+    await ingest([first, second], { memory: mem });
+    await rm(join(dir, "interactions"), { recursive: true, force: true });
+
+    const rerun = await ingest([first, second], { memory: mem });
+    expect(rerun).toEqual({ added: 0, skipped: 2, errors: [] });
+    const saved = await readJson("interactions/acme.json", Interaction.array(), []);
+    expect(saved.map((i) => i.sourceId).sort()).toEqual([first.sourceId, second.sourceId].sort());
   });
 });
