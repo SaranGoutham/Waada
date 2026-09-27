@@ -190,6 +190,9 @@ importers:
       '@openrouter/ai-sdk-provider':
         specifier: ^3.1.0
         version: 3.1.0(ai@7.0.116(zod@4.6.5))(zod@4.6.5)
+      '@vectorize-io/hindsight-client':
+        specifier: 0.10.1
+        version: 0.10.1
       ai:
         specifier: ^7.0.116
         version: 7.0.116(zod@4.6.5)
@@ -568,6 +571,9 @@ packages:
     engines: {node: '>=16.20.0'}
     cpu: [x64]
     os: [win32]
+
+  '@vectorize-io/hindsight-client@0.10.1':
+    resolution: {integrity: sha512-83FsMz/FyFwKooN1KsBZq4cWLB4RJQcTTnmxpZ0n4bXZih1iySLCtR88OAuqhqSnT3ajw4Nx5Oa8OwrrBuI6Lw==}
 
   '@vercel/oidc@3.2.0':
     resolution: {integrity: sha512-UycprH3T6n3jH0k44NHMa7pnFHGu/N05MjojYr+Mc6I7obkoLIJujSWwin1pCvdy/eOxrI/l3uDLQsmcrOb4ug==}
@@ -1091,6 +1097,8 @@ snapshots:
 
   '@typescript/typescript-win32-x64@7.0.2':
     optional: true
+
+  '@vectorize-io/hindsight-client@0.10.1': {}
 
   '@vercel/oidc@3.2.0': {}
 
