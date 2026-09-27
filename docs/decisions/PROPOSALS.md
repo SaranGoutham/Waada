@@ -86,4 +86,4 @@ Agents **append** here when they need a stack addition (AGENTS.md rule 3), a con
 - New packages: none.
 - Blocks: the fallback path in M02 (today every fallback call fails).
 - **Status:** approved: `openai/gpt-oss-20b`
-- Human answer: use `openai/gpt-oss-20b` as the Groq fallback (2026-09-27). AGENTS.md §5 S3 still says `qwen/qwen3-32b`; the human updates §5. Code change: card 006.
+- Human answer: use `openai/gpt-oss-20b` as the Groq fallback (2026-09-27). AGENTS.md §5 S3 updated by the master with the human's permission. Code change: card 006.

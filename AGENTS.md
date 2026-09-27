@@ -137,7 +137,7 @@ Notes for master: <anything the next card needs to know>
 |---|---|---|---|
 | S1 | Language | **TypeScript everywhere** (core, web app, MCP, connectors, extension) | Approved |
 | S2 | Memory | **Hindsight** via `@vectorize-io/hindsight-client`. Support **both** Hindsight Cloud and local OSS in Docker; only `HINDSIGHT_BASE_URL` / `HINDSIGHT_API_KEY` change | Approved |
-| S3 | LLM | **Vercel AI SDK** (`ai`) as the only LLM layer. User picks a provider in Settings: **Groq** (default `openai/gpt-oss-120b`, fallback `qwen/qwen3-32b`), **OpenAI**, **Anthropic**, **Google**, **OpenRouter** (API key or **OpenRouter OAuth PKCE sign-in**), **Ollama** (local). Plus **OpenAI ChatGPT-subscription login**: ⚠️ unofficial, not an OpenAI program. It must be optional, isolated in one adapter, labelled "experimental" in the UI, and the app must fully work without it | Approved |
+| S3 | LLM | **Vercel AI SDK** (`ai`) as the only LLM layer. User picks a provider in Settings: **Groq** (default `openai/gpt-oss-120b`, fallback `openai/gpt-oss-20b`; changed from `qwen/qwen3-32b` by the human 2026-09-27, P-005), **OpenAI**, **Anthropic**, **Google**, **OpenRouter** (API key or **OpenRouter OAuth PKCE sign-in**), **Ollama** (local). Plus **OpenAI ChatGPT-subscription login**: ⚠️ unofficial, not an OpenAI program. It must be optional, isolated in one adapter, labelled "experimental" in the UI, and the app must fully work without it | Approved |
 | S4 | Speech-to-text | Whisper through whichever configured provider supports it (Groq or OpenAI), via the AI SDK | Approved |
 | S5 | CLI | **None.** Surfaces are the web app and MCP | Approved |
 | S6 | Web app (UI + backend) | **TanStack Start** full stack (TanStack Router, server functions, server routes) | Approved |
