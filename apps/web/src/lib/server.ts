@@ -50,16 +50,23 @@ export const getAnswer = createServerFn({ method: "POST" })
   });
 export const getCompare = createServerFn({ method: "GET" })
   .validator(AccountSlug)
-  .handler(async () => {
-    return fakeCompare();
+  .handler(async ({ data }) => {
+    return fakeCore() ? fakeCompare() : invoke(({ compare }) => compare(data.account));
   });
 export const getSettings = createServerFn({ method: "GET" }).handler(async () => {
-  return invoke(async ({ getLlmSettings, redactedSettings }) => {
-    const value = redactedSettings(await getLlmSettings());
+  return invoke(async ({ getEnv, getLlmSettings, redactedSettings }) => {
+    const settings = await getLlmSettings();
+    const value = redactedSettings(settings);
+    const groqKeySource = settings.credentials.groq
+      ? "settings"
+      : getEnv().groqApiKey
+        ? "env"
+        : "none";
     return {
       model: value.model,
       fallbackModel: value.fallbackModel ?? "",
       groqConfigured: Boolean(value.credentials.groq),
+      groqKeySource,
     };
   });
 });

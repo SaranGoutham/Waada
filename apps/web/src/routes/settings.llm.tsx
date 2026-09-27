@@ -50,6 +50,11 @@ function Settings() {
       <p className="mt-2 text-slate-600">
         Groq is the MVP provider. The API key is saved only in local Waada settings.
       </p>
+      {settings.groqKeySource === "env" ? (
+        <p role="status" className="mt-3 rounded-md bg-teal-50 px-3 py-2 text-sm text-teal-950">
+          Groq key from .env is configured. Save a key here to override it.
+        </p>
+      ) : null}
       <form
         onSubmit={save}
         className="mt-7 space-y-5 rounded-xl border border-slate-200 bg-white p-6"
@@ -90,7 +95,13 @@ function Settings() {
             id="api-key"
             type="password"
             autoComplete="new-password"
-            placeholder={settings.groqConfigured ? "Configured (masked)" : "Enter API key"}
+            placeholder={
+              settings.groqConfigured
+                ? settings.groqKeySource === "env"
+                  ? "Configured from .env (masked)"
+                  : "Configured (masked)"
+                : "Enter API key"
+            }
             value={apiKey}
             onChange={(e) => setApiKey(e.target.value)}
             className="mt-2 w-full rounded-md border border-slate-300 px-3 py-2"

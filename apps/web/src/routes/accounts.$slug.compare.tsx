@@ -1,5 +1,6 @@
 import { createFileRoute } from "@tanstack/react-router";
 import { AccountNav, SampleBanner } from "../components/account-nav";
+import { routeErrorMessage } from "../lib/error";
 import { getAppMode, getCompare } from "../lib/server";
 export const Route = createFileRoute("/accounts/$slug/compare")({
   loader: async ({ params }) => ({
@@ -7,7 +8,17 @@ export const Route = createFileRoute("/accounts/$slug/compare")({
     mode: await getAppMode(),
   }),
   component: Compare,
+  errorComponent: ({ error }) => <RouteError error={error} />,
 });
+
+function RouteError({ error }: { error: unknown }) {
+  return (
+    <p role="alert" className="rounded-xl border border-rose-200 bg-rose-50 p-4 text-rose-950">
+      {routeErrorMessage(error)}
+    </p>
+  );
+}
+
 function Compare() {
   const { result, mode } = Route.useLoaderData();
   const { slug } = Route.useParams();

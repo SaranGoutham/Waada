@@ -12,6 +12,7 @@ import { Route as rootRouteImport } from './routes/__root'
 import { Route as IndexRouteImport } from './routes/index'
 import { Route as AccountsSlugRouteImport } from './routes/accounts.$slug'
 import { Route as SettingsLlmRouteImport } from './routes/settings.llm'
+import { Route as AccountsSlugIndexRouteImport } from './routes/accounts.$slug.index'
 import { Route as AccountsSlugAskRouteImport } from './routes/accounts.$slug.ask'
 import { Route as AccountsSlugCommitmentsRouteImport } from './routes/accounts.$slug.commitments'
 import { Route as AccountsSlugCompareRouteImport } from './routes/accounts.$slug.compare'
@@ -31,6 +32,11 @@ const SettingsLlmRoute = SettingsLlmRouteImport.update({
   id: '/settings/llm',
   path: '/settings/llm',
   getParentRoute: () => rootRouteImport,
+} as any)
+const AccountsSlugIndexRoute = AccountsSlugIndexRouteImport.update({
+  id: '/',
+  path: '/',
+  getParentRoute: () => AccountsSlugRoute,
 } as any)
 const AccountsSlugAskRoute = AccountsSlugAskRouteImport.update({
   id: '/ask',
@@ -61,15 +67,16 @@ export interface FileRoutesByFullPath {
   '/accounts/$slug/commitments': typeof AccountsSlugCommitmentsRoute
   '/accounts/$slug/compare': typeof AccountsSlugCompareRoute
   '/accounts/$slug/import': typeof AccountsSlugImportRoute
+  '/accounts/$slug/': typeof AccountsSlugIndexRoute
 }
 export interface FileRoutesByTo {
   '/': typeof IndexRoute
-  '/accounts/$slug': typeof AccountsSlugRouteWithChildren
   '/settings/llm': typeof SettingsLlmRoute
   '/accounts/$slug/ask': typeof AccountsSlugAskRoute
   '/accounts/$slug/commitments': typeof AccountsSlugCommitmentsRoute
   '/accounts/$slug/compare': typeof AccountsSlugCompareRoute
   '/accounts/$slug/import': typeof AccountsSlugImportRoute
+  '/accounts/$slug': typeof AccountsSlugIndexRoute
 }
 export interface FileRoutesById {
   __root__: typeof rootRouteImport
@@ -80,6 +87,7 @@ export interface FileRoutesById {
   '/accounts/$slug/commitments': typeof AccountsSlugCommitmentsRoute
   '/accounts/$slug/compare': typeof AccountsSlugCompareRoute
   '/accounts/$slug/import': typeof AccountsSlugImportRoute
+  '/accounts/$slug/': typeof AccountsSlugIndexRoute
 }
 export interface FileRouteTypes {
   fileRoutesByFullPath: FileRoutesByFullPath
@@ -91,15 +99,16 @@ export interface FileRouteTypes {
     | '/accounts/$slug/commitments'
     | '/accounts/$slug/compare'
     | '/accounts/$slug/import'
+    | '/accounts/$slug/'
   fileRoutesByTo: FileRoutesByTo
   to:
     | '/'
-    | '/accounts/$slug'
     | '/settings/llm'
     | '/accounts/$slug/ask'
     | '/accounts/$slug/commitments'
     | '/accounts/$slug/compare'
     | '/accounts/$slug/import'
+    | '/accounts/$slug'
   id:
     | '__root__'
     | '/'
@@ -109,6 +118,7 @@ export interface FileRouteTypes {
     | '/accounts/$slug/commitments'
     | '/accounts/$slug/compare'
     | '/accounts/$slug/import'
+    | '/accounts/$slug/'
   fileRoutesById: FileRoutesById
 }
 export interface RootRouteChildren {
@@ -139,6 +149,13 @@ declare module '@tanstack/react-router' {
       fullPath: '/settings/llm'
       preLoaderRoute: typeof SettingsLlmRouteImport
       parentRoute: typeof rootRouteImport
+    }
+    '/accounts/$slug/': {
+      id: '/accounts/$slug/'
+      path: '/'
+      fullPath: '/accounts/$slug/'
+      preLoaderRoute: typeof AccountsSlugIndexRouteImport
+      parentRoute: typeof AccountsSlugRoute
     }
     '/accounts/$slug/ask': {
       id: '/accounts/$slug/ask'
@@ -176,6 +193,7 @@ interface AccountsSlugRouteChildren {
   AccountsSlugCommitmentsRoute: typeof AccountsSlugCommitmentsRoute
   AccountsSlugCompareRoute: typeof AccountsSlugCompareRoute
   AccountsSlugImportRoute: typeof AccountsSlugImportRoute
+  AccountsSlugIndexRoute: typeof AccountsSlugIndexRoute
 }
 
 const AccountsSlugRouteChildren: AccountsSlugRouteChildren = {
@@ -183,6 +201,7 @@ const AccountsSlugRouteChildren: AccountsSlugRouteChildren = {
   AccountsSlugCommitmentsRoute: AccountsSlugCommitmentsRoute,
   AccountsSlugCompareRoute: AccountsSlugCompareRoute,
   AccountsSlugImportRoute: AccountsSlugImportRoute,
+  AccountsSlugIndexRoute: AccountsSlugIndexRoute,
 }
 
 const AccountsSlugRouteWithChildren = AccountsSlugRoute._addFileChildren(
