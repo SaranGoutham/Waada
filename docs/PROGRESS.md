@@ -9,7 +9,7 @@ One row per module. **Each agent edits only its own row** (AGENTS.md §4). All w
 | M02 LLM core | Codex | planning | [plan](superpowers/plans/2026-09-27-m02-llm-core.md) | Design and test-first plan complete; waiting for M00 Foundation `done` before code. | 2026-09-27 |
 | M02b LLM sign-in | — | not started | — | — | — |
 | M03 Ingest | — | not started | — | — | — |
-| M04 Synthetic data | OpenCode | in progress | [plan](superpowers/plans/2026-09-27-m04-synthetic-data.md) | writing seed files (Task 1: scaffold) | 2026-09-27 |
+| M04 Synthetic data | OpenCode | review | [plan](superpowers/plans/2026-09-27-m04-synthetic-data.md) | 33 Acme + 6 Nova interactions done, verified; [report](reports/m04-synthetic-data.md); needs human data review | 2026-09-27 |
 | M05 Agent core | — | not started | — | — | — |
 | M06 Web app | — | not started | — | — | — |
 | M07 MCP server | — | not started | — | — | — |
