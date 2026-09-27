@@ -3,6 +3,7 @@ import { mkdtemp, readdir, rm, writeFile } from "node:fs/promises";
 import { tmpdir } from "node:os";
 import { join } from "node:path";
 import type * as Pkg from "@waada/core";
+import type * as PkgTesting from "@waada/core/testing";
 import { afterEach, beforeEach, describe, expect, expectTypeOf, it, vi } from "vitest";
 import { z } from "zod";
 import { Account, listAccounts, upsertAccount } from "../src/accounts.ts";
@@ -21,6 +22,7 @@ import {
   MemoryHit,
 } from "../src/models.ts";
 import { readJson, writeJson } from "../src/store.ts";
+import { FakeLLM, FakeMemory, sampleInteractions } from "./fakes.ts";
 
 const validInteraction = {
   account: "acme",
@@ -310,5 +312,87 @@ describe("public index", () => {
     expectTypeOf<typeof Pkg.createLLM>().returns.toEqualTypeOf<Promise<Pkg.LLM>>();
     expectTypeOf<typeof Pkg.ingest>().returns.toEqualTypeOf<Promise<Pkg.IngestReport>>();
     expectTypeOf<typeof Pkg.brief>().returns.toEqualTypeOf<Promise<Pkg.Brief>>();
+    expectTypeOf<PkgTesting.FakeMemory>().toMatchTypeOf<Pkg.Memory>();
+    expectTypeOf<PkgTesting.FakeLLM>().toMatchTypeOf<Pkg.LLM>();
+  });
+});
+
+describe("fakes", () => {
+  it("sampleInteractions returns 3 valid Interactions for acme", () => {
+    const items = sampleInteractions();
+    expect(items).toHaveLength(3);
+    for (const i of items) {
+      expect(Interaction.parse(i)).toEqual(i);
+      expect(i.account).toBe("acme");
+    }
+    expect(new Set(items.map((i) => i.sourceId)).size).toBe(3);
+  });
+
+  it("FakeMemory stores per account and ranks search hits by word overlap", async () => {
+    const mem = new FakeMemory();
+    expect(await mem.ensureBank("acme")).toBe("waada-acme");
+    for (const i of sampleInteractions()) await mem.remember(i);
+    const [email] = sampleInteractions() as [Interaction];
+    await mem.remember({ ...email, account: "globex", sourceId: "g1" });
+
+    const hits = await mem.search("acme", "When is the SOC 2 report due?");
+    expect(hits.length).toBeGreaterThan(0);
+    expect(hits[0]?.documentId).toBe("<soc2-followup@acme.example>");
+    expect(hits[0]?.context).toBe("email — Security docs follow-up");
+    expect(hits.every((h) => MemoryHit.parse(h))).toBe(true);
+    expect(hits.some((h) => h.documentId === "g1")).toBe(false);
+    expect(await mem.search("acme", "zebra giraffe")).toEqual([]);
+    expect(await mem.search("acme", "pricing SOC report billing", { maxResults: 1 })).toHaveLength(
+      1,
+    );
+  });
+
+  it("FakeMemory replaces by sourceId, deletes banks, reflects, and records calls", async () => {
+    const mem = new FakeMemory({ reflectAnswer: "They care about security." });
+    const [first] = sampleInteractions() as [Interaction];
+    await mem.remember(first);
+    await mem.remember({ ...first, content: "Updated: zebra" });
+    expect(await mem.search("acme", "zebra")).toHaveLength(1);
+    expect(await mem.reflect("acme", "patterns?")).toBe("They care about security.");
+    expect(await new FakeMemory().reflect("acme", "x")).toBe(FakeMemory.DEFAULT_REFLECTION);
+    await mem.deleteBank("acme");
+    expect(await mem.search("acme", "zebra")).toEqual([]);
+    expect(mem.calls.map((c) => c.method)).toEqual([
+      "remember",
+      "remember",
+      "search",
+      "reflect",
+      "deleteBank",
+      "search",
+    ]);
+    expect(mem.calls[2]?.args).toEqual(["acme", "zebra", undefined]);
+  });
+
+  it("FakeLLM returns queued chat replies in order, then throws", async () => {
+    const llm = new FakeLLM({ chat: ["one", "two"] });
+    expect(await llm.chat({ system: "s", user: "u" })).toBe("one");
+    expect(await llm.chat({ system: "s", user: "u2" })).toBe("two");
+    await expect(llm.chat({ system: "s", user: "u3" })).rejects.toThrow(/no chat reply queued/);
+    expect(llm.calls[1]).toEqual({ method: "chat", args: [{ system: "s", user: "u2" }] });
+  });
+
+  it("FakeLLM.extract returns queued values by name, validated, else null", async () => {
+    const Item = z.object({ text: z.string() });
+    const llm = new FakeLLM({ extract: { ledger: [{ text: "ok" }, { wrong: 1 }] } });
+    const args = { system: "s", user: "u", schema: Item, name: "ledger", description: "d" };
+    expect(await llm.extract(args)).toEqual({ text: "ok" });
+    expect(await llm.extract(args)).toBeNull(); // fails schema
+    expect(await llm.extract(args)).toBeNull(); // queue empty
+    expect(await llm.extract({ ...args, name: "other" })).toBeNull();
+    expect(llm.calls.filter((c) => c.method === "extract")).toHaveLength(4);
+  });
+
+  it("FakeLLM.transcribe returns the configured text, or throws when none", async () => {
+    const llm = new FakeLLM({ transcribe: "hello from the call" });
+    expect(await llm.transcribe(new Uint8Array([1]), "call.mp3")).toBe("hello from the call");
+    expect(await llm.transcribe(new Uint8Array([2]), "call2.mp3")).toBe("hello from the call");
+    await expect(new FakeLLM().transcribe(new Uint8Array(), "a.mp3")).rejects.toThrow(
+      /no transcription/,
+    );
   });
 });
