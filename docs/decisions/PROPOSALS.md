@@ -87,3 +87,11 @@ Agents **append** here when they need a stack addition (AGENTS.md rule 3), a con
 - Blocks: the fallback path in M02 (today every fallback call fails).
 - **Status:** approved: `openai/gpt-oss-20b`
 - Human answer: use `openai/gpt-oss-20b` as the Groq fallback (2026-09-27). AGENTS.md §5 S3 updated by the master with the human's permission. Code change: card 006.
+
+## P-006 — Compare baselines read imported data, not `seed/`
+- Raised by: master (Claude Code), from the browser run of today's target · 2026-09-27
+- Type: contract note (§6.8) + design; no new package (S13 JSON files)
+- Problem: an account created in the UI as "Acme Corp" gets slug `acme-corp`; both baselines read `seed/<slug>/` and find nothing, so Compare fills only the Waada column.
+- Options: A. baselines read imported data saved in `.waada/`; B. keep `seed/`, demo names the account "Acme"; C. heuristic slug → seed folder lookup.
+- **Status:** approved: A
+- Human answer: use imported data (2026-09-27). AGENTS.md §6.8 note updated by the master. Code change: card 009.

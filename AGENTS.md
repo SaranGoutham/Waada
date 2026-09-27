@@ -310,7 +310,7 @@ export function baselineSummary(account: string, deps?): Promise<string>;   // a
 export function compare(account: string, deps?): Promise<{ crm: string; summary: string; waada: string }>;
 ```
 
-CRM fields for the baseline come from `seed/<account>/crm.json` unless HubSpot is configured.
+Baselines read what the user imported, not `seed/` (human, 2026-09-27, P-006): Import saves the parsed interactions to `.waada/interactions/<account>.json` and an uploaded `crm.json` to `.waada/crm/<account>.json`; `baselineSummary` and `baselineCrm` read those. HubSpot (post-MVP) can replace the CRM file later.
 
 ## 7. Repository layout
 

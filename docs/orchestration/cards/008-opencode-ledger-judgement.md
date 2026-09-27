@@ -14,8 +14,12 @@ MVP success criterion 1: on `seed/acme` the brief's **first** item is the open S
 - EVAL-2's lookup matched a different item ("Send written proposal documenting pil…"); check whether the test's lookup is too loose.
 
 ## Files you may change
-`packages/core/src/agent/**`, `packages/core/test/agent*.test.ts`, `packages/core/test/agent.eval.live.test.ts`, `docs/decisions/llm/prompts/*` (new version, keep the old), `docs/decisions/llm/task-routing.md`, `docs/decisions/llm/evals.md`, `docs/reports/m05-agent-core.md`.
-**Don't touch:** `packages/core/src/llm/**`, `apps/**`, `seed/**`, `package.json`, `pnpm-lock.yaml`, `docs/PROGRESS.md`, `AGENTS.md`, `.env`.
+`packages/core/src/agent/{ledger,landmines,brief,prompts,evidence}.ts`, `packages/core/test/agent-{ledger,landmines,brief,evidence}.test.ts`, `packages/core/test/agent.eval.live.test.ts`, `docs/decisions/llm/prompts/*` (new version, keep the old), `docs/decisions/llm/task-routing.md`, `docs/decisions/llm/evals.md`, `docs/reports/m05-agent-core.md`.
+**Don't touch:** `packages/core/src/agent/baselines.ts` and `packages/core/src/ingest/**` (Codex, card 009, works there at the same time), `packages/core/src/llm/**`, `apps/**`, `seed/**`, `package.json`, `pnpm-lock.yaml`, `docs/PROGRESS.md`, `AGENTS.md`, `.env`.
+
+## Also seen in the master's browser run (same brief)
+- The brief's "Recent changes" and "Deal story" **missed the Q3 → Q4 go-live move** (Sep 18 call, Sep 19 email "Revised rollout: Q4 go-live confirmed") and still said "go-live by Sept 30". `ask("What changed since July?")` finds it, so it's in memory; the brief's recent-changes recall or its 4,000-char cut drops it. Fix so the latest date/plan changes survive (e.g. recall sorted by date, newest first, before truncation).
+- The brief markdown's "Open commitments" section listed items the ledger had marked delivered/late. The markdown must list only the ledger's **open** items, in the ledger's order.
 
 ## Steps
 1. Ledger prompt v2 (versioned in `docs/decisions/llm/prompts/`), general rules such as:
