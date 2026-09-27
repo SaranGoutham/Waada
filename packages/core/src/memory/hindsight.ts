@@ -59,10 +59,10 @@ function statusOf(err: unknown): number | undefined {
   return typeof status === "number" ? status : undefined;
 }
 
-/** Network failures (no status) and 5xx are worth one retry; 4xx are not. */
+/** Network failures (no status), 429 and 5xx are worth one retry; other 4xx are not. */
 function isRetryable(err: unknown): boolean {
   const status = statusOf(err);
-  return status === undefined || status >= 500;
+  return status === undefined || status === 429 || status >= 500;
 }
 
 /** Log-safe error description: SDK messages can echo request details, so never log them. */
@@ -182,6 +182,16 @@ export class HindsightMemory implements Memory {
         `Hindsight rejected the API key (HTTP ${status}). Check HINDSIGHT_API_KEY in .env.`,
         { cause: err },
       );
+    }
+    if (status === 429) {
+      return new ExternalServiceError("Hindsight is busy (HTTP 429). Try again shortly.", {
+        cause: err,
+      });
+    }
+    if (status !== undefined && status < 500) {
+      return new ExternalServiceError(`Hindsight rejected the ${op} request (HTTP ${status}).`, {
+        cause: err,
+      });
     }
     const suffix = status === undefined ? "" : ` (HTTP ${status})`;
     return new ExternalServiceError(

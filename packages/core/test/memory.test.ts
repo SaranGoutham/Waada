@@ -179,6 +179,22 @@ describe("HindsightMemory errors", () => {
     expect(recall).toHaveBeenCalledTimes(1);
   });
 
+  it("retries a 429 once, then says Hindsight is busy", async () => {
+    const retain = vi.fn<HindsightApi["retain"]>().mockRejectedValue(httpError(429));
+    await expect(memoryWith(fakeApi({ retain })).remember(call)).rejects.toThrow(
+      "Hindsight is busy (HTTP 429). Try again shortly.",
+    );
+    expect(retain).toHaveBeenCalledTimes(2);
+  });
+
+  it("says Hindsight rejected the request on other 4xx, naming the operation", async () => {
+    const retain = vi.fn<HindsightApi["retain"]>().mockRejectedValue(httpError(422));
+    await expect(memoryWith(fakeApi({ retain })).remember(call)).rejects.toThrow(
+      "Hindsight rejected the retain request (HTTP 422).",
+    );
+    expect(retain).toHaveBeenCalledTimes(1);
+  });
+
   it("does not retry a 4xx", async () => {
     const createBank = vi.fn<HindsightApi["createBank"]>().mockRejectedValue(httpError(400));
     await expect(memoryWith(fakeApi({ createBank })).ensureBank("acme")).rejects.toThrow(
