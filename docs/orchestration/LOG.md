@@ -2,6 +2,11 @@
 
 Plain-language record of what happened, newest first. Written by the master (Claude Code) for the human.
 
+## 2026-09-27: card 002 done (compare and baselines)
+
+- **Card 002 (OpenCode, M05): done** in c2922b7. `compare` now returns three columns: CRM-only (from `seed/<account>/crm.json`), summary-only (all raw seed text, no Hindsight, 60,000-character budget, answer key files skipped) and Waada's brief. A failing column shows its error instead of breaking the page. Checks: `pnpm check` passes; tests 109 core + 2 web.
+- **Next:** card 003 (OpenCode, `.env` Groq key fallback) is running; then card 004 (Codex) and card 005 (OpenCode).
+
 ## 2026-09-27: card 001 done (web app committed)
 
 - **Two master sessions ran at once** by accident (an interrupted chat kept going) and sent cards 001 and 002 twice. The human stopped the other session's workers; only this session dispatches now.
