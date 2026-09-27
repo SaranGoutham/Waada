@@ -1,0 +1,40 @@
+Message-ID: <acme-0815-proposal@example.com>
+Date: Sat, 15 Aug 2026 10:00:00 +0000
+From: Alex Rivera <alex.rivera@example.com>
+To: Priya Nair <priya.nair@example.com>
+Subject: Annual-pricing proposal: $86,000 ARR
+Content-Type: multipart/alternative; boundary="acme-boundary-0815"
+
+--acme-boundary-0815
+Content-Type: text/plain; charset=utf-8
+
+Hi Priya,
+
+As promised, the annual-pricing proposal:
+
+- $86,000 ARR, 240 seats, annual billing with 8% discount applied.
+- 3-week pilot included at no charge; SSO + onboarding covered.
+- Payment terms and DPA to be finalized with David's team.
+
+This matches exactly what we agreed on the 12th. Let me know
+when you'd like to walk through it together.
+
+Best,
+Alex Rivera
+alex.rivera@example.com
+
+--acme-boundary-0815
+Content-Type: text/html; charset=utf-8
+
+<html><body>
+<p>Hi Priya,</p>
+<p>As promised, the <b>annual-pricing proposal</b>:</p>
+<ul>
+<li><b>$86,000 ARR</b>, 240 seats, annual billing with 8% discount applied.</li>
+<li>3-week pilot included at no charge; SSO + onboarding covered.</li>
+<li>Payment terms and DPA to be finalized with David's team.</li>
+</ul>
+<p>Best,<br/>Alex Rivera<br/>alex.rivera@example.com</p>
+</body></html>
+
+--acme-boundary-0815--

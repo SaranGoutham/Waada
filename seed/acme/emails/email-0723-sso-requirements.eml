@@ -1,0 +1,41 @@
+Message-ID: <acme-0723-sso@example.com>
+Date: Thu, 23 Jul 2026 11:00:00 +0000
+From: Meenakshi Rao <meenakshi.rao@example.com>
+To: Priya Nair <priya.nair@example.com>
+Subject: SSO integration notes for your IT team
+Content-Type: multipart/alternative; boundary="acme-boundary-0723"
+
+--acme-boundary-0723
+Content-Type: text/plain; charset=utf-8
+
+Hi Priya,
+
+As promised, here is the SSO summary for your IT team:
+
+- SAML 2.0 via Okta, enforced for all seats, no exceptions.
+- SCIM provisioning with role mapping from your IdP groups.
+- Single domain to start; multi-domain available later.
+
+Happy to join a call with your IT folks if they want to walk
+through the group-mapping setup before the pilot.
+
+Best,
+Meenakshi Rao
+Sales Engineer
+meenakshi.rao@example.com
+
+--acme-boundary-0723
+Content-Type: text/html; charset=utf-8
+
+<html><body>
+<p>Hi Priya,</p>
+<p>As promised, here is the <b>SSO summary</b> for your IT team:</p>
+<ul>
+<li>SAML 2.0 via Okta, enforced for all seats, no exceptions.</li>
+<li>SCIM provisioning with role mapping from your IdP groups.</li>
+<li>Single domain to start; multi-domain available later.</li>
+</ul>
+<p>Best,<br/>Meenakshi Rao, Sales Engineer<br/>meenakshi.rao@example.com</p>
+</body></html>
+
+--acme-boundary-0723--

@@ -1,0 +1,20 @@
+Message-ID: <acme-0730-recap@example.com>
+Date: Thu, 30 Jul 2026 16:45:00 +0000
+From: Alex Rivera <alex.rivera@example.com>
+To: Priya Nair <priya.nair@example.com>
+Subject: Recap: requirements + Q3 target
+Content-Type: text/plain; charset=utf-8
+
+Hi Priya,
+
+Recap from yesterday's session with Meenakshi:
+
+- 240 seats, one domain, SSO via Okta (enforced, SCIM).
+- Pilot: 3 weeks, west region (~40 seats), binary success criteria.
+- Target: live in Q3, before your October peak season.
+
+I'll send the pilot proposal with the criteria in writing next week.
+Let me know if I missed anything.
+
+Best,
+Alex
