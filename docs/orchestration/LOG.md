@@ -13,3 +13,5 @@ Plain-language record of what happened, newest first. Written by the master (Cla
   - M06 is scaffolded but nothing is committed
   - no Groq key is configured yet
 - **Next cards:** 001 Codex, M06 (fix nested config, commit the web app); 002 OpenCode, M05 (compare and baselines).
+
+- **Human asked for `GROQ_API_KEY` in `.env`.** Added an empty line to `.env` (gitignored) and `.env.example`; AGENTS.md rule 6 now allows it as a fallback (Settings wins). The code doesn't read it yet, so card 003 (OpenCode, after 002) adds the fallback.
