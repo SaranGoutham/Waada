@@ -1,7 +1,10 @@
 import { existsSync } from "node:fs";
+import { mkdtemp, readdir, rm, writeFile } from "node:fs/promises";
 import { tmpdir } from "node:os";
 import { join } from "node:path";
-import { afterEach, describe, expect, it, vi } from "vitest";
+import { afterEach, beforeEach, describe, expect, it, vi } from "vitest";
+import { z } from "zod";
+import { Account, listAccounts, upsertAccount } from "../src/accounts.ts";
 import { bankIdFor, findProjectRoot, getEnv, requireEnv, slugify } from "../src/config.ts";
 import { ConfigError, ExternalServiceError, WaadaError } from "../src/errors.ts";
 import { createLogger, log } from "../src/log.ts";
@@ -15,6 +18,7 @@ import {
   Landmine,
   MemoryHit,
 } from "../src/models.ts";
+import { readJson, writeJson } from "../src/store.ts";
 
 const validInteraction = {
   account: "acme",
@@ -171,5 +175,93 @@ describe("log", () => {
     vi.stubEnv("WAADA_LOG_LEVEL", "debug");
     log.debug("shown");
     expect(err).toHaveBeenCalledTimes(2);
+  });
+});
+
+describe("store", () => {
+  let dir: string;
+  beforeEach(async () => {
+    dir = await mkdtemp(join(tmpdir(), "waada-store-"));
+    vi.stubEnv("WAADA_DATA_DIR", dir);
+  });
+  afterEach(async () => {
+    vi.unstubAllEnvs();
+    await rm(dir, { recursive: true, force: true });
+  });
+
+  const Sync = z.object({ cursor: z.string(), count: z.number() });
+
+  it("returns the fallback when the file is missing", async () => {
+    expect(await readJson("nope.json", Sync, { cursor: "", count: 0 })).toEqual({
+      cursor: "",
+      count: 0,
+    });
+  });
+
+  it("round-trips through a nested path and leaves no temp files", async () => {
+    await writeJson("sync/slack.json", { cursor: "abc", count: 3 });
+    await writeJson("sync/slack.json", { cursor: "def", count: 4 });
+    expect(await readJson("sync/slack.json", Sync, { cursor: "", count: 0 })).toEqual({
+      cursor: "def",
+      count: 4,
+    });
+    expect(await readdir(join(dir, "sync"))).toEqual(["slack.json"]);
+  });
+
+  it("throws ConfigError naming the file for invalid JSON or schema mismatch", async () => {
+    await writeFile(join(dir, "broken.json"), "{not json");
+    await expect(readJson("broken.json", Sync, { cursor: "", count: 0 })).rejects.toThrow(
+      ConfigError,
+    );
+    await expect(readJson("broken.json", Sync, { cursor: "", count: 0 })).rejects.toThrow(
+      /broken\.json/,
+    );
+    await writeJson("wrong.json", { cursor: 1 });
+    await expect(readJson("wrong.json", Sync, { cursor: "", count: 0 })).rejects.toThrow(
+      ConfigError,
+    );
+  });
+
+  it("rejects paths outside the data dir", async () => {
+    await expect(writeJson("../escape.json", {})).rejects.toThrow(WaadaError);
+    await expect(readJson(join(dir, "abs.json"), Sync, { cursor: "", count: 0 })).rejects.toThrow(
+      WaadaError,
+    );
+  });
+});
+
+describe("accounts", () => {
+  let dir: string;
+  beforeEach(async () => {
+    dir = await mkdtemp(join(tmpdir(), "waada-accounts-"));
+    vi.stubEnv("WAADA_DATA_DIR", dir);
+  });
+  afterEach(async () => {
+    vi.unstubAllEnvs();
+    await rm(dir, { recursive: true, force: true });
+  });
+
+  it("starts empty, upserts, and lists", async () => {
+    expect(await listAccounts()).toEqual([]);
+    const a = await upsertAccount({ name: "Acme Corp" });
+    expect(a.slug).toBe("acme-corp");
+    expect(a.name).toBe("Acme Corp");
+    expect(Account.parse(a)).toEqual(a);
+    expect(await listAccounts()).toEqual([a]);
+  });
+
+  it("updates the name of an existing slug and keeps createdAt", async () => {
+    const first = await upsertAccount({ name: "Acme" });
+    const second = await upsertAccount({ name: "ACME Inc", slug: "acme" });
+    expect(second).toEqual({ ...first, name: "ACME Inc" });
+    expect(await listAccounts()).toHaveLength(1);
+  });
+
+  it("honours an explicit slug and keeps concurrent upserts", async () => {
+    await Promise.all([
+      upsertAccount({ name: "Globex", slug: "globex-eu" }),
+      upsertAccount({ name: "Initech" }),
+    ]);
+    expect((await listAccounts()).map((a) => a.slug).sort()).toEqual(["globex-eu", "initech"]);
   });
 });
