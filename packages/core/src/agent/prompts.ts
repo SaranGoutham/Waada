@@ -17,3 +17,29 @@ Cite the source for every landmine in "source". Only include objections that wer
 export function landminesUser(evidence: string): string {
   return `From these interaction excerpts, list every resolved objection the new rep must not re-open:\n${evidence}`;
 }
+
+export const BRIEF_SYSTEM = `You write a deal-continuity brief for a sales rep who just inherited an account.
+Render markdown with exactly these sections in this order:
+1. Open commitments
+2. Landmines
+3. People
+4. Deal story (4 sentences or fewer)
+5. Recent changes
+6. Customer words to lead with.
+Only use the evidence given; do not invent facts.`;
+
+export function briefUser(a: {
+  commitments: { text: string; status: string; evidence: string; source: string }[];
+  landmines: { topic: string; resolution: string; guidance: string; source: string }[];
+  stakeholders: string;
+  recent: string;
+}): string {
+  const commitments =
+    a.commitments.map((c) => `- [${c.status}] ${c.text} (${c.evidence}; ${c.source})`).join("\n") ||
+    "none";
+  const mines =
+    a.landmines
+      .map((m) => `- ${m.topic}: ${m.resolution} Guidance: ${m.guidance} (${m.source})`)
+      .join("\n") || "none";
+  return `Write the brief with these sections in order: open commitments, landmines, people, deal story (4 sentences or fewer), recent changes, customer words to lead with.\n\nOpen commitments:\n${commitments}\n\nLandmines:\n${mines}\n\nPeople:\n${a.stakeholders || "none"}\n\nRecent changes:\n${a.recent || "none"}`;
+}
