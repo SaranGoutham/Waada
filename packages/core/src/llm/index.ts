@@ -1,6 +1,13 @@
-// STUB (M00). Owned by M02: replace createLLM() and LlmSettings (provisional shape from tasks/M02-llm-core.md).
 // Only this folder may import `ai` / `@ai-sdk/*` / provider packages (AGENTS.md rule 4).
-import { z } from "zod";
+import { generateText, transcribe as generateTranscript } from "ai";
+import type { z } from "zod";
+import { ConfigError, ExternalServiceError } from "../errors.ts";
+import { extract as extractObject } from "./extract.ts";
+import { createLanguageModel, createTranscriptionModel } from "./providers.ts";
+import { getLlmSettings } from "./settings.ts";
+
+export * from "./providers.ts";
+export * from "./settings.ts";
 
 export interface LLM {
   chat(a: { system: string; user: string; temperature?: number }): Promise<string>;
@@ -17,27 +24,51 @@ export interface LLM {
   transcribe(audio: Uint8Array, filename: string): Promise<string>;
 }
 
-const ApiKey = z.object({ apiKey: z.string() });
-
-// Provider, model, fallbackModel, per-provider credentials. Stored in .waada/llm.json.
-export const LlmSettings = z.object({
-  provider: z.enum(["groq", "openai", "anthropic", "google", "openrouter", "ollama", "chatgpt"]),
-  model: z.string(),
-  fallbackModel: z.string().optional(),
-  credentials: z.object({
-    groq: ApiKey.optional(),
-    openai: ApiKey.optional(),
-    anthropic: ApiKey.optional(),
-    google: ApiKey.optional(),
-    openrouter: z.object({ apiKey: z.string(), via: z.enum(["key", "oauth"]) }).optional(),
-    ollama: z.object({ baseUrl: z.string() }).optional(),
-    chatgpt: z.record(z.string(), z.unknown()).optional(), // owned by M02b; opaque
-  }),
-  transcription: z.object({ provider: z.enum(["groq", "openai"]), model: z.string() }).optional(),
-});
-export type LlmSettings = z.infer<typeof LlmSettings>;
-
 /** Reads the user's provider settings from .waada/llm.json. */
 export async function createLLM(): Promise<LLM> {
-  throw new Error("not implemented: llm");
+  const settings = await getLlmSettings();
+  return {
+    async chat({ system, user, temperature }) {
+      const models = [settings.model];
+      if (settings.fallbackModel && settings.fallbackModel !== settings.model)
+        models.push(settings.fallbackModel);
+      let lastError: unknown;
+      for (const modelId of models) {
+        try {
+          const result = await generateText({
+            model: createLanguageModel(settings, modelId),
+            system,
+            prompt: user,
+            temperature,
+          });
+          return result.text;
+        } catch (error) {
+          if (error instanceof ConfigError) throw error;
+          lastError = error;
+        }
+      }
+      throw new ExternalServiceError(
+        `Could not get a response from ${settings.provider}. Check the model and Settings.`,
+        { cause: lastError },
+      );
+    },
+    async extract(args) {
+      return extractObject(settings, args);
+    },
+    async transcribe(audio, _filename) {
+      try {
+        const result = await generateTranscript({
+          model: createTranscriptionModel(settings),
+          audio,
+        });
+        return result.text;
+      } catch (error) {
+        if (error instanceof ConfigError) throw error;
+        throw new ExternalServiceError(
+          "Could not transcribe audio. Check the provider and Settings.",
+          { cause: error },
+        );
+      }
+    },
+  };
 }
