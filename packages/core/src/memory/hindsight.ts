@@ -121,8 +121,14 @@ export class HindsightMemory implements Memory {
     query: string,
     opts?: { budget?: "low" | "mid" | "high"; maxResults?: number },
   ): Promise<MemoryHit[]> {
+    // Recall on a bank that doesn't exist yet (nothing ingested) is a 404: that means no hits.
     const response = await this.#call("recall", () =>
-      this.#api.recall(bankIdFor(account), query, { budget: opts?.budget ?? "mid" }),
+      this.#api
+        .recall(bankIdFor(account), query, { budget: opts?.budget ?? "mid" })
+        .catch((err: unknown) => {
+          if (statusOf(err) === 404) return { results: [] };
+          throw err;
+        }),
     );
     const hits = response.results.map(
       (r): MemoryHit => ({

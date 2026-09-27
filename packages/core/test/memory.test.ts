@@ -173,6 +173,12 @@ describe("HindsightMemory errors", () => {
     expect(retain).toHaveBeenCalledTimes(2);
   });
 
+  it("search returns no hits for a bank that doesn't exist yet (HTTP 404), without retrying", async () => {
+    const recall = vi.fn<HindsightApi["recall"]>().mockRejectedValue(httpError(404));
+    expect(await memoryWith(fakeApi({ recall })).search("acme", "q")).toEqual([]);
+    expect(recall).toHaveBeenCalledTimes(1);
+  });
+
   it("does not retry a 4xx", async () => {
     const createBank = vi.fn<HindsightApi["createBank"]>().mockRejectedValue(httpError(400));
     await expect(memoryWith(fakeApi({ createBank })).ensureBank("acme")).rejects.toThrow(
