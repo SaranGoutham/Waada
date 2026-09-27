@@ -4,7 +4,7 @@ One row per module. **Each agent edits only its own row** (AGENTS.md §4). All w
 
 | Module | Owner (agent) | Status | Plan | Note (one line, latest first) | Updated |
 |---|---|---|---|---|---|
-| M00 Foundation | Claude Code | not started | — | — | — |
+| M00 Foundation | Claude Code | in progress | [plan](superpowers/plans/2026-09-27-m00-foundation.md) | building scaffold + contracts | 2026-09-27 |
 | M01 Memory | — | not started | — | — | — |
 | M02 LLM core | Codex | not started | — | — | — |
 | M02b LLM sign-in | — | not started | — | — | — |
