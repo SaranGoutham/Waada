@@ -1,4 +1,5 @@
 import { describe, expect, it, vi } from "vitest";
+import { ExternalServiceError } from "../src/errors.ts";
 import { type HindsightApi, HindsightMemory, toIsoOrNull } from "../src/memory/hindsight.ts";
 import { type Interaction, MemoryHit } from "../src/models.ts";
 
@@ -134,5 +135,87 @@ describe("HindsightMemory", () => {
     expect(api.deleteBank).toHaveBeenCalledWith("waada-acme");
     await mem.ensureBank("acme");
     expect(api.createBank).toHaveBeenCalledTimes(2);
+  });
+});
+
+const httpError = (status: number) =>
+  Object.assign(new Error(`request failed (${status})`), { statusCode: status });
+const networkError = () => new TypeError("fetch failed");
+
+describe("HindsightMemory errors", () => {
+  it("retries a network error once, then succeeds", async () => {
+    const reflect = vi
+      .fn<HindsightApi["reflect"]>()
+      .mockRejectedValueOnce(networkError())
+      .mockResolvedValueOnce({ text: "ok" });
+    expect(await memoryWith(fakeApi({ reflect })).reflect("acme", "q")).toBe("ok");
+    expect(reflect).toHaveBeenCalledTimes(2);
+  });
+
+  it("gives up after one retry on 5xx with a friendly message naming the URL", async () => {
+    const recall = vi.fn<HindsightApi["recall"]>().mockRejectedValue(httpError(503));
+    const err = await memoryWith(fakeApi({ recall }))
+      .search("acme", "q")
+      .catch((e: unknown) => e);
+    expect(err).toBeInstanceOf(ExternalServiceError);
+    expect((err as Error).message).toBe(
+      "Couldn't reach Hindsight at https://hindsight.example (HTTP 503). Is the server running / is the API key right?",
+    );
+    expect(recall).toHaveBeenCalledTimes(2);
+  });
+
+  it("maps an unreachable server to the friendly message without an HTTP suffix", async () => {
+    const retain = vi.fn<HindsightApi["retain"]>().mockRejectedValue(networkError());
+    await expect(memoryWith(fakeApi({ retain })).remember(call)).rejects.toThrow(
+      "Couldn't reach Hindsight at https://hindsight.example. Is the server running / is the API key right?",
+    );
+    expect(retain).toHaveBeenCalledTimes(2);
+  });
+
+  it("does not retry a 4xx", async () => {
+    const createBank = vi.fn<HindsightApi["createBank"]>().mockRejectedValue(httpError(400));
+    await expect(memoryWith(fakeApi({ createBank })).ensureBank("acme")).rejects.toThrow(
+      ExternalServiceError,
+    );
+    expect(createBank).toHaveBeenCalledTimes(1);
+  });
+
+  it("says the API key was rejected on 401/403, without retrying or leaking the key", async () => {
+    for (const status of [401, 403]) {
+      const reflect = vi
+        .fn<HindsightApi["reflect"]>()
+        .mockRejectedValue(
+          Object.assign(new Error("Bearer hs-SECRET-KEY invalid"), { statusCode: status }),
+        );
+      const err = (await memoryWith(fakeApi({ reflect }))
+        .reflect("acme", "q")
+        .catch((e: unknown) => e)) as Error;
+      expect(err).toBeInstanceOf(ExternalServiceError);
+      expect(err.message).toBe(
+        `Hindsight rejected the API key (HTTP ${status}). Check HINDSIGHT_API_KEY in .env.`,
+      );
+      expect(err.message).not.toContain("SECRET");
+      expect(reflect).toHaveBeenCalledTimes(1);
+    }
+  });
+
+  it("does not cache a bank whose creation failed", async () => {
+    const createBank = vi
+      .fn<HindsightApi["createBank"]>()
+      .mockRejectedValueOnce(httpError(400))
+      .mockResolvedValueOnce({});
+    const mem = memoryWith(fakeApi({ createBank }));
+    await expect(mem.ensureBank("acme")).rejects.toThrow(ExternalServiceError);
+    expect(await mem.ensureBank("acme")).toBe("waada-acme");
+    expect(createBank).toHaveBeenCalledTimes(2);
+  });
+
+  it("retries deleteBank's plain Error (no status) once", async () => {
+    const deleteBank = vi
+      .fn<HindsightApi["deleteBank"]>()
+      .mockRejectedValueOnce(new Error("deleteBank failed: {}"))
+      .mockResolvedValueOnce(undefined);
+    await memoryWith(fakeApi({ deleteBank })).deleteBank("acme");
+    expect(deleteBank).toHaveBeenCalledTimes(2);
   });
 });
