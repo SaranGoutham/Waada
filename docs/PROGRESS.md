@@ -10,7 +10,7 @@ One row per module. **Each agent edits only its own row** (AGENTS.md §4). All w
 | M02b LLM sign-in | — | not started | — | — | — |
 | M03 Ingest | OpenCode | review | [plan](superpowers/plans/2026-09-27-m03-ingest.md) | pipeline+4 parsers done, 20 tests green, seed 33/33 no errors; [report](reports/m03-ingest.md); other-module note: foundation public-index test fails at createLLM stub assertion (M02 mid-work, theirs) | 2026-09-27 |
 | M04 Synthetic data | OpenCode | review | [plan](superpowers/plans/2026-09-27-m04-synthetic-data.md) | 33 Acme + 6 Nova interactions done, verified; [report](reports/m04-synthetic-data.md); needs human data review | 2026-09-27 |
-| M05 Agent core | — | not started | — | — | — |
+| M05 Agent core | OpenCode (next) | not started | — | reserved 2026-09-27 after M03 review | 2026-09-27 |
 | M06 Web app | — | not started | — | — | — |
 | M07 MCP server | — | not started | — | — | — |
 | M08a Slack connector | — | not started | — | — | — |
