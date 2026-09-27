@@ -1,0 +1,17 @@
+---
+title: Nova call #1 — discovery
+date: 2026-08-04T14:00:00Z
+type: call
+participants: Karan Malhotra, Alex Rivera
+---
+Alex Rivera: Karan, thanks for taking the call. Tell me how freight tracking works at Nova today.
+
+Karan Malhotra: Spreadsheets and phone calls, mostly. I'm Head of Operations and I have twelve dispatchers updating a shared sheet that breaks every other week. Peak season is coming and I'm not confident it survives.
+
+Alex Rivera: Twelve dispatchers — what size rollout are we talking about?
+
+Karan Malhotra: Start with the dispatch team, maybe expand to the warehouse later. And Alex — pricing has to be simple. My last vendor billed monthly and finance hated the unpredictability. I don't want another line item that wobbles every month.
+
+Alex Rivera: Noted. Simple, predictable pricing — we'll come back with a structure that finance can set and forget. Next step: I'll send notes and we'll talk commercials once you've seen the product.
+
+Karan Malhotra: Fair. Show me it works, then we talk money.

@@ -1,0 +1,17 @@
+---
+title: Nova call #2 — pricing
+date: 2026-08-12T15:00:00Z
+type: call
+participants: Karan Malhotra, Alex Rivera, Meenakshi Rao
+---
+Alex Rivera: Karan, Meenakshi's with us today — she ran your trial environment. Karan Malhotra, Head of Ops at Nova; Meenakshi Rao, our SE.
+
+Karan Malhotra: The trial went well, I'll give you that. Dispatchers like it. But the quote you sent has monthly billing, and I told you on day one — finance hates wobbling line items. Monthly is a problem.
+
+Meenakshi Rao: That's useful clarity. Annual would fix the predictability and it's cheaper — same pattern we've seen work elsewhere.
+
+Alex Rivera: Here's what I'll do: annual billing, 10% discount off the monthly rate card. One number, $54,000 ARR, no monthly wobble. If finance wants predictability, this is it.
+
+Karan Malhotra: Annual at fifty-four with the discount... yes. That I can take to finance. Send it in writing and we're moving forward.
+
+Alex Rivera: In your inbox tomorrow.
