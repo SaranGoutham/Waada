@@ -2,6 +2,13 @@
 
 Plain-language record of what happened, newest first. Written by the master (Claude Code) for the human.
 
+## 2026-09-27: card 007 done: the brief works on a free Groq key
+
+- **Human decisions:** OpenCode uses the Muse free model; AGENTS.md §5 S3 updated by the master with permission (fallback `openai/gpt-oss-20b`).
+- **Card 007 (OpenCode + master):** each request is capped in size, brief and compare run their AI calls one at a time, and the app waits and retries when Groq says "retry after". OpenCode wrote the code and ran the eval, then hit **its own** model's rate limit twice; the master verified, committed (b5902eb, 745ceaf) and recorded the eval.
+- **Eval now 4 of 6**, with no rate-limit failures; a brief takes about 63 seconds. The brief contains the SOC 2 promise and the pricing landmine, and Ask works.
+- **Still failing (accuracy, not capacity):** the SOC 2 promise is third, not first (the ledger also counts two older items as open), and the $86k pricing proposal is marked "unclear" instead of "delivered". Next card fixes the ledger's judgement.
+
 ## 2026-09-27: card 006 done; card 007 started
 
 - **Card 006 (OpenCode, M02): done** in 471cc67. Default Groq fallback is now `openai/gpt-oss-20b`. The e2e test now gives the LLM to the file parser, so the two headerless transcripts get proper dates. Checks: `pnpm check` passes; tests 119 core + 4 web. A `.waada/llm.json` saved earlier keeps its old fallback until re-saved in Settings.
