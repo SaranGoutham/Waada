@@ -103,7 +103,28 @@ You are <AGENT>, continuing module MNN (<name>) of Waada from a checkpoint. Read
 
 Then stop. Don't start new work in the old chat.
 
-**The new chat's first steps:** read in the order the prompt lists, run the handoff's "How to verify" commands, and confirm the state matches before writing any code. If it doesn't match (e.g. another agent's commit changed something), say so to the human before continuing.
+### Module finished: hand yourself the next module
+
+When your module reaches `review` or `done` (report written, pushed), don't stop silently. Pick up the next piece of work:
+
+1. Open `TASKS.md` (Module map, Hand-out waves) and `docs/PROGRESS.md`.
+2. Choose the **first module in map order** whose Owner is `—` and whose wave is open:
+   - **Wave 0** is open from the start. **Wave 1** is open once M00 is `done`. **Wave 2** is open once M01, M02, M03 and M05 are `done`. **Wave 3** is open once M06 is `done`.
+   - A module in the **next** wave (not yet open) may be taken for **brainstorming and planning only**: write the spec and plan, then set status `planning (waiting for wave)` and write no code until the wave opens.
+3. **Reserve it:** set that row's Owner to `<your tool name> (next)`, then commit and push `docs/PROGRESS.md` alone right away. This stops two agents picking the same module. Re-read the file first; if someone else reserved it in the meantime, pick the next one.
+4. Reply to the human with a ready-to-paste prompt in one code block, then stop:
+
+```
+You are <AGENT>, working on module MNN (<name>) of Waada. Read AGENTS.md fully, then tasks/MNN-<name>.md, and follow them. <Any stop-point from the brief, e.g. "Show me the Acme timeline before writing files.">. <If its wave isn't open: "Spec and plan only; write no code until <gate> is done.">. Work on branch dev with other agents in parallel: never switch branches, and stage only your own files. Update your row in docs/PROGRESS.md. Commits start with "mNN:" and have no AI attribution.
+```
+
+If no module is available, say so and suggest what the human could merge or unblock.
+
+**Every reply that ends a chat** (checkpoint or module finished) ends with exactly one ready-to-paste prompt, so the human never has to write one.
+
+### The new chat's first steps
+
+Read in the order the prompt lists, run the handoff's "How to verify" commands, and confirm the state matches before writing any code. If it doesn't match (e.g. another agent's commit changed something), say so to the human before continuing.
 
 ## 5. Stack decisions (approved by the human, 2026-09-27)
 

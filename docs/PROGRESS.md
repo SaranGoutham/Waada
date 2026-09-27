@@ -4,12 +4,12 @@ One row per module. **Each agent edits only its own row** (AGENTS.md §4). All w
 
 | Module | Owner (agent) | Status | Plan | Note (one line, latest first) | Updated |
 |---|---|---|---|---|---|
-| M00 Foundation | — | not started | — | — | — |
+| M00 Foundation | Claude Code | not started | — | — | — |
 | M01 Memory | — | not started | — | — | — |
-| M02 LLM core | — | not started | — | — | — |
+| M02 LLM core | Codex | not started | — | — | — |
 | M02b LLM sign-in | — | not started | — | — | — |
 | M03 Ingest | — | not started | — | — | — |
-| M04 Synthetic data | — | not started | — | — | — |
+| M04 Synthetic data | OpenCode | not started | — | — | — |
 | M05 Agent core | — | not started | — | — | — |
 | M06 Web app | — | not started | — | — | — |
 | M07 MCP server | — | not started | — | — | — |
