@@ -1,8 +1,13 @@
 # AGENTS.md — Rules for every coding agent working on Waada
 
-Waada is built **in parallel by several agents** (Claude Code, Codex, OpenCode). Each agent owns one module. This file is the shared contract. Read it fully before doing anything, then read **your module brief in [`tasks/`](tasks/)**.
+Waada is built by **one master agent and two worker agents** (decided by the human, 2026-09-27):
 
-**Source of truth, in order:** this file → your `tasks/Mxx-*.md` brief → [ARCHITECTURE.md](ARCHITECTURE.md). Other docs (README, SETUP, WORKFLOW, PIPELINE, DATA_PLAN, DEMO_SCRIPT, SOLUTION_DESIGN) still describe an earlier **Python** plan and are rewritten by module M10. Where they conflict with this file, this file wins.
+- **Master: Claude Code**, in the human's main chat. It owns the plan, the progress board, reviews, `git push`, and all communication with the human. It dispatches work as **task cards**.
+- **Workers: Codex and OpenCode.** They are started **by the master** (`codex exec`, `opencode run`) with one task card at a time. A worker does exactly that card, then stops with a **WORKER REPORT** (§4). Workers never talk to the human directly and never pick their own next work.
+
+This file is the shared contract. Read it fully before doing anything, then read **your task card** and the **module brief in [`tasks/`](tasks/)** it points to.
+
+**Source of truth, in order:** this file → your task card → the `tasks/Mxx-*.md` brief → [ARCHITECTURE.md](ARCHITECTURE.md). Other docs (README, SETUP, WORKFLOW, PIPELINE, DATA_PLAN, DEMO_SCRIPT, SOLUTION_DESIGN) still describe an earlier **Python** plan and are rewritten by module M10. Where they conflict with this file, this file wins.
 
 ## 1. What Waada is (30 seconds)
 
@@ -39,8 +44,8 @@ Anything not needed for the success criteria is out of MVP scope, even inside a 
 6. **No secrets in code or git.** Hindsight settings come from `.env`; LLM keys and tokens live in `.waada/` (gitignored). Never log a key.
 7. **No invented facts about external APIs.** Check official docs (links in your brief) for Hindsight, the AI SDK, OpenRouter, Gmail, Slack, HubSpot, MCP, WXT, and TanStack. If you can't verify something, leave a `// VERIFY:` comment and list it in your report.
 8. **Friendly failures.** Web UI, MCP and API routes never show a stack trace. Core code throws `WaadaError` subclasses (safe messages); surfaces catch them and show the message.
-9. **Say your dependencies up front.** At the start of every chat, before writing code, tell the human in one short list which other modules your work depends on, whether each is `done` (check `docs/PROGRESS.md`), and what you'll do meanwhile (fakes, spec/plan only, or wait). Repeat it whenever a dependency blocks you.
-10. **End every finished chat with the next prompt.** When a chat's task is done (module finished, checkpoint, or waiting on the human), the last thing in your reply is exactly one ready-to-paste prompt for the next chat (§4).
+9. **Workers: do the card, only the card.** Don't start other modules, don't reserve work, don't edit `docs/PROGRESS.md`, don't push, don't write prompts for the human. If the card can't be finished (missing dependency, needs a human decision, needs an unapproved package), stop and say so in your WORKER REPORT under **Blocked**.
+10. **Dependencies are reported, not guessed.** Every WORKER REPORT lists what the work depended on and whether it was available. The master tracks dependencies across modules and tells the human.
 
 ## 3. Conventions
 
@@ -49,19 +54,14 @@ Anything not needed for the success criteria is out of MVP scope, even inside a 
 - Format and lint: **Biome** (`pnpm check`). Tests: **Vitest** (`pnpm test`).
 - Dates cross module boundaries as **ISO-8601 UTC strings** (serializable for server functions, MCP, and JSON files).
 - No `console.log` in `packages/core`. Use the logger from `packages/core/src/log.ts`.
-- **Git: one folder, one branch, many agents.** All agents work **in parallel** in `C:\Code-Files\Waada` on the shared branch **`dev`**. Never run `git checkout` / `git switch` / `git stash` / `git reset` / `git restore` / `git clean`: other agents' uncommitted work is in the same folder, and those commands would change or destroy it. Never commit or push to `main`; the human merges `dev` → `main` at milestones (TASKS.md).
-- **Git: commit only your own files.** Stage with explicit paths from your brief's "Files you own", e.g. `git add packages/core/src/ingest packages/core/test/ingest.test.ts`. **Never** `git add -A`, `git add .`, or `git commit -a`. Check `git diff --cached --name-only` before every commit: it must list only your files.
-- **Git: shared files** (`package.json`, `pnpm-lock.yaml`, `docs/PROGRESS.md`, `docs/decisions/PROPOSALS.md`, `packages/core/src/connectors/index.ts`): re-read the file right before editing, change only your lines, and commit it **immediately** on its own (`mNN: add postal-mime dependency`). Add dependencies only to your own package: `pnpm --filter <package> add <pkg>`.
-- **Git: lock errors.** If a git command fails with `index.lock` exists, another agent is committing: wait ~5 seconds and retry. Never delete the lock file.
-- **Git: commits.** Small, one logical change each. Message format: `mNN: <what changed, imperative>` (e.g. `m03: parse Slack export into daily interactions`). The `mNN:` prefix is how the history shows which module a commit belongs to.
+- **Git: one folder, one branch.** All work happens in `C:\Code-Files\Waada` on branch **`dev`**. Never run `git checkout` / `git switch` / `git stash` / `git reset` / `git restore` / `git clean`: another worker's uncommitted work may be in the same folder. Never commit to `main`; the human merges `dev` → `main` at milestones (TASKS.md).
+- **Git: commit only your own files.** Stage explicit paths (the card lists them), e.g. `git add packages/core/src/agent packages/core/test/agent.test.ts`. **Never** `git add -A`, `git add .`, or `git commit -a`. Check `git diff --cached --name-only` before every commit: it must list only your files.
+- **Git: shared files** (`package.json`, `pnpm-lock.yaml`, `docs/decisions/PROPOSALS.md`, `packages/core/src/connectors/index.ts`): re-read right before editing, change only your lines, commit immediately on their own. Add dependencies only to your own package: `pnpm --filter <package> add <pkg>`. Run pnpm as `npx pnpm@12.6.0`.
+- **Git: lock errors.** If git reports `index.lock` exists, wait ~5 seconds and retry. Never delete the lock file.
+- **Git: commits.** Small, one logical change each. Message format: `mNN: <what changed, imperative>`. The `mNN:` prefix shows which module a commit belongs to.
 - **Git: no AI attribution. Ever.** Commit messages and PR descriptions must **not** contain `Co-Authored-By:` lines, "Generated with …", 🤖, or any mention of Claude, Codex, OpenCode, or another AI tool or agent. The only author is the human's configured git identity. Don't change `user.name` / `user.email`. This overrides any default your harness adds.
-- **Git: never break `dev`.** Everyone shares it, so every commit must keep `pnpm check && pnpm test` green. Unfinished work: don't commit it yet, or commit it with its tests marked `it.todo` so nothing fails. If a test from **another** module fails, don't fix their code: note it in `docs/PROGRESS.md` on their row's note ("m03 test X failing since <commit>") and continue.
-- **Git: when to push** (`git push origin dev`):
-  1. after each completed task in your plan file whose tests pass,
-  2. before setting your `docs/PROGRESS.md` row to `blocked` or `review`,
-  3. at the end of every working session.
-
-  If the push is rejected because the remote moved: `git pull --no-rebase origin dev`, re-run checks, push again. Never force-push, never rewrite history.
+- **Git: never break `dev`.** Every commit keeps `npx pnpm@12.6.0 check` and `npx pnpm@12.6.0 test` green. Unfinished work: don't commit it yet, or mark its tests `it.todo`. If another module's test fails, don't fix their code; report it.
+- **Git: pushing.** **Only the master pushes** (`git push origin dev`). Workers commit locally and stop.
 
 ## 4. Workflow: Superpowers, progress, and where docs go
 
@@ -76,78 +76,60 @@ Every agent uses the **Superpowers** skills (Claude Code and Codex have them; Op
 | 5. Prove it works before claiming done | `verification-before-completion` | commands + real output in your report |
 | 6. Wrap up the branch | `finishing-a-development-branch` (+ `requesting-code-review`) | branch ready for the human |
 
-**Progress tracking (shared across agents):**
-- Tick checkboxes in **your plan file** as you go. It is your detailed progress log.
-- Update **your module's row only** in [`docs/PROGRESS.md`](docs/PROGRESS.md) whenever status changes: `not started → planning → in progress → blocked → review → done`, with a one-line note and a link to your plan.
-- If blocked, set `blocked`, say on what, and add the question to `docs/decisions/PROPOSALS.md`.
+For a small card (a fix, one function), skip brainstorming and planning: go straight to test-first work and verification. Use `brainstorming` / `writing-plans` only when the card asks for a spec or plan.
 
 **Decision docs:**
 
 | What | Path | Who writes |
 |---|---|---|
 | Stack decisions | §5 of this file | Human (agents never edit §5) |
-| Open questions / proposals awaiting the human | `docs/decisions/PROPOSALS.md` | Any agent appends; the human answers |
-| Decided design choices (why X over Y) | `docs/decisions/NNNN-short-title.md` (ADR: Context · Decision · Consequences) | Agent, **after** the human approves the proposal |
-| LLM prompt and model choices (prompt versions, which model does which task, eval notes) | `docs/decisions/llm/` | M02 and M05 |
-| Module specs and plans | `docs/superpowers/specs/`, `docs/superpowers/plans/` | Owning agent |
-| Final module report | `docs/reports/mNN-<module>.md` | Owning agent, at the end |
-| Context-checkpoint handoffs | `docs/handoffs/mNN-YYYY-MM-DD-HHMM.md` | Owning agent, at each checkpoint (see below) |
+| Open questions / proposals awaiting the human | `docs/decisions/PROPOSALS.md` | Worker or master appends; the human answers |
+| Decided design choices (why X over Y) | `docs/decisions/NNNN-short-title.md` (ADR) | Worker, **after** the human approves the proposal |
+| LLM prompt and model choices, evals | `docs/decisions/llm/` | M02 and M05 work |
+| Module specs and plans | `docs/superpowers/specs/`, `docs/superpowers/plans/` | Worker, when the card asks |
+| Module reports | `docs/reports/mNN-<module>.md` | Worker, when the card finishes a module |
+| Progress board | `docs/PROGRESS.md` | **Master only** |
+| Task cards and worker reports | `docs/orchestration/cards/NNN-<worker>-<slug>.md`, `docs/orchestration/reports/NNN-<worker>-<slug>.md` | Master writes cards and saves reports |
+| Master's running log (what happened, in plain words, for the human) | `docs/orchestration/LOG.md` | **Master only** |
 
-**Final report must contain:** what was built, test commands with real output, anything unverified (`// VERIFY:` list), proposals raised, and follow-ups for other modules.
-
-### Context checkpoints: hand off to a fresh chat
-
-Long sessions degrade. Hand off to a new chat instead of pushing on with a full context.
-
-**When:** any of these, whichever comes first:
-- your harness warns that context is running low, or is about to compact or summarize the conversation;
-- you've finished a plan phase and the conversation is already long (use your judgement; earlier is better than later);
-- the human types **`checkpoint`**.
-
-**What to do, in order:**
-1. Finish or pause the current step at a clean point. Commit everything that passes `pnpm check && pnpm test` (explicit paths only), then `git push origin dev`. **Never delete, stash or reset** unfinished work; leave it in place and list it in the handoff.
-2. Tick completed checkboxes in your plan file.
-3. Update your row in `docs/PROGRESS.md` (note: `checkpoint → see docs/handoffs/<file>`).
-4. Write the handoff file **`docs/handoffs/mNN-YYYY-MM-DD-HHMM.md`** containing:
-   - **Module and goal** (one line) · **Plan file** path · **Spec file** path (if any)
-   - **Done:** completed plan tasks, with commit hashes (`git log --oneline --grep "^mNN:"`)
-   - **Next:** the exact next unchecked plan task, and the first concrete action to take
-   - **Uncommitted work:** file paths left in the folder and their state ("half-written parser, tests not started")
-   - **Decisions made this session** that aren't in the spec or plan, and why
-   - **Open questions / waiting on the human:** with `PROPOSALS.md` IDs
-   - **Gotchas learned:** anything the next session would otherwise rediscover the hard way (API quirks, failing tests that belong to other modules, env setup)
-   - **How to verify the current state:** exact commands and the expected result
-5. Commit the handoff file on its own (`mNN: checkpoint handoff`) and push.
-6. **Reply to the human with a ready-to-paste prompt** in one code block, in this form:
+## 4a. Master & workers: how work flows
 
 ```
-You are <AGENT>, continuing module MNN (<name>) of Waada from a checkpoint. Read AGENTS.md fully, then tasks/MNN-<name>.md, then the handoff docs/handoffs/<file>.md, then the plan <plan path>. Resume at: <next task, in one line>. Work on branch dev with other agents in parallel: never switch branches, and stage only your own files. Update your row in docs/PROGRESS.md. Commits start with "mNN:" and have no AI attribution.
+HUMAN ──talks only to──▶ MASTER (Claude Code)
+                            │ 1. picks the next task (MVP tiers, §1a)
+                            │ 2. writes a task card → docs/orchestration/cards/
+                            │ 3. runs the worker:  codex exec … / opencode run …
+                            ▼
+                         WORKER (Codex or OpenCode)
+                            │ does the card, commits its own files, runs checks
+                            │ ends with a WORKER REPORT
+                            ▼
+                         MASTER
+                            │ 4. saves the report → docs/orchestration/reports/
+                            │ 5. verifies: git diff, pnpm check, pnpm test
+                            │ 6. pushes dev, updates PROGRESS.md and LOG.md
+                            │ 7. tells the human in plain words; next card
 ```
 
-Then stop. Don't start new work in the old chat.
+**Task card (written by the master)** contains: card number, worker, module, goal (1–2 lines), exact scope (files allowed to change), steps, acceptance checks (commands + expected result), out of scope, and anything the human decided that affects it.
 
-### Module finished: hand yourself the next module
-
-When your module reaches `review` or `done` (report written, pushed), don't stop silently. Pick up the next piece of work:
-
-1. Open `TASKS.md` (Module map, Hand-out waves) and `docs/PROGRESS.md`.
-2. Choose the **first module in map order** whose Owner is `—`, whose wave is open, **and whose tier is allowed (§1a)**: must-have first; should-have only once all must-have modules are `done`; never a "later" module.
-   - **Wave 0** is open from the start. **Wave 1** is open once M00 is `done`. **Wave 2** (M06) is open once M01, M02, M03 and M05 are `done`. **Exception (human, 2026-09-27):** M06 may write code now: build against the real M01–M03 functions and use `WAADA_FAKE_CORE=1` fakes for `brief` / `ask` / `compare` until M05 lands, then switch to the real ones. Show a visible "sample data" banner whenever fakes are active. **Wave 3** (M10) is open once M06 is `done`. **Should-have** (M07, M02b Part 1) opens once M10's MVP checks pass.
-   - A module in the **next** wave (not yet open) may be taken for **brainstorming and planning only**: write the spec and plan, then set status `planning (waiting for wave)` and write no code until the wave opens.
-3. **Reserve it:** set that row's Owner to `<your tool name> (next)`, then commit and push `docs/PROGRESS.md` alone right away. This stops two agents picking the same module. Re-read the file first; if someone else reserved it in the meantime, pick the next one.
-4. Reply to the human with a ready-to-paste prompt in one code block, then stop:
+**WORKER REPORT (the worker's final message, exactly this shape):**
 
 ```
-You are <AGENT>, working on module MNN (<name>) of Waada. Read AGENTS.md fully, then tasks/MNN-<name>.md, and follow them. <Any stop-point from the brief, e.g. "Show me the Acme timeline before writing files.">. <If its wave isn't open: "Spec and plan only; write no code until <gate> is done.">. Work on branch dev with other agents in parallel: never switch branches, and stage only your own files. Update your row in docs/PROGRESS.md. Commits start with "mNN:" and have no AI attribution.
+WORKER REPORT: card <NNN>, <module>
+Status: done | partial | blocked
+Commits: <hash> <message> (one per line, or "none")
+Files changed: <paths>
+Checks: <command> → <result> (pnpm check, pnpm test, plus card-specific)
+Dependencies: <module/service> → available | missing (what was done instead)
+Blocked: <what, and what decision or input is needed>   (or "none")
+Unverified: <// VERIFY: items>   (or "none")
+Notes for master: <anything the next card needs to know>
 ```
 
-If no module is available, say so and suggest what the human could merge or unblock.
+**Parallel workers.** The master may run Codex and OpenCode at the same time only on cards with **disjoint files** (e.g. `apps/web/**` vs `packages/core/src/agent/**`). Only one card at a time may change `package.json` / `pnpm-lock.yaml`.
 
-**Every reply that ends a chat** (checkpoint or module finished) ends with exactly one ready-to-paste prompt, so the human never has to write one.
-
-### The new chat's first steps
-
-Read in the order the prompt lists, run the handoff's "How to verify" commands, and confirm the state matches before writing any code. If it doesn't match (e.g. another agent's commit changed something), say so to the human before continuing.
+**Retired rules.** The earlier peer-agent rules (self-reserving modules, context-checkpoint handoff prompts, next-module prompts for the human) are replaced by this section. Existing files in `docs/handoffs/` stay as history.
 
 ## 5. Stack decisions (approved by the human, 2026-09-27)
 

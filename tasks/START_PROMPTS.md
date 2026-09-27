@@ -1,3 +1,5 @@
+> ⚠️ **Retired 2026-09-27.** Agents are no longer started by hand. The master (Claude Code) dispatches Codex and OpenCode with task cards; see AGENTS.md §4a. Kept for history only.
+
 # Start-off Prompts (one per new agent chat)
 
 **How to start an agent:** open a **fresh** chat (Claude Code, Codex or OpenCode) in `C:\Code-Files\Waada` (on branch `dev`) and paste the module's prompt. Replace `<AGENT>` with the tool's name (e.g. `Codex`). It goes in the Owner column of `docs/PROGRESS.md`. Several agents can run at the same time in this same folder.

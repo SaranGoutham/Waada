@@ -1,6 +1,6 @@
 # Build Plan — Modules for Parallel Agents
 
-The build is split into **modules** that different agents (Claude Code, Codex, OpenCode) take independently. To start an agent on a module, give it this prompt:
+**Since 2026-09-27: Claude Code is the master; Codex and OpenCode are workers dispatched by the master with task cards (AGENTS.md §4a). You talk only to the master.** The build is split into **modules**. To start an agent on a module, give it this prompt:
 
 > Read `AGENTS.md` fully, then `tasks/<MODULE>.md`. Follow the Superpowers workflow in AGENTS.md §4. Update your row in `docs/PROGRESS.md`. Do not choose any stack item that isn't Approved in AGENTS.md §5. Ask via `docs/decisions/PROPOSALS.md` instead.
 
@@ -17,9 +17,9 @@ By end of day, this must work on `localhost`, with the real core wherever it's a
 
 | Who | Today |
 |---|---|
-| **Codex: M06** | Code **now** (exception to the wave gate, see AGENTS.md §4): scaffold, Settings→LLM, Accounts, Import (real), then Brief and Ask pages, first on fakes, then swapped to real functions as M05 lands |
-| **OpenCode: M05** | `brief` (commitment ledger + landmines) and `ask` first; `compare` and baselines after. Push each function as soon as its tests pass, so M06 can wire it |
-| **Claude Code** | Fix the failing M00 test, then write `packages/core/test/e2e.live.test.ts` early (M10 scope) so "does the real flow work?" can be checked tonight |
+| **Codex (worker): M06** | Code **now** (exception to the wave gate, see AGENTS.md §4): scaffold, Settings→LLM, Accounts, Import (real), then Brief and Ask pages, first on fakes, then swapped to real functions as M05 lands |
+| **OpenCode (worker): M05** | `brief` (commitment ledger + landmines) and `ask` first; `compare` and baselines after. Push each function as soon as its tests pass, so M06 can wire it |
+| **Claude Code (master)** | Dispatches and reviews the workers' cards, pushes, runs the e2e live test once a Groq key exists, reports to you. (M00 test fix and e2e test: done.) |
 | **You** | Review the Acme data (M04), add a Groq key, mark M01–M04 `done` if their reports look right |
 
 Compare page, eval and docs are tomorrow.
