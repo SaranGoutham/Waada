@@ -52,3 +52,20 @@ reported plainly, not hidden: on the Groq free tier the eval does not pass.
   parallel — 2 × ~6.7k never fits 8000 TPM. EVAL-4 failed on the same
   exhaustion cascade (primary 429 → invalid-fallback 404 → throw). Full log
   kept outside the repo (worker temp file, not committed).
+
+## 2026-09-27 — card 007 run (free-tier budget + sequential + 429 retry)
+
+Same harness, Groq `openai/gpt-oss-120b` on a **free** key (8,000 tokens/minute), fallback `openai/gpt-oss-20b` (P-005). Changes since run 4: every prompt capped at ~5,000 input tokens (chars/4), brief and compare run their LLM calls one after another, one retry layer that waits out Groq's `retry-after` on 429 (never retries 413). The summary baseline is capped the same way (kept 12,000 of 23,246 chars), so the comparison stays fair.
+
+Result: **4 of 6 tests pass, no rate-limit failures.** Whole eval 384 s; the EVAL-1 test (ledger + landmines + brief) took **63.5 s**.
+
+| Check | Waada | Notes |
+|---|---|---|
+| Ingest 33/33 | pass | |
+| EVAL-1: Sep 2 SOC 2 open **and first** | **fail** | SOC 2 item is present and open, but **third**: the ledger also lists "same-day SSO response" (Aug 21) and "security & legal review session" (Aug 27) as open, and open items sort oldest first |
+| EVAL-2: pricing proposal = delivered | **fail** | ledger marked it **unclear** ("deadline missed; proposal sent 15 Aug"); a different item matched the check's lookup |
+| EVAL-3: pricing landmine + do-not-reopen | pass | "Monthly-billing objection … Do NOT propose or revisit monthly-billing options" |
+| EVAL-4: ask "What changed since July?" → Q3→Q4 | pass | |
+| EVAL-5: compare fills all three columns | pass | per-column scores for summary-only / CRM-only were **not captured** in the saved log; next run must record them |
+
+Verdict: the free tier is no longer the blocker. The remaining misses are **ledger judgement** (what counts as an open commitment, and "late but sent" = delivered), not capacity. MVP criterion 1 is not met yet. Run by OpenCode (card 007); the worker hit its own model's rate limit before writing this, so the master recorded it from the run log.
