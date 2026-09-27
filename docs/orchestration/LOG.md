@@ -2,6 +2,13 @@
 
 Plain-language record of what happened, newest first. Written by the master (Claude Code) for the human.
 
+## 2026-09-27: card 009 done (baselines use imported data)
+
+- **Card 009 (Codex): done**, committed by the master (3f8d568, 8681453, 2da7139). Import now saves what was imported (and `crm.json`) under `.waada/`, and Compare's baselines read that. Slack items get a real channel name. **Root cause of the wrong transcript dates:** the Import page never gave the parser an LLM; now it does.
+- **Master fix:** re-importing an account didn't save anything for the baselines (only brand-new items were saved). Fixed with a test.
+- Checks: `pnpm check` passes; tests 141 core + 4 web; web build OK.
+- **Running:** card 008 (Codex, ledger judgement + Q4 in the brief). Then the master reruns the live eval and the browser flow.
+
 ## 2026-09-27: today's target run for real in the browser
 
 - **Master ran the whole flow on localhost** with the real core, Hindsight Cloud and the free Groq key from `.env`:
