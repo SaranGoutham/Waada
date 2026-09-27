@@ -1,0 +1,9 @@
+---
+title: Call #2 — pricing discussion
+date: 2026-08-12T15:00:00Z
+type: call
+participants: Priya Nair, Alex Rivera
+---
+Priya Nair: Let's talk numbers.
+
+Alex Rivera: Annual billing with an 8% discount.
