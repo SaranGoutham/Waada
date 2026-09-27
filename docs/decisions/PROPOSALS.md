@@ -41,3 +41,18 @@ Agents **append** here when they need a stack addition (AGENTS.md rule 3), a con
 - Blocks: the Ollama option in M02 only
 - **Status:** approved: Ollama via its OpenAI-compatible endpoint (`http://localhost:11434/v1`) using `@ai-sdk/openai-compatible`
 - Human answer: use the OpenAI-compatible route; package `@ai-sdk/openai-compatible` (2026-09-27)
+
+## P-003 — Library for reading Slack-export `.zip` files
+- Raised by: M03 (OpenCode) · 2026-09-27
+- Type: stack
+- Question / proposal: `parseFiles` currently rejects `.zip` with "extract first" guidance. Should M03 read zips directly?
+- Why it's needed: Slack exports ship as `.zip`; direct support would let the web UI accept the download as-is.
+- Options considered (with trade-offs):
+  - `unzipper`: streaming unzip, maintained, pulls in `fstream`-era deps.
+  - `yauzl` (+ `yazl` for writing, not needed): minimal, low-level, needs wrapper code.
+  - `adm-zip`: simple sync API, heavier memory use on large archives.
+  - Node built-ins only: Node 22 has no unzip; would mean shelling out to a system `unzip` (not portable, breaks the Windows dev setup).
+- Recommendation: `yauzl` (smallest surface for read-only extraction) — but only if the human wants direct `.zip` upload in the MVP; otherwise keep the extract-first error.
+- Blocks: nothing (MVP works with extracted channel-day `.json`).
+- **Status:** open
+- Human answer:
