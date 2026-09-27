@@ -23,7 +23,10 @@ function stripQuotedReplies(text: string): string {
     if (/^On .*wrote:\s*$/.test(line.trim())) break;
     kept.push(line);
   }
-  return kept.join("\n").replace(/[ \t]+\n/g, "\n").trim();
+  return kept
+    .join("\n")
+    .replace(/[ \t]+\n/g, "\n")
+    .trim();
 }
 
 const ENTITIES: Record<string, string> = {

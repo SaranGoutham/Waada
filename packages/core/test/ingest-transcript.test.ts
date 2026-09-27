@@ -32,14 +32,14 @@ describe("parseTranscript", () => {
     });
     expect(warnings).toEqual([]);
     const [i] = interactions;
-    expect(i!.sourceId).toBe(`file:${hashOf(file.data)}`);
-    expect(i!.type).toBe("call");
-    expect(i!.source).toBe("transcript");
-    expect(i!.date).toBe("2026-08-12T15:00:00.000Z");
-    expect(i!.title).toBe("Call #2 — pricing discussion");
-    expect(i!.participants).toEqual(["Priya Nair", "Alex Rivera"]);
-    expect(i!.content).toContain("8% discount");
-    expect(i!.content).not.toContain("title:");
+    expect(i?.sourceId).toBe(`file:${hashOf(file.data)}`);
+    expect(i?.type).toBe("call");
+    expect(i?.source).toBe("transcript");
+    expect(i?.date).toBe("2026-08-12T15:00:00.000Z");
+    expect(i?.title).toBe("Call #2 — pricing discussion");
+    expect(i?.participants).toEqual(["Priya Nair", "Alex Rivera"]);
+    expect(i?.content).toContain("8% discount");
+    expect(i?.content).not.toContain("title:");
   });
 
   it("falls back to llm.extract when there is no header", async () => {
@@ -50,9 +50,9 @@ describe("parseTranscript", () => {
       { llm },
     );
     expect(warnings).toEqual([]);
-    expect(interactions[0]!.title).toBe("Pilot scoping session");
-    expect(interactions[0]!.participants).toEqual(["Priya Nair", "Alex Rivera"]);
-    expect(interactions[0]!.content).toContain("forty seats");
+    expect(interactions[0]?.title).toBe("Pilot scoping session");
+    expect(interactions[0]?.participants).toEqual(["Priya Nair", "Alex Rivera"]);
+    expect(interactions[0]?.content).toContain("forty seats");
     expect(llm.calls.filter((c) => c.method === "extract")).toHaveLength(1);
   });
 
@@ -63,10 +63,10 @@ describe("parseTranscript", () => {
       "acme",
       { llm: new FakeLLM() },
     );
-    expect(interactions[0]!.title).toBe("no-header");
-    expect(Date.parse(interactions[0]!.date)).toBeGreaterThanOrEqual(before);
+    expect(interactions[0]?.title).toBe("no-header");
+    expect(Date.parse(interactions[0]?.date ?? "")).toBeGreaterThanOrEqual(before);
     expect(warnings).toHaveLength(1);
-    expect(warnings[0]).toContain("no-header.txt");
+    expect(warnings[0] ?? "").toContain("no-header.txt");
   });
 
   it("strips WEBVTT cues to Speaker lines", async () => {
@@ -74,7 +74,7 @@ describe("parseTranscript", () => {
     const { interactions } = await parseTranscript(await fixture("sample.vtt"), "acme", {
       llm,
     });
-    const content = interactions[0]!.content;
+    const content = interactions[0]?.content;
     expect(content).toContain("Alex Rivera: Hi Priya");
     expect(content).toContain("Priya Nair: Honestly?");
     expect(content).not.toContain("WEBVTT");
@@ -84,11 +84,9 @@ describe("parseTranscript", () => {
 
   it("accepts .md files the same way", async () => {
     const file = await fixture("with-header.txt");
-    const { interactions } = await parseTranscript(
-      { name: "notes.md", data: file.data },
-      "acme",
-      { llm: new FakeLLM() },
-    );
-    expect(interactions[0]!.title).toBe("Call #2 — pricing discussion");
+    const { interactions } = await parseTranscript({ name: "notes.md", data: file.data }, "acme", {
+      llm: new FakeLLM(),
+    });
+    expect(interactions[0]?.title).toBe("Call #2 — pricing discussion");
   });
 });

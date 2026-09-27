@@ -4,7 +4,7 @@ import { z } from "zod";
 import { createLogger } from "../log.ts";
 import type { Memory } from "../memory/index.ts";
 import { createMemory } from "../memory/index.ts";
-import { Interaction, type IngestReport, type Interaction as InteractionT } from "../models.ts";
+import { type IngestReport, Interaction, type Interaction as InteractionT } from "../models.ts";
 import { readJson, writeJson } from "../store.ts";
 
 const log = createLogger("ingest");
@@ -30,7 +30,9 @@ export async function ingest(
         (item as Partial<InteractionT>).sourceId !== ""
           ? (item as InteractionT).sourceId
           : "<unknown sourceId>";
-      errors.push(`${id}: invalid interaction (${parsed.error.issues[0]?.message ?? "schema mismatch"})`);
+      errors.push(
+        `${id}: invalid interaction (${parsed.error.issues[0]?.message ?? "schema mismatch"})`,
+      );
       continue;
     }
     valid.push(parsed.data);
@@ -44,7 +46,8 @@ export async function ingest(
   const isNew = (i: InteractionT): boolean => !seen.get(i.account)?.has(i.sourceId);
 
   let memory = deps?.memory;
-  if (!memory && valid.some(isNew)) {
+  if (memory === undefined) {
+    if (!valid.some(isNew)) return { added: 0, skipped: 0, errors };
     memory = createMemory();
   }
 
@@ -58,10 +61,10 @@ export async function ingest(
     }
     try {
       if (!banked.has(item.account)) {
-        await memory!.ensureBank(item.account);
+        await memory.ensureBank(item.account);
         banked.add(item.account);
       }
-      await memory!.remember(item);
+      await memory.remember(item);
     } catch (err) {
       errors.push(`${item.sourceId}: ${(err as Error).message}`);
       continue;

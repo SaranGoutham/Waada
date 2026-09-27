@@ -37,12 +37,12 @@ describe("parseFiles", () => {
       { llm },
     );
     const bySource = new Map(interactions.map((i) => [i.source, i]));
-    expect(bySource.get("eml")!.type).toBe("email");
-    expect(bySource.get("slack_export")!.type).toBe("slack");
-    expect(bySource.get("transcript")!.title).toBe("Call #2 — pricing discussion");
-    const audio = bySource.get("audio")!;
-    expect(audio.type).toBe("call");
-    expect(audio.content).toContain("hello from the call");
+    expect(bySource.get("eml")?.type).toBe("email");
+    expect(bySource.get("slack_export")?.type).toBe("slack");
+    expect(bySource.get("transcript")?.title).toBe("Call #2 — pricing discussion");
+    const audio = bySource.get("audio");
+    expect(audio?.type).toBe("call");
+    expect(audio?.content).toContain("hello from the call");
     expect(errors).toEqual(['notes.pdf: unsupported extension ".pdf"']);
     for (const i of interactions) expect(i.account).toBe("acme");
   });
@@ -70,7 +70,7 @@ describe("parseFiles", () => {
       "acme",
     );
     expect(interactions).toHaveLength(1);
-    expect(interactions[0]!.source).toBe("eml");
+    expect(interactions[0]?.source).toBe("eml");
     expect(errors).toHaveLength(1);
     expect(errors[0]).toContain("2026-07-15.json");
   });
@@ -81,8 +81,6 @@ describe("parseFiles", () => {
       "acme",
     );
     expect(interactions).toEqual([]);
-    expect(errors).toEqual([
-      "call.mp3: transcription needs a configured LLM; set one up first.",
-    ]);
+    expect(errors).toEqual(["call.mp3: transcription needs a configured LLM; set one up first."]);
   });
 });

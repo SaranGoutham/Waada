@@ -30,9 +30,7 @@ describe("ingest pipeline", () => {
     const items = [...sampleInteractions()].reverse();
     const first = await ingest(items, { memory: mem });
     expect(first).toEqual({ added: 3, skipped: 0, errors: [] });
-    expect(rememberDates(mem)).toEqual(
-      [...sampleInteractions()].map((i) => i.date).sort(),
-    );
+    expect(rememberDates(mem)).toEqual([...sampleInteractions()].map((i) => i.date).sort());
     expect(mem.calls.filter((c) => c.method === "ensureBank")).toHaveLength(1);
 
     const second = await ingest(sampleInteractions(), { memory: mem });

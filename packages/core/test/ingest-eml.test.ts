@@ -16,25 +16,25 @@ describe("parseEml", () => {
   it("parses headers and strips quoted replies", async () => {
     const [i] = await parseEml(await fixture("plain.eml"), "acme");
     expect(i).toBeDefined();
-    expect(i!.account).toBe("acme");
-    expect(i!.type).toBe("email");
-    expect(i!.source).toBe("eml");
-    expect(i!.sourceId).toBe("<plain-1@example.com>");
-    expect(i!.date).toBe(new Date("Tue, 14 Jul 2026 10:30:00 +0000").toISOString());
-    expect(i!.title).toBe("Intro + finding 30 minutes this week");
-    expect(i!.participants).toEqual(["Alex Rivera", "Priya Nair", "David Chen"]);
-    expect(i!.content).toContain("ops roundtable");
-    expect(i!.content).not.toContain("Thursday morning works");
-    expect(i!.content).not.toContain(">");
+    expect(i?.account).toBe("acme");
+    expect(i?.type).toBe("email");
+    expect(i?.source).toBe("eml");
+    expect(i?.sourceId).toBe("<plain-1@example.com>");
+    expect(i?.date).toBe(new Date("Tue, 14 Jul 2026 10:30:00 +0000").toISOString());
+    expect(i?.title).toBe("Intro + finding 30 minutes this week");
+    expect(i?.participants).toEqual(["Alex Rivera", "Priya Nair", "David Chen"]);
+    expect(i?.content).toContain("ops roundtable");
+    expect(i?.content).not.toContain("Thursday morning works");
+    expect(i?.content).not.toContain(">");
   });
 
   it("falls back to HTML text when there is no text part", async () => {
     const [i] = await parseEml(await fixture("html-only.eml"), "acme");
-    expect(i!.sourceId).toBe("<html-only-1@example.com>");
-    expect(i!.participants).toEqual(["Priya Nair", "Alex Rivera"]);
-    expect(i!.content).toContain("Thursday morning works");
-    expect(i!.content).not.toContain("On Tue, Jul 14, 2026");
-    expect(i!.content.length).toBeGreaterThan(20);
+    expect(i?.sourceId).toBe("<html-only-1@example.com>");
+    expect(i?.participants).toEqual(["Priya Nair", "Alex Rivera"]);
+    expect(i?.content).toContain("Thursday morning works");
+    expect(i?.content).not.toContain("On Tue, Jul 14, 2026");
+    expect(i?.content.length).toBeGreaterThan(20);
   });
 
   it("falls back to file:<hash> when Message-ID is missing", async () => {
@@ -43,8 +43,8 @@ describe("parseEml", () => {
     );
     const [i] = await parseEml({ name: "noid.eml", data: raw }, "acme");
     const hash = createHash("sha256").update(raw).digest("hex").slice(0, 16);
-    expect(i!.sourceId).toBe(`file:${hash}`);
-    expect(i!.title).toBe("No ID");
+    expect(i?.sourceId).toBe(`file:${hash}`);
+    expect(i?.title).toBe("No ID");
   });
 
   it("throws a friendly error when the Date header is missing", async () => {

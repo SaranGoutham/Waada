@@ -18,16 +18,16 @@ describe("parseSlackExport", () => {
   it("collapses one channel-day into one Interaction", async () => {
     const [i] = await parseSlackExport(await channelDay("slack-day.json"), "acme");
     expect(i).toBeDefined();
-    expect(i!.account).toBe("acme");
-    expect(i!.sourceId).toBe("slack:deal-acme:2026-07-15");
-    expect(i!.type).toBe("slack");
-    expect(i!.source).toBe("slack_export");
-    expect(i!.title).toBe("#deal-acme — 2026-07-15");
-    expect(i!.date).toBe(new Date(1784106000 * 1000).toISOString());
-    expect(i!.participants).toEqual(["Alex Rivera", "Bhavana Iyer", "U99MISSING"]);
-    expect(i!.content).toContain("Alex Rivera: Discovery call done");
-    expect(i!.content).toContain("U99MISSING: Requirements session");
-    expect(i!.content).not.toContain("1784110000");
+    expect(i?.account).toBe("acme");
+    expect(i?.sourceId).toBe("slack:deal-acme:2026-07-15");
+    expect(i?.type).toBe("slack");
+    expect(i?.source).toBe("slack_export");
+    expect(i?.title).toBe("#deal-acme — 2026-07-15");
+    expect(i?.date).toBe(new Date(1784106000 * 1000).toISOString());
+    expect(i?.participants).toEqual(["Alex Rivera", "Bhavana Iyer", "U99MISSING"]);
+    expect(i?.content).toContain("Alex Rivera: Discovery call done");
+    expect(i?.content).toContain("U99MISSING: Requirements session");
+    expect(i?.content).not.toContain("1784110000");
   });
 
   it("reads the channel from the file payload when the path has no folder", async () => {
@@ -45,8 +45,8 @@ describe("parseSlackExport", () => {
       }),
     );
     const [i] = await parseSlackExport({ name: "2026-08-04.json", data: raw }, "nova");
-    expect(i!.sourceId).toBe("slack:deal-nova:2026-08-04");
-    expect(i!.title).toBe("#deal-nova — 2026-08-04");
+    expect(i?.sourceId).toBe("slack:deal-nova:2026-08-04");
+    expect(i?.title).toBe("#deal-nova — 2026-08-04");
   });
 
   it("throws a friendly error for non-JSON bodies", async () => {

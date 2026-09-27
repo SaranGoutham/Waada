@@ -2,9 +2,9 @@
 // otherwise llm.extract over the first ~2,000 characters, otherwise
 // filename + current time with a warning. Also handles .vtt cue files.
 import { z } from "zod";
-import { fileHash } from "./eml.ts";
-import { InteractionType, type Interaction } from "../models.ts";
 import type { LLM } from "../llm/index.ts";
+import { type FileInput, type Interaction, InteractionType } from "../models.ts";
+import { fileHash } from "./eml.ts";
 
 const TranscriptMeta = z.object({
   date: z.string().datetime(),
@@ -58,7 +58,13 @@ function parseFrontMatter(text: string): { meta: Partial<TranscriptMeta>; body: 
       .map((p) => p.trim())
       .filter((p) => p !== "");
   }
-  return { meta, body: lines.slice(end + 1).join("\n").trim() };
+  return {
+    meta,
+    body: lines
+      .slice(end + 1)
+      .join("\n")
+      .trim(),
+  };
 }
 
 /** Strips the WEBVTT header and cue timings; keeps `<v Speaker>` names as prefixes. */
@@ -75,11 +81,12 @@ function vttToText(text: string): string {
     if (line.startsWith("NOTE")) continue;
     if (line.includes("-->")) continue;
     if (/^\d+$/.test(line)) continue;
-    const voice = /^<v\s+([^>]+)>([\s\S]*)<\/v>\s*$/.exec(line)
-      ?? /^<v\s+([^>]+)>([\s\S]*)$/.exec(line);
+    const voice =
+      /^<v\s+([^>]+)>([\s\S]*)<\/v>\s*$/.exec(line) ?? /^<v\s+([^>]+)>([\s\S]*)$/.exec(line);
     if (voice) {
-      const rest = voice[2]!.replace(/<[^>]*>/g, "").trim();
-      out.push(`${voice[1]!.trim()}: ${rest}`);
+      const speaker = voice[1]?.trim() || "unknown";
+      const rest = (voice[2] ?? "").replace(/<[^>]*>/g, "").trim();
+      out.push(`${speaker}: ${rest}`);
     } else {
       out.push(line.replace(/<[^>]*>/g, "").trim());
     }
@@ -97,7 +104,7 @@ export async function parseTranscript(
   const header = parseFrontMatter(text);
   let meta: TranscriptMeta | null = null;
   let body = text.trim();
-  if (header && header.meta.title && header.meta.date) {
+  if (header?.meta.title && header.meta.date) {
     meta = {
       date: header.meta.date,
       title: header.meta.title,

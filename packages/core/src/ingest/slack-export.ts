@@ -40,15 +40,13 @@ function dayLabel(ms: number): string {
 
 function channelFromName(name: string, payloadChannel?: string | null): string {
   const parts = name.replace(/\\/g, "/").split("/");
-  if (parts.length >= 2 && parts[0] !== "") return parts[0]!;
+  const head = parts[0];
+  if (parts.length >= 2 && head !== undefined && head !== "") return head;
   if (payloadChannel?.trim()) return payloadChannel.trim();
   return "unknown";
 }
 
-export async function parseSlackExport(
-  file: FileInput,
-  account: string,
-): Promise<Interaction[]> {
+export async function parseSlackExport(file: FileInput, account: string): Promise<Interaction[]> {
   let raw: unknown;
   try {
     raw = JSON.parse(new TextDecoder().decode(file.data));
@@ -104,5 +102,5 @@ export async function parseSlackExport(
 
 function dayInFileName(name: string): string | null {
   const m = /(20\d\d-\d\d-\d\d)/.exec(name);
-  return m ? m[1]! : null;
+  return m?.[1] ?? null;
 }
