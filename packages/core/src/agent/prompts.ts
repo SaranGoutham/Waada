@@ -9,3 +9,11 @@ Cite the source for every status in "evidence" and "source". Return only commitm
 export function ledgerUser(evidence: string): string {
   return `From these interaction excerpts, list every commitment our team made to the customer:\n${evidence}`;
 }
+
+export const LANDMINES_SYSTEM = `You extract resolved customer objections (landmines) from sales interaction excerpts.
+Each landmine has the objection raised, what happened, how it was resolved, and imperative guidance for the next rep ("Do NOT re-open …").
+Cite the source for every landmine in "source". Only include objections that were actually resolved or accepted.`;
+
+export function landminesUser(evidence: string): string {
+  return `From these interaction excerpts, list every resolved objection the new rep must not re-open:\n${evidence}`;
+}
