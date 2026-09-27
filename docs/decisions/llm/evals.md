@@ -69,3 +69,13 @@ Result: **4 of 6 tests pass, no rate-limit failures.** Whole eval 384 s; the EVA
 | EVAL-5: compare fills all three columns | pass | per-column scores for summary-only / CRM-only were **not captured** in the saved log; next run must record them |
 
 Verdict: the free tier is no longer the blocker. The remaining misses are **ledger judgement** (what counts as an open commitment, and "late but sent" = delivered), not capacity. MVP criterion 1 is not met yet. Run by OpenCode (card 007); the worker hit its own model's rate limit before writing this, so the master recorded it from the run log.
+
+## 2026-09-27 — card 008 changes awaiting live evaluation
+
+No live run was performed in the offline worker sandbox. Ledger prompt v2 now
+excludes non-specific ongoing service levels, treats later proof of a completed
+action as delivered even when late, and treats meetings later shown to have
+occurred as delivered. The EVAL-2 assertion now selects a delivered commitment
+only when its own text or evidence identifies the pricing proposal, avoiding a
+false match on another delivered item. The master must run the live harness and
+append its resulting Waada, summary-only, and CRM-only scorecard here.

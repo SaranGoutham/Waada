@@ -28,6 +28,15 @@ function formatHits(hits: MemoryHit[]): string {
     .join("\n");
 }
 
+function newestFirst(hits: MemoryHit[]): MemoryHit[] {
+  return [...hits].sort((a, b) => (b.date ?? "").localeCompare(a.date ?? ""));
+}
+
+function truncateNewestFirst(text: string, budget: number): string {
+  if (text.length <= budget) return text;
+  return `… [showing the newest ${budget} of ${text.length} characters; older text omitted]\n${text.slice(0, budget)}`;
+}
+
 export async function brief(account: string, deps?: AgentDeps): Promise<BriefT> {
   const memory = deps?.memory ?? createMemory();
   const llm = deps?.llm ?? (await createLLM());
@@ -45,10 +54,10 @@ export async function brief(account: string, deps?: AgentDeps): Promise<BriefT> 
   const markdown = await llm.chat({
     system: BRIEF_SYSTEM,
     user: briefUser({
-      commitments,
+      commitments: commitments.filter((commitment) => commitment.status === "open"),
       landmines: mines,
       stakeholders: truncateForBudget(formatHits(stakeholders), BRIEF_RECALL_BUDGET_CHARS),
-      recent: truncateForBudget(formatHits(recent), BRIEF_RECALL_BUDGET_CHARS),
+      recent: truncateNewestFirst(formatHits(newestFirst(recent)), BRIEF_RECALL_BUDGET_CHARS),
     }),
   });
   return Brief.parse({ account, markdown, commitments, landmines: mines });

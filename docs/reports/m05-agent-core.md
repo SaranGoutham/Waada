@@ -51,3 +51,15 @@ Summary-vs-Waada comparison: **not measurable yet** — stated plainly in
 - `pnpm --filter @waada/core test` → 19 files, 119 tests, all pass (unit, no network).
 - `test:live` (this file): ingest 33/33 + EVAL-4 green in run 2; full runs
   fail on provider TPM as documented above (runs 1–4 logged in `evals.md`).
+
+## Card 008 follow-up — ledger judgement (offline)
+
+- Updated the ledger prompt to v2 with general commitment boundaries and
+  late-but-completed delivery guidance; `v1-ledger.md` remains for review.
+- Brief chat input now contains only open ledger items, preserving ledger order.
+- Recent-change evidence is ordered newest-first and capped from that end, so a
+  latest timeline change is retained rather than displaced by older recall text.
+- Tightened EVAL-2 to locate the delivered pricing proposal itself before
+  asserting, rather than selecting the first delivered ledger entry.
+- No live evaluation was run in the offline sandbox; the master must append the
+  resulting per-column scorecard to `docs/decisions/llm/evals.md`.

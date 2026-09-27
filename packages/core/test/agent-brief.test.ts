@@ -14,6 +14,16 @@ const OPEN: Commitment = {
   source: "email — Security docs follow-up",
 };
 
+const DELIVERED: Commitment = {
+  text: "Send annual pricing proposal",
+  madeBy: "Alex Rivera",
+  madeTo: "Priya Nair",
+  date: "2026-08-13T10:00:00.000Z",
+  status: "delivered",
+  evidence: "Sent after the original deadline",
+  source: "email — Pricing proposal",
+};
+
 const PRICING: Landmine = {
   topic: "Monthly pricing",
   whatHappened: "Bhavana pushed for monthly pricing on the pricing call.",
@@ -65,6 +75,54 @@ describe("brief", () => {
     const positions = order.map((s) => user.toLowerCase().indexOf(s));
     expect(positions.every((p) => p >= 0)).toBe(true);
     expect([...positions].sort((a, b) => a - b)).toEqual(positions);
+  });
+
+  it("passes only open ledger items to the markdown prompt in ledger order", async () => {
+    const llm = new FakeLLM({
+      chat: ["# Acme brief"],
+      extract: {
+        commitments: [{ commitments: [DELIVERED, OPEN] }],
+        landmines: [{ landmines: [PRICING] }],
+      },
+    });
+    await brief("acme", { memory: await seededMemory(), llm });
+    const chatCall = llm.calls.find((c) => c.method === "chat");
+    if (!chatCall) throw new Error("expected a chat call");
+    const user = (chatCall.args[0] as { user: string }).user;
+    const openSection = user.split("\n\nLandmines:")[0] ?? "";
+    expect(openSection).toContain(OPEN.text);
+    expect(openSection).not.toContain(DELIVERED.text);
+    expect(user).toMatch(/exactly and only the supplied items in their order/i);
+  });
+
+  it("keeps the newest recent-change evidence when context is capped", async () => {
+    const mem = new FakeMemory();
+    await mem.remember({
+      account: "acme",
+      sourceId: "file:old-timeline",
+      type: "call",
+      date: "2026-07-29T10:00:00.000Z",
+      title: "Timeline change",
+      participants: ["Alex Rivera"],
+      content: `timeline changes ${"old plan ".repeat(1_000)}`,
+      source: "transcript",
+    });
+    await mem.remember({
+      account: "acme",
+      sourceId: "file:new-timeline",
+      type: "email",
+      date: "2026-09-19T10:00:00.000Z",
+      title: "Timeline change confirmed",
+      participants: ["Alex Rivera"],
+      content: "timeline changes Revised rollout: Q4 go-live confirmed",
+      source: "eml",
+    });
+    const llm = makeLlm("# Acme brief");
+    await brief("acme", { memory: mem, llm });
+    const chatCall = llm.calls.find((c) => c.method === "chat");
+    if (!chatCall) throw new Error("expected a chat call");
+    const user = (chatCall.args[0] as { user: string }).user;
+    expect(user).toContain("Q4 go-live confirmed");
   });
 
   it("recalls commitments, landmines, stakeholders and recent changes", async () => {

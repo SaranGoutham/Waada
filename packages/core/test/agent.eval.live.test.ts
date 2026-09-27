@@ -195,12 +195,11 @@ live("eval: M05 checks on seed/acme (Waada vs baselines)", () => {
     "EVAL-2: delivered pricing proposal has status delivered",
     async () => {
       const ledger = result?.commitments ?? (await brief(ACCOUNT, deps())).commitments;
-      const delivered = ledger.find((c) => c.status === "delivered");
+      const delivered = ledger.find(
+        (c) => c.status === "delivered" && deliveredProposal(`${c.text} ${c.evidence}`),
+      );
       console.info("delivered commitment:", JSON.stringify(delivered, null, 2));
       expect(delivered, "a delivered commitment").toBeDefined();
-      expect(`${delivered?.text} ${delivered?.evidence}`).toMatch(
-        /pricing proposal|annual|86,?000/i,
-      );
     },
     10 * MINUTE,
   );

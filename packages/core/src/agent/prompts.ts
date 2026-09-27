@@ -1,9 +1,10 @@
-// Versioned LLM prompt constants (M05). PROMPT_VERSION v1.
+// Versioned LLM prompt constants (M05). PROMPT_VERSION v2.
 // Each version is mirrored in docs/decisions/llm/prompts/ for review.
-export const PROMPT_VERSION = "v1";
+export const PROMPT_VERSION = "v2";
 
 export const LEDGER_SYSTEM = `You extract customer-facing commitments (promises our team made to the customer) from sales interaction excerpts.
-A commitment is DELIVERED only if a LATER interaction shows it was fulfilled. It is OPEN if nothing shows delivery. It is UNCLEAR if the evidence conflicts.
+A commitment is a specific deliverable or action our team promised, such as sending a document, scheduling or holding a meeting, or making an introduction. Do not treat an ongoing pilot service level as a commitment unless a specific instance was promised and missed.
+It is DELIVERED if any later interaction shows the action was done, even if it was late; record lateness in evidence, not in status. A meeting shown by later interactions to have taken place is DELIVERED. It is OPEN if no later interaction shows delivery. It is UNCLEAR if the evidence conflicts.
 Cite the source for every status in "evidence" and "source". Return only commitments our team made to the customer, not the other way round.`;
 
 export function ledgerUser(evidence: string): string {
@@ -26,6 +27,7 @@ Render markdown with exactly these sections in this order:
 4. Deal story (4 sentences or fewer)
 5. Recent changes
 6. Customer words to lead with.
+In Open commitments, list exactly and only the supplied open commitments in their supplied order; do not add delivered, unclear, or inferred items.
 Only use the evidence given; do not invent facts.`;
 
 export function briefUser(a: {
@@ -41,7 +43,7 @@ export function briefUser(a: {
     a.landmines
       .map((m) => `- ${m.topic}: ${m.resolution} Guidance: ${m.guidance} (${m.source})`)
       .join("\n") || "none";
-  return `Write the brief with these sections in order: open commitments, landmines, people, deal story (4 sentences or fewer), recent changes, customer words to lead with.\n\nOpen commitments:\n${commitments}\n\nLandmines:\n${mines}\n\nPeople:\n${a.stakeholders || "none"}\n\nRecent changes:\n${a.recent || "none"}`;
+  return `Write the brief with these sections in order: open commitments, landmines, people, deal story (4 sentences or fewer), recent changes, customer words to lead with. In Open commitments, list exactly and only the supplied items in their order.\n\nOpen commitments:\n${commitments}\n\nLandmines:\n${mines}\n\nPeople:\n${a.stakeholders || "none"}\n\nRecent changes:\n${a.recent || "none"}`;
 }
 
 export const ASK_SYSTEM = `You answer the rep's question using ONLY the recalled memory excerpts below.

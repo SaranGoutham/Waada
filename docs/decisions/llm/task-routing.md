@@ -18,5 +18,5 @@ SDK default temperature unless the call site says otherwise.
 
 ## Prompt versions
 
-Each task's system/user prompts are versioned under `prompts/` (v1 = current). A prompt
+Each task's system/user prompts are versioned under `prompts/` (ledger and brief v2, all others v1). A prompt
 change means a new `vN` file, never a silent edit.

@@ -90,4 +90,14 @@ describe("commitmentLedger", () => {
     const ledger = await commitmentLedger("acme", { memory: mem, llm: new FakeLLM() });
     expect(ledger).toEqual([]);
   });
+
+  it("tells the extractor that late delivery remains delivered", async () => {
+    const mem = await seededMemory();
+    const llm = new FakeLLM({ extract: { commitments: [{ commitments: [] }] } });
+    await commitmentLedger("acme", { memory: mem, llm });
+    const extractCall = llm.calls.find((c) => c.method === "extract");
+    if (!extractCall) throw new Error("expected an extract call");
+    const system = (extractCall.args[0] as { system: string }).system;
+    expect(system).toMatch(/even if.*late/i);
+  });
 });
