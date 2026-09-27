@@ -2,6 +2,12 @@
 
 Plain-language record of what happened, newest first. Written by the master (Claude Code) for the human.
 
+## 2026-09-27: card 006 done; card 007 started
+
+- **Card 006 (OpenCode, M02): done** in 471cc67. Default Groq fallback is now `openai/gpt-oss-20b`. The e2e test now gives the LLM to the file parser, so the two headerless transcripts get proper dates. Checks: `pnpm check` passes; tests 119 core + 4 web. A `.waada/llm.json` saved earlier keeps its old fallback until re-saved in Settings.
+- **Human decision:** Waada must work with a **free** Groq key. Card 007 (OpenCode) runs the big requests one at a time, caps each request's size, retries when Groq says "retry after", then reruns the eval.
+- **Still open for the human:** update AGENTS.md §5 S3 to name `openai/gpt-oss-20b`.
+
 ## 2026-09-27: cards 004 and 005 back; Groq free tier is the blocker
 
 - **Card 004 (Codex, M06): code done** (e9161ec). Compare uses the real core; Settings shows the key comes from `.env`; pages show a friendly error box. Codex's sandbox has no network, so it couldn't run the real flow; the master will.
