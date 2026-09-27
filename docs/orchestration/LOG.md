@@ -2,6 +2,15 @@
 
 Plain-language record of what happened, newest first. Written by the master (Claude Code) for the human.
 
+## 2026-09-27: card 001 done (web app committed)
+
+- **Two master sessions ran at once** by accident (an interrupted chat kept going) and sent cards 001 and 002 twice. The human stopped the other session's workers; only this session dispatches now.
+- **OpenCode** failed twice to start ("background service" timeout). Fixed by running it with `--standalone`. Card 002 is running.
+- **Card 001 (Codex, M06): done.** Nested config removed, web app joined the workspace. Codex's sandbox can't write inside `.git`, so the master made the commits (ba21eb4, ad3a76b, 4535d6f). Root `pnpm check` passes again; tests 101 core + 2 web; web build succeeds. Brief and Ask call the real core; Compare is still sample data.
+- **From now on:** Codex cards say "don't commit"; the master commits Codex's work after verifying it.
+- **Groq key** is now set in `.env`, so the real LLM path can run once card 003 lands.
+- **Written:** card 004 (Codex: whole flow on real data + real Compare), card 005 (OpenCode: live evaluation).
+
 ## 2026-09-27: switched to master/worker
 
 - **Decision (human):** Claude Code is the master; Codex and OpenCode are workers run by the master (`codex exec`, `opencode run`). The human talks only to the master.
