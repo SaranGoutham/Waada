@@ -1,0 +1,23 @@
+{
+  "name": "@waada/core",
+  "version": "0.0.0",
+  "private": true,
+  "type": "module",
+  "exports": {
+    ".": "./src/index.ts",
+    "./testing": "./test/fakes.ts"
+  },
+  "scripts": {
+    "test": "vitest run",
+    "test:live": "vitest run --mode live --passWithNoTests",
+    "typecheck": "tsc --noEmit"
+  },
+  "dependencies": {
+    "zod": "4.6.5"
+  },
+  "devDependencies": {
+    "@types/node": "^22.20.4",
+    "typescript": "7.0.2",
+    "vitest": "5.0.2"
+  }
+}
