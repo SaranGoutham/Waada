@@ -27,11 +27,15 @@ dates (`nova-0803-…`, `nova-0813-…`) instead of the planned `0804`/`0811` na
 
 ## Test commands with real output
 
-`pnpm` is not installed in this environment (human checklist item), and M00's
-scaffold is still in progress — so `pnpm check && pnpm test` could not run here.
-Data files contain no code and touch no package, so they cannot break those
-gates; M00/M10 should confirm green at merge. Verification instead was a
-throwaway Node script (uncommitted, `TEMP/opencode/m04-verify.js`):
+Update (same day, after `pnpm` was installed via `npm install -g pnpm --force`
+— corepack's cache was corrupt): `pnpm install && pnpm check && pnpm test`
+ran fully green — install up to date, `biome check` clean (19 files),
+`tsc --noEmit` clean, **28/28 `foundation.test.ts` tests pass**. M04's
+data-only files break nothing.
+
+Original note, kept for the record: `pnpm` was initially unavailable in this
+environment (human checklist item), and M00's scaffold was still in progress — so
+verification was first done with a throwaway Node script (uncommitted, `TEMP/opencode/m04-verify.js`):
 
 ```
 PASS acme emails = 14 (want 14)
