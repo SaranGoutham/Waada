@@ -1,0 +1,27 @@
+---
+title: Call #1 — discovery
+date: 2026-07-15T14:00:00Z
+type: call
+participants: Priya Nair, Alex Rivera
+---
+Alex Rivera: Hi Priya, thanks for making time. Before anything else, I'd love to hear how operations looks at Acme today — what's eating your week?
+
+Priya Nair: Honestly? The handoffs. We have regional teams running their own playbooks, three tools that don't talk to each other, and every quarter-close turns into a scavenger hunt. I'm the VP of Ops, and I still get asked for numbers I can't defend.
+
+Alex Rivera: That scavenger hunt image lands. How big is the team that would live in this day to day?
+
+Priya Nair: About two hundred and forty seats if we go company-wide. But I'm not signing up for a big-bang rollout that disrupts peak season. A pilot first, then we decide.
+
+Alex Rivera: Pilot-first is exactly how our best rollouts go. What does success look like at the end of a pilot for you?
+
+Priya Nair: Two things. One, my team leads can pull their own reports without pinging my analysts. Two, continuity. Alex, I'll be blunt — we got burned by a vendor who disappeared after signing. Support tickets went into a black hole, our rep left, nobody knew our history. I won't live through that again.
+
+Alex Rivera: That's fair, and I'm glad you said it early. Part of my job is making sure our history with you outlives any one person. If we move forward, everything — every call, every promise — gets logged against your account so whoever picks this up knows exactly where things stand.
+
+Priya Nair: Good. Hold yourself to that. On process: our CFO, David Chen, owns the budget line. He'll show up later and he'll ask hard questions. Don't take it personally.
+
+Alex Rivera: Noted — I'd rather meet the hard questions early. Next step: I'll send over notes from today, and let's do a deeper requirements session with our sales engineer. Does the 29th work?
+
+Priya Nair: The 29th works. Bring someone who actually knows the product, not a slide reader.
+
+Alex Rivera: Meenakshi Rao, our SE — she built half the reporting stack. You'll like her.

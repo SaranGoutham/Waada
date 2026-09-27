@@ -1,0 +1,23 @@
+---
+title: Call #3 — pricing discussion
+date: 2026-08-12T14:30:00Z
+type: call
+participants: Priya Nair, Alex Rivera
+---
+Alex Rivera: Thanks for the time, Priya. I wanted to walk through commercial options before the pilot kicks off, so there are no surprises later.
+
+Priya Nair: Good, because I have a concern right up front. I saw the monthly billing option in your deck and I don't like it. Monthly pricing makes my CFO twitchy — it reads as "easy to cancel," which to David means "easy to waste." And frankly, month-to-month tells my team this might not stick.
+
+Alex Rivera: That's honest feedback. What structure would make this a non-issue internally?
+
+Priya Nair: Annual. One throat to choke, one renewal conversation, real commitment on both sides. But annual at list price won't fly either — David will benchmark us to death.
+
+Alex Rivera: What if we do annual billing with an 8% discount off list? That puts real savings on the table and gives David the commitment story he wants.
+
+Priya Nair: Annual billing plus eight percent... that's meaningful. At that structure I can defend it. Yes — if the proposal says annual with the 8% discount, we're good on structure. Don't bring monthly back to the table.
+
+Alex Rivera: Monthly is off the table. I'll send an annual-pricing proposal — $86,000 ARR for the 240 seats — by the end of the week.
+
+Priya Nair: Send it, and copy me directly. If the paper matches what you just said, pricing is settled and we don't revisit it. One more thing — the pilot criteria we discussed, still on track for the 20th?
+
+Alex Rivera: Pilot scoping on the 20th, three weeks, one region. Locked in.

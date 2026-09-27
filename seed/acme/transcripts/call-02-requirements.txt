@@ -1,0 +1,27 @@
+---
+title: Call #2 — requirements deep-dive
+date: 2026-07-29T15:00:00Z
+type: call
+participants: Priya Nair, Alex Rivera, Meenakshi Rao
+---
+Alex Rivera: Priya, this is Meenakshi Rao, our sales engineer. Meenakshi, Priya Nair, VP Operations at Acme.
+
+Meenakshi Rao: Hi Priya. Alex tells me reporting handoffs are the pain. Walk me through who needs what.
+
+Priya Nair: Three regional leads need self-serve dashboards, my analysts need row-level permissions, and IT has one non-negotiable: SSO. We run Okta with SAML, and anything that doesn't plug into it is dead on arrival. Our security team won't even review it otherwise.
+
+Meenakshi Rao: SAML via Okta is standard for us — enforced SSO, SCIM provisioning, role mapping from your IdP groups. Do you also need multi-domain or just the one?
+
+Priya Nair: One domain. Two hundred and forty seats to start. If the pilot works, we expand from there.
+
+Alex Rivera: Timeline-wise, what are you hoping for?
+
+Priya Nair: I'd love to be live in Q3. End of September. Peak season starts in October and I want the team settled before that.
+
+Meenakshi Rao: Q3 is tight but doable if the pilot starts mid-August. Three weeks, scoped to one region, then a go/no-go.
+
+Priya Nair: Three-week pilot, one region. And I want the pilot success criteria in writing before we start — no moving goalposts.
+
+Alex Rivera: Agreed. I'll send a pilot proposal with the criteria spelled out. And Priya — on the continuity point from our first call — Meenakshi's notes from today go into your account record, same as mine.
+
+Priya Nair: I appreciate that. Talk next week.

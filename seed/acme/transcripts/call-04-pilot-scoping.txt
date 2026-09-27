@@ -1,0 +1,15 @@
+Alex Rivera: Morning everyone — thanks for joining the pilot scoping session on this Thursday, August 20th. On the line we have Priya Nair from Acme, Meenakshi Rao our sales engineer, and myself, Alex Rivera.
+
+Priya Nair: Morning. Let's keep this tight — I have a hard stop at the half hour.
+
+Meenakshi Rao: Tight it is. Scope: one region, the west team, about forty seats. Week one is onboarding and data connections, week two is live usage with office hours, week three is measurement against the criteria.
+
+Priya Nair: The criteria being: regional leads pull their own reports, and SSO works end to end with our Okta setup. Both in writing, both binary.
+
+Alex Rivera: Both binary, both in the proposal I sent. Go/no-go call on the 27th, same time?
+
+Priya Nair: 27th works. Meenakshi, who do my IT folks call if SSO hiccups mid-pilot?
+
+Meenakshi Rao: Me, directly. I'll send you my details after this call — same-day response during the pilot, that's my commitment.
+
+Priya Nair: Good. That's the kind of thing I remember. See you both on the 27th.

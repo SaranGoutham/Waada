@@ -1,0 +1,21 @@
+---
+title: Call #6 — security and legal review
+date: 2026-09-02T15:30:00Z
+type: call
+participants: Priya Nair, David Chen, Alex Rivera
+---
+Alex Rivera: David, thanks for joining — David Chen, our first session together. Goal today: clear the DPA redlines and the SSO sign-off so contracts can move.
+
+David Chen: Let's be efficient. Three items. One: data processing addendum, section 7 — your liability cap language is half of what our standard requires. Two: SSO — Priya says it works, I need your confirmation that enforced SAML stays on for all 240 seats, no exceptions. Three: payment terms — we pay Net-30, not upfront annual. If those three move, finance won't block.
+
+Alex Rivera: On all three: liability cap — I'll take your redline back to legal today. Enforced SAML for all seats — yes, that's already how the pilot ran. Net-30 — I can put that in the order form.
+
+Priya Nair: David, the pilot really was clean. IT signed off on the Okta integration yesterday.
+
+David Chen: Fine. Then I also need your SOC 2 Type II report and the completed security questionnaire before I'll release the PO. Our policy, no exceptions — the last vendor who couldn't produce one cost us a quarter.
+
+Alex Rivera: Understood — I'll get you the SOC 2 Type II report and the security questionnaire by end of week.
+
+David Chen: Good. Now back to section 7 — walk me through your subprocessor list, because two of those names I don't recognize...
+
+[The remaining forty minutes cover subprocessor due diligence, the liability cap negotiation, and Net-30 mechanics. The security documentation is not mentioned again.]

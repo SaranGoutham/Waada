@@ -1,0 +1,17 @@
+---
+title: Call #5 — pilot readout
+date: 2026-08-27T14:00:00Z
+type: call
+participants: Priya Nair, Alex Rivera, Meenakshi Rao
+---
+Alex Rivera: Alright, readout day. Meenakshi, you ran point — headline numbers?
+
+Meenakshi Rao: West region, forty seats, three weeks. Report self-sufficiency: eleven out of twelve leads pulled their full weekly pack without analyst help. SSO via Okta: zero escalations after day two — the day-one hiccup was a group-mapping typo on our side, fixed same day.
+
+Priya Nair: I checked with my leads independently, and they're genuinely happy. The one holdout was on leave, so call it twelve for twelve in practice. This is the first pilot in two years that didn't need babysitting.
+
+Alex Rivera: That's great to hear. So — go or no-go?
+
+Priya Nair: Go. Full rollout, 240 seats. But Alex, the clock is ticking on Q3. If we're live by end of September, I need contracts moving now. Get me in front of whoever needs to approve the DPA on your side, because David will redline it.
+
+Alex Rivera: I'll set up the security and legal review for next week — you, me, David, done in one session. I'll send the invite today.
