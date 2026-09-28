@@ -21,7 +21,7 @@ All functions use `deps?.memory ?? createMemory()` and `deps?.llm ?? await creat
    - Recalls (`budget: "high"`): "commitments or promises our team made to the customer", "documents, proposals or materials we sent or delivered", "follow-ups we owe the customer", "things the customer is still waiting for".
    - Dedupe the hits by text and give the combined list, each hit with its date and context, to `llm.extract` with `z.object({ commitments: z.array(Commitment) })`.
    - The prompt must say: a commitment is **delivered** only if a *later* interaction shows it was fulfilled; **open** if nothing shows delivery; **unclear** if evidence conflicts. Cite the source for every status.
-   - Sort: open (oldest first) → unclear → delivered. `null` from extract → return `[]` and log a warning.
+   - Sort: open (newest promise first; human, 2026-09-27, P-007) → unclear → delivered. `null` from extract → return `[]` and log a warning.
 2. **`landmines(account)`**
    - Recalls: "objections the customer raised and how they were resolved", "topics the customer is sensitive or negative about", "things the customer explicitly accepted or agreed to".
    - Extract `Landmine[]`. Guidance is imperative ("Do NOT re-open …").

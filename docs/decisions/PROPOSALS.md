@@ -95,3 +95,11 @@ Agents **append** here when they need a stack addition (AGENTS.md rule 3), a con
 - Options: A. baselines read imported data saved in `.waada/`; B. keep `seed/`, demo names the account "Acme"; C. heuristic slug → seed folder lookup.
 - **Status:** approved: A
 - Human answer: use imported data (2026-09-27). AGENTS.md §6.8 note updated by the master. Code change: card 009.
+
+## P-007 — Ledger accuracy approach and open-commitment order
+- Raised by: master (Claude Code), from the card 008 live eval · 2026-09-27
+- Type: design (no new package)
+- Problem: with the free-tier evidence cap the ledger marks items "open" whose delivery proof it can't see (e.g. DPA redlines sent Sep 3), counts ongoing habits ("log everything", "same-day SSO response") as commitments, and results vary run to run. Open items sort oldest first, so any older false positive pushes the Sep 2 SOC 2 item down.
+- Options: A. verification pass per open item (targeted recall + small check call); B. keep one pass, tighten the prompt. Order: newest promise first vs oldest first.
+- **Status:** approved: B (one pass, tighter prompt); **newest open promise first**
+- Human answer: 2026-09-27. `tasks/M05-agent-core.md` sort rule updated. Code change: card 010.
