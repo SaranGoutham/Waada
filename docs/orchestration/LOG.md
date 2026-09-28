@@ -2,6 +2,14 @@
 
 Plain-language record of what happened, newest first. Written by the master (Claude Code) for the human.
 
+## 2026-09-28: cards 011–013; first readable eval; paused for Groq's daily limit
+
+- **Card 011 (Codex):** `extract` repairs Groq's "invalid JSON" errors, falls back to `gpt-oss-20b`, and says in plain words when the free daily limit is used up (7afec1f). Codex lost its own connection to OpenAI for ~10 minutes mid-card, then finished.
+- **Card 012 (Codex):** Ask's request is capped; failed extractions log *why* (field names and error codes only); the eval writes its scorecard and ledger to `.waada/eval/last-run.json` (a4aa8c9).
+- **Eval run D (first readable one):** summary-only baseline 2 checks, Waada 1, CRM-only 0. Recorded plainly in `evals.md`. Conditions were degraded: the main model's daily tokens ran out, so the ledger may have run on the weaker fallback model and returned nothing, and Ask was still over the per-minute size limit.
+- **Card 013 (Codex):** token budget based on a real measurement (2.5 characters per token, not 4), ledger back to default temperature, logs show which model answered (7b1cdbf).
+- **Paused:** next live eval waits until the main model's daily Groq tokens free up (or a paid key, the human's call). Then: eval, and a fresh browser run of the whole flow including Compare.
+
 ## 2026-09-27: cards 008 and 010 (ledger), transcript fix; Groq daily limit reached
 
 - **Card 008 (Codex):** ledger prompt v2, brief keeps the newest changes and lists only open items (9860d44).
