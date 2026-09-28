@@ -114,3 +114,6 @@ What still counts as a finding:
 - The Sep 2 SOC 2 call **was** stored, yet the ledger did not list the SOC 2 promise: a single mention does not survive recall + the 12,500-char evidence cap.
 - Newest-first order puts a legitimate new promise first ("contact Priya on Sep 28", from the handover email), so SOC 2 cannot be first under P-007 even when found.
 - Ledger output varies between calls in the same run (the delivered pricing proposal appears in the saved ledger but not in EVAL-2's call).
+
+### Run F (2026-09-28 ~09:40 UTC) — after card 014, spare key `Groq_Key3` — **invalid**
+Hindsight Cloud `search` calls failed with "Couldn't reach Hindsight" even with card 014's retries (EVAL-1/2/3/5); the results file was not rewritten. A health probe right after returned 200 five times: the Cloud service is intermittently unavailable. The master's web dev server (Pipeline page stuck loading) was hitting Hindsight at the same time. No quality conclusion from this run.
