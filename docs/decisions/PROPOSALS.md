@@ -103,3 +103,7 @@ Agents **append** here when they need a stack addition (AGENTS.md rule 3), a con
 - Options: A. verification pass per open item (targeted recall + small check call); B. keep one pass, tighten the prompt. Order: newest promise first vs oldest first.
 - **Status:** approved: B (one pass, tighter prompt); **newest open promise first**
 - Human answer: 2026-09-27. `tasks/M05-agent-core.md` sort rule updated. Code change: card 010.
+
+## P-008 — Extra Groq keys: dev/eval only
+- Raised by: human, 2026-09-28 (five extra free Groq keys, each from a different organization; checked with Groq)
+- **Status:** approved: use them **only for the master's dev/eval runs** (set `GROQ_API_KEY` in the process environment per run; `config.ts` prefers the environment over `.env`). No in-app key rotation; the app stays one-key (MVP criterion 4).
