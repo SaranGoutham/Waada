@@ -61,7 +61,8 @@ describe("parseTranscript", () => {
     const llm = new FakeLLM({ extract: { "transcript-metadata": [{ ...META }] } });
     await parseTranscript(await fixture("no-header.txt"), "acme", { llm });
     const call = llm.calls.find((c) => c.method === "extract");
-    const schema = z.toJSONSchema((call?.args[0] as { schema: z.ZodType }).schema) as {
+    if (!call) throw new Error("expected an extract call");
+    const schema = z.toJSONSchema((call.args[0] as { schema: z.ZodType }).schema) as {
       properties: Record<string, unknown>;
       required?: string[];
     };
