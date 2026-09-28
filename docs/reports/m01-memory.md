@@ -18,7 +18,7 @@ Behaviour:
 - `remember`: sync `retain`. `context = "<type> — <title>"`, `timestamp = i.date`, `documentId = i.sourceId`, metadata `{ type, participants (", "-joined), account, source }`, all strings as the API requires.
 - `search`: `recall` with `budget` (default `"mid"`), `maxResults` applied client-side. `date` is `occurred_start`, else `mentioned_at`, else `null`, always normalised to `...Z`. **A bank that doesn't exist yet returns `[]`** (Hindsight answers 404).
 - `reflect`: returns `response.text`. `deleteBank`: deletes the bank and forgets the cache entry.
-- **Errors:** every public method throws only `ExternalServiceError` (a `WaadaError`). There is one retry (500 ms) on network failures, 429 and 5xx, and none on other 4xx.
+- **Errors:** every public method throws only `ExternalServiceError` (a `WaadaError`). Transient failures (network errors, 429, 5xx) are retried up to 2 times with a short wait (card 014; injectable `sleep`/`maxRetries` for tests), and never on other 4xx.
 
 | Case | Message |
 |---|---|
@@ -108,7 +108,19 @@ One whole-branch review (fresh reviewer), with no Critical findings. Two Importa
 - `deleteBank` gets a plain `Error` from the SDK with no status, so a 401/403/404 on delete is retried once and labelled "couldn't reach".
 - A negative `maxResults` silently drops hits.
 - `memory.live.test.ts` errors at import (instead of skipping) when `.env` has no `HINDSIGHT_BASE_URL`.
-- No `Retry-After` handling: a 429 gets one fixed 500 ms backoff.
+- No `Retry-After` handling: a 429 gets a fixed 500 ms wait per retry (card 014: up to 2 retries).
+
+## Card 014 follow-up — two retries with injectable sleep (offline)
+
+- `HindsightMemory` now retries transient failures (network errors, 429, 5xx)
+  up to 2 times (3 attempts total) with the existing short wait; other 4xx
+  still fail fast, and every retry is logged without content. The wait goes
+  through an injectable `sleep` (plus the existing `retryDelayMs` and a new
+  `maxRetries` override) so unit tests don't sleep. Run E's flaky ingest
+  (6 of 33 `remember` calls failed with "Couldn't reach Hindsight") gets two
+  more chances per item before surfacing. Unit-tested with a fake
+  `HindsightApi`: success after two failures, sleep called with the delay,
+  terminal failures now take 3 attempts.
 
 ## Follow-ups for other modules
 

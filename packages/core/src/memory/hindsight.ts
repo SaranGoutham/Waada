@@ -70,18 +70,30 @@ function errorName(err: unknown): string {
   return err instanceof Error ? err.name : typeof err;
 }
 
-const sleep = (ms: number) => new Promise<void>((resolve) => setTimeout(resolve, ms));
+const defaultSleep = (ms: number) => new Promise<void>((resolve) => setTimeout(resolve, ms));
 
 export class HindsightMemory implements Memory {
   readonly #api: HindsightApi;
   readonly #baseUrl: string;
   readonly #retryDelayMs: number;
+  readonly #maxRetries: number;
+  readonly #sleep: (ms: number) => Promise<void>;
   readonly #knownBanks = new Set<string>();
 
-  constructor(options: { api: HindsightApi; baseUrl: string; retryDelayMs?: number }) {
+  constructor(options: {
+    api: HindsightApi;
+    baseUrl: string;
+    retryDelayMs?: number;
+    /** How many times a transient failure is retried (default 2). */
+    maxRetries?: number;
+    /** Wait between retries; injectable so tests don't sleep. */
+    sleep?: (ms: number) => Promise<void>;
+  }) {
     this.#api = options.api;
     this.#baseUrl = options.baseUrl;
     this.#retryDelayMs = options.retryDelayMs ?? 500;
+    this.#maxRetries = options.maxRetries ?? 2;
+    this.#sleep = options.sleep ?? defaultSleep;
   }
 
   async ensureBank(account: string): Promise<string> {
@@ -154,21 +166,24 @@ export class HindsightMemory implements Memory {
     this.#knownBanks.delete(bankId);
   }
 
-  /** Runs one client call: one retry on network/5xx errors, then a friendly WaadaError. */
+  /**
+   * Runs one client call: transient failures (network errors, 429, 5xx) are
+   * retried up to maxRetries times with a short wait; other 4xx fail fast.
+   * Every failure surfaces as a friendly WaadaError.
+   */
   async #call<T>(op: string, fn: () => Promise<T>): Promise<T> {
-    try {
-      return await fn();
-    } catch (first) {
-      if (first instanceof WaadaError || !isRetryable(first)) throw this.#friendly(op, first);
-      log.debug(`${op} failed, retrying once`, {
-        status: statusOf(first),
-        error: errorName(first),
-      });
-      await sleep(this.#retryDelayMs);
+    for (let attempt = 0; ; attempt++) {
       try {
         return await fn();
-      } catch (second) {
-        throw this.#friendly(op, second);
+      } catch (err) {
+        if (err instanceof WaadaError || !isRetryable(err) || attempt >= this.#maxRetries) {
+          throw this.#friendly(op, err);
+        }
+        log.debug(`${op} failed, retrying (${attempt + 1}/${this.#maxRetries})`, {
+          status: statusOf(err),
+          error: errorName(err),
+        });
+        await this.#sleep(this.#retryDelayMs);
       }
     }
   }

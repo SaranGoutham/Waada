@@ -153,7 +153,37 @@ describe("HindsightMemory errors", () => {
     expect(reflect).toHaveBeenCalledTimes(2);
   });
 
-  it("gives up after one retry on 5xx with a friendly message naming the URL", async () => {
+  it("succeeds after two transient failures", async () => {
+    const reflect = vi
+      .fn<HindsightApi["reflect"]>()
+      .mockRejectedValueOnce(networkError())
+      .mockRejectedValueOnce(httpError(503))
+      .mockResolvedValueOnce({ text: "ok" });
+    expect(await memoryWith(fakeApi({ reflect })).reflect("acme", "q")).toBe("ok");
+    expect(reflect).toHaveBeenCalledTimes(3);
+  });
+
+  it("waits via the injectable sleep between retries", async () => {
+    const slept: number[] = [];
+    const mem = new HindsightMemory({
+      api: fakeApi({
+        reflect: vi
+          .fn<HindsightApi["reflect"]>()
+          .mockRejectedValueOnce(networkError())
+          .mockRejectedValueOnce(networkError())
+          .mockResolvedValueOnce({ text: "ok" }),
+      }),
+      baseUrl: BASE_URL,
+      retryDelayMs: 150,
+      sleep: async (ms: number) => {
+        slept.push(ms);
+      },
+    });
+    expect(await mem.reflect("acme", "q")).toBe("ok");
+    expect(slept).toEqual([150, 150]);
+  });
+
+  it("gives up after two retries on 5xx with a friendly message naming the URL", async () => {
     const recall = vi.fn<HindsightApi["recall"]>().mockRejectedValue(httpError(503));
     const err = await memoryWith(fakeApi({ recall }))
       .search("acme", "q")
@@ -162,7 +192,7 @@ describe("HindsightMemory errors", () => {
     expect((err as Error).message).toBe(
       "Couldn't reach Hindsight at https://hindsight.example (HTTP 503). Is the server running / is the API key right?",
     );
-    expect(recall).toHaveBeenCalledTimes(2);
+    expect(recall).toHaveBeenCalledTimes(3);
   });
 
   it("maps an unreachable server to the friendly message without an HTTP suffix", async () => {
@@ -170,7 +200,7 @@ describe("HindsightMemory errors", () => {
     await expect(memoryWith(fakeApi({ retain })).remember(call)).rejects.toThrow(
       "Couldn't reach Hindsight at https://hindsight.example. Is the server running / is the API key right?",
     );
-    expect(retain).toHaveBeenCalledTimes(2);
+    expect(retain).toHaveBeenCalledTimes(3);
   });
 
   it("search returns no hits for a bank that doesn't exist yet (HTTP 404), without retrying", async () => {
@@ -179,12 +209,12 @@ describe("HindsightMemory errors", () => {
     expect(recall).toHaveBeenCalledTimes(1);
   });
 
-  it("retries a 429 once, then says Hindsight is busy", async () => {
+  it("retries a 429 twice, then says Hindsight is busy", async () => {
     const retain = vi.fn<HindsightApi["retain"]>().mockRejectedValue(httpError(429));
     await expect(memoryWith(fakeApi({ retain })).remember(call)).rejects.toThrow(
       "Hindsight is busy (HTTP 429). Try again shortly.",
     );
-    expect(retain).toHaveBeenCalledTimes(2);
+    expect(retain).toHaveBeenCalledTimes(3);
   });
 
   it("says Hindsight rejected the request on other 4xx, naming the operation", async () => {
