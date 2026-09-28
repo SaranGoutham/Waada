@@ -24,6 +24,7 @@ import { createLLM, type LLM } from "../src/llm/index.ts";
 import { saveLlmSettings } from "../src/llm/settings.ts";
 import { createMemory, type Memory } from "../src/memory/index.ts";
 import type { Brief, Commitment, FileInput, Interaction, Landmine } from "../src/models.ts";
+import { writeJson } from "../src/store.ts";
 
 const ACCOUNT = "acme";
 const BANK_SUFFIX = "-eval";
@@ -119,6 +120,32 @@ function scoreBaselineMarkdown(markdown: string) {
     pricingLandmine: pricingLandmine(markdown) && dontReopen(markdown),
     q3q4: q3q4Move(markdown),
   };
+}
+
+async function writeEvalResult(a: {
+  waada: ReturnType<typeof scoreWaada>;
+  summary: ReturnType<typeof scoreBaselineMarkdown>;
+  crm: ReturnType<typeof scoreBaselineMarkdown>;
+  commitments: Commitment[];
+}): Promise<void> {
+  const currentDataDir = process.env.WAADA_DATA_DIR;
+  process.env.WAADA_DATA_DIR = realDataDir;
+  try {
+    await writeJson("eval/last-run.json", {
+      account: ACCOUNT,
+      ranAt: new Date().toISOString(),
+      checks: { waada: a.waada, summaryOnly: a.summary, crmOnly: a.crm },
+      ledger: a.commitments.map((commitment) => ({
+        status: commitment.status,
+        date: commitment.date,
+        text: commitment.text,
+        evidence: commitment.evidence.slice(0, 200),
+      })),
+    });
+  } finally {
+    if (currentDataDir === undefined) delete process.env.WAADA_DATA_DIR;
+    else process.env.WAADA_DATA_DIR = currentDataDir;
+  }
 }
 
 live("eval: M05 checks on seed/acme (Waada vs baselines)", () => {
@@ -254,6 +281,7 @@ live("eval: M05 checks on seed/acme (Waada vs baselines)", () => {
         summary: scoreBaselineMarkdown(columns.summary),
         crm: scoreBaselineMarkdown(columns.crm),
       };
+      await writeEvalResult({ ...table, commitments: result.commitments });
       console.info("EVAL SCORECARD (waada / summary / crm):", JSON.stringify(table, null, 2));
       console.info("compare.summary markdown:\n", columns.summary);
       console.info("compare.crm markdown:\n", columns.crm);

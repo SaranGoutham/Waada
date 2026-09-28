@@ -1,5 +1,8 @@
 import { describe, expect, it } from "vitest";
 import { ask } from "../src/agent/index.ts";
+import { MAX_PROMPT_CHARS } from "../src/llm/budget.ts";
+import type { Memory } from "../src/memory/index.ts";
+import type { MemoryHit } from "../src/models.ts";
 import { FakeLLM, FakeMemory, sampleInteractions } from "./fakes.ts";
 
 async function seededMemory(): Promise<FakeMemory> {
@@ -29,6 +32,40 @@ describe("ask", () => {
     if (!chatCall) throw new Error("expected a chat call");
     const chatUser = (chatCall.args[0] as { user: string }).user;
     expect(chatUser).toMatch(/answer only from/i);
+  });
+
+  it("caps recall evidence within the full prompt budget without displacing top hits", async () => {
+    const hits: MemoryHit[] = [
+      {
+        text: `most relevant evidence ${"a".repeat(MAX_PROMPT_CHARS)}`,
+        date: "2026-09-02T15:30:00.000Z",
+        context: "email — top hit",
+        documentId: "top",
+      },
+      {
+        text: "least relevant evidence",
+        date: "2026-08-20T10:00:00.000Z",
+        context: "call — later hit",
+        documentId: "later",
+      },
+    ];
+    const memory: Memory = {
+      ensureBank: async () => "unused",
+      remember: async () => {},
+      search: async () => hits,
+      reflect: async () => "unused",
+      deleteBank: async () => {},
+    };
+    const llm = new FakeLLM({ chat: ["Answer from the most relevant evidence."] });
+
+    await ask("acme", "What changed?", { memory, llm });
+
+    const chatCall = llm.calls.find((call) => call.method === "chat");
+    if (!chatCall) throw new Error("expected a chat call");
+    const prompt = chatCall.args[0] as { system: string; user: string };
+    expect(prompt.system.length + prompt.user.length).toBeLessThanOrEqual(MAX_PROMPT_CHARS);
+    expect(prompt.user).toContain("most relevant evidence");
+    expect(prompt.user).not.toContain("least relevant evidence");
   });
 
   it("says not in memory instead of guessing when nothing is recalled", async () => {

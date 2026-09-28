@@ -62,6 +62,29 @@ function malformedObjectError(error: unknown): boolean {
   return NoObjectGeneratedError.isInstance(error) || invalidJsonSchemaError(error);
 }
 
+function validationReason(error: z.ZodError<unknown>): string {
+  return error.issues
+    .map((issue) => `${issue.path.length > 0 ? issue.path.join(".") : "(root)"}: ${issue.code}`)
+    .join("; ");
+}
+
+function providerReason(error: unknown): string {
+  if (!APICallError.isInstance(error)) return "malformed structured response";
+  const data = error.data as { error?: { code?: unknown }; code?: unknown } | undefined;
+  let body: { error?: { code?: unknown }; code?: unknown } | undefined;
+  try {
+    body = error.responseBody ? JSON.parse(error.responseBody) : undefined;
+  } catch {
+    // Provider error bodies can be non-JSON.
+  }
+  const code = data?.error?.code ?? data?.code ?? body?.error?.code ?? body?.code;
+  return typeof code === "string" ? `provider code ${code}` : "malformed structured response";
+}
+
+function cappedAttemptReasons(reasons: string[]): string {
+  return reasons.join("; ").slice(0, 300);
+}
+
 async function extractWithModel<T>(
   settings: LlmSettings,
   args: ExtractArgs<T>,
@@ -94,21 +117,26 @@ async function extractWithModel<T>(
       }),
     );
   let validationDetail = "The response did not match the requested schema.";
+  const attemptReasons: string[] = [];
   try {
     const result = await objectCall(args.user);
     const parsed = args.schema.safeParse(result.object);
     if (parsed.success) return parsed.data;
     validationDetail = parsed.error.message;
+    attemptReasons.push(`structured attempt 1: ${validationReason(parsed.error)}`);
   } catch (error) {
     if (!malformedObjectError(error)) throw externalFailure(settings, error);
     validationDetail = error instanceof Error ? error.message : validationDetail;
+    attemptReasons.push(`structured attempt 1: ${providerReason(error)}`);
   }
   try {
     const result = await objectCall(repairPrompt(args, validationDetail));
     const parsed = args.schema.safeParse(result.object);
     if (parsed.success) return parsed.data;
+    attemptReasons.push(`structured attempt 2: ${validationReason(parsed.error)}`);
   } catch (error) {
     if (!malformedObjectError(error)) throw externalFailure(settings, error);
+    attemptReasons.push(`structured attempt 2: ${providerReason(error)}`);
   }
   let plainText: string;
   try {
@@ -122,12 +150,15 @@ async function extractWithModel<T>(
   try {
     const parsed = args.schema.safeParse(JSON.parse(unfence(plainText)));
     if (parsed.success) return parsed.data;
+    attemptReasons.push(`plain JSON attempt: ${validationReason(parsed.error)}`);
   } catch {
     // Bad plain JSON from the model is intentionally non-fatal for this contract.
+    attemptReasons.push("plain JSON attempt: invalid JSON");
   }
   log.warn("LLM structured extraction returned no valid object", {
     provider: settings.provider,
     name: args.name,
+    attempts: cappedAttemptReasons(attemptReasons),
   });
   return null;
 }

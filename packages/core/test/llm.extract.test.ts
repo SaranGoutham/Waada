@@ -7,6 +7,7 @@ const mocks = vi.hoisted(() => ({
   createLanguageModel: vi.fn(() => ({}) as never),
   generateObject: vi.fn(),
   generateText: vi.fn(),
+  warn: vi.fn(),
 }));
 
 vi.mock("ai", async (importOriginal) => ({
@@ -17,6 +18,10 @@ vi.mock("ai", async (importOriginal) => ({
 
 vi.mock("../src/llm/providers.ts", () => ({
   createLanguageModel: mocks.createLanguageModel,
+}));
+
+vi.mock("../src/log.ts", () => ({
+  log: { warn: mocks.warn },
 }));
 
 import { extract } from "../src/llm/extract.ts";
@@ -141,6 +146,15 @@ describe("LLM extraction recovery", () => {
     mocks.generateText.mockResolvedValueOnce({ text: "not json" });
 
     await expect(extract(settings, args)).resolves.toBeNull();
+    expect(mocks.warn).toHaveBeenCalledWith(
+      "LLM structured extraction returned no valid object",
+      expect.objectContaining({
+        attempts: expect.stringContaining("value: invalid_type"),
+      }),
+    );
+    const fields = mocks.warn.mock.calls[0]?.[1] as { attempts: string };
+    expect(fields.attempts.length).toBeLessThanOrEqual(300);
+    expect(fields.attempts).not.toContain("not json");
   });
 
   it("maps provider failures to a safe external-service error", async () => {

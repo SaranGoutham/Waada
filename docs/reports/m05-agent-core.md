@@ -74,3 +74,11 @@ Summary-vs-Waada comparison: **not measurable yet** — stated plainly in
   absence evidence.
 - Ledger extraction uses temperature 0 to reduce run-to-run variance. No live
   run was performed in this sandbox; the master must run the eval.
+
+## Card 012 follow-up — prompt budget and eval visibility (offline)
+
+- Ask evidence is capped inside the shared prompt budget while retaining
+  relevance-ranked excerpts first.
+- Failed structured extraction logs compact, safe per-attempt validation reasons.
+- The live eval writes its scorecard and a redacted ledger view to
+  `.waada/eval/last-run.json` (or the configured data directory).
