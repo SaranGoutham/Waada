@@ -79,7 +79,9 @@ select {
   border-radius: 4px;
 }
 .nav-link {
-  display: block;
+  display: flex;
+  align-items: center;
+  gap: 0.5rem;
   border-radius: 4px;
   padding: 0.45rem 0.6rem;
   color: #5f5f5b;
