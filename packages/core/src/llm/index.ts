@@ -4,7 +4,7 @@ import type { z } from "zod";
 import { ConfigError, ExternalServiceError } from "../errors.ts";
 import { extract as extractObject } from "./extract.ts";
 import { createLanguageModel, createTranscriptionModel } from "./providers.ts";
-import { withRateLimitRetry } from "./retry.ts";
+import { dailyLimitMessage, withRateLimitRetry } from "./retry.ts";
 import { getLlmSettings } from "./settings.ts";
 
 export * from "./providers.ts";
@@ -55,7 +55,8 @@ export async function createLLM(): Promise<LLM> {
         }
       }
       throw new ExternalServiceError(
-        `Could not get a response from ${settings.provider}. Check the model and Settings.`,
+        dailyLimitMessage(settings.provider, lastError) ??
+          `Could not get a response from ${settings.provider}. Check the model and Settings.`,
         { cause: lastError },
       );
     },

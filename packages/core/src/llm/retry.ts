@@ -67,24 +67,43 @@ export function isTooLargeError(error: unknown): boolean {
  * the default delay when the headers are missing or unparseable.
  */
 export function retryAfterMs(error: unknown, now: number = Date.now()): number {
+  const hint = retryAfterHintMs(error, now);
+  return hint === undefined ? RATE_LIMIT_DEFAULT_DELAY_MS : Math.min(hint, RATE_LIMIT_MAX_DELAY_MS);
+}
+
+/** The server's raw retry-after hint, before Waada's 60-second wait cap. */
+function retryAfterHintMs(error: unknown, now: number = Date.now()): number | undefined {
   const headers = rateLimitInfo(error).headers;
   if (headers) {
     const msHint = headers["retry-after-ms"];
     if (msHint !== undefined) {
       const ms = Number.parseFloat(msHint);
-      if (!Number.isNaN(ms) && ms >= 0) return Math.min(ms, RATE_LIMIT_MAX_DELAY_MS);
+      if (!Number.isNaN(ms) && ms >= 0) return ms;
     }
     const hint = headers["retry-after"];
     if (hint !== undefined) {
       const seconds = Number.parseFloat(hint);
-      if (!Number.isNaN(seconds) && seconds >= 0) {
-        return Math.min(seconds * 1_000, RATE_LIMIT_MAX_DELAY_MS);
-      }
+      if (!Number.isNaN(seconds) && seconds >= 0) return seconds * 1_000;
       const dateMs = Date.parse(hint) - now;
-      if (!Number.isNaN(dateMs) && dateMs >= 0) return Math.min(dateMs, RATE_LIMIT_MAX_DELAY_MS);
+      if (!Number.isNaN(dateMs) && dateMs >= 0) return dateMs;
     }
   }
-  return RATE_LIMIT_DEFAULT_DELAY_MS;
+  return undefined;
+}
+
+/** A long server-directed wait is a daily/window limit, not a retry candidate. */
+export function isLongRateLimitError(error: unknown): boolean {
+  const hint = retryAfterHintMs(error);
+  return isRateLimitError(error) && hint !== undefined && hint > RATE_LIMIT_MAX_DELAY_MS;
+}
+
+/** Friendly final error for a Groq free-tier daily limit, without provider details. */
+export function dailyLimitMessage(provider: string, error: unknown): string | undefined {
+  if (provider !== "groq" || !isLongRateLimitError(error)) return undefined;
+  const hint = retryAfterHintMs(error);
+  if (hint === undefined) return undefined;
+  const minutes = Math.ceil(hint / 60_000);
+  return `Groq's free daily limit is used up. Try again in about ${minutes} minutes, or add a paid key in Settings.`;
 }
 
 function isRetryableProviderError(error: unknown): boolean {
@@ -110,6 +129,7 @@ export async function withRateLimitRetry<T>(
       return await fn();
     } catch (error) {
       if (attempt >= maxRetries || isTooLargeError(error)) throw error;
+      if (isLongRateLimitError(error)) throw error;
       const retryable = isRateLimitError(error) || isRetryableProviderError(error);
       if (!retryable) throw error;
       attempt += 1;

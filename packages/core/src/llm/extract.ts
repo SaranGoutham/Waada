@@ -1,9 +1,9 @@
-import { generateObject, generateText, NoObjectGeneratedError } from "ai";
+import { APICallError, generateObject, generateText, NoObjectGeneratedError } from "ai";
 import { z } from "zod";
-import { ExternalServiceError } from "../errors.ts";
+import { ConfigError, ExternalServiceError } from "../errors.ts";
 import { log } from "../log.ts";
 import { createLanguageModel } from "./providers.ts";
-import { withRateLimitRetry } from "./retry.ts";
+import { dailyLimitMessage, withRateLimitRetry } from "./retry.ts";
 import type { LlmSettings } from "./settings.ts";
 
 type ExtractArgs<T> = {
@@ -32,15 +32,42 @@ function repairPrompt<T>(args: ExtractArgs<T>, validationDetail: string): string
   ].join("\n");
 }
 
-function externalFailure(error: unknown): ExternalServiceError {
+function externalFailure(settings: LlmSettings, error: unknown): ExternalServiceError {
   return new ExternalServiceError(
-    "Could not extract structured data. Check the provider and Settings.",
+    dailyLimitMessage(settings.provider, error) ??
+      "Could not extract structured data. Check the provider and Settings.",
     { cause: error },
   );
 }
 
-export async function extract<T>(settings: LlmSettings, args: ExtractArgs<T>): Promise<T | null> {
-  const model = createLanguageModel(settings);
+function invalidJsonSchemaError(error: unknown): boolean {
+  if (!APICallError.isInstance(error) || error.statusCode !== 400) return false;
+  const data = error.data as { error?: { code?: unknown }; code?: unknown } | undefined;
+  let body: { error?: { code?: unknown }; code?: unknown } | undefined;
+  try {
+    body = error.responseBody ? JSON.parse(error.responseBody) : undefined;
+  } catch {
+    // Some providers return a non-JSON error body; inspect its message below.
+  }
+  const code = data?.error?.code ?? data?.code ?? body?.error?.code ?? body?.code;
+  if (code === "json_validate_failed") return true;
+  // VERIFY: @ai-sdk/groq 4.0.50 declares only error.message/type, while Groq's
+  // live response reported `json_validate_failed`; retain this exact fallback
+  // until the provider exposes that code in its public error schema.
+  const detail = `${error.message}\n${error.responseBody ?? ""}`.toLowerCase();
+  return detail.includes("generated json does not match the expected schema");
+}
+
+function malformedObjectError(error: unknown): boolean {
+  return NoObjectGeneratedError.isInstance(error) || invalidJsonSchemaError(error);
+}
+
+async function extractWithModel<T>(
+  settings: LlmSettings,
+  args: ExtractArgs<T>,
+  modelId: string,
+): Promise<T | null> {
+  const model = createLanguageModel(settings, modelId);
   // maxRetries: 0 on every SDK call: llm/retry.ts is the single retry layer
   // (429 → retry-after wait, ≤ 2 retries, never 413), not the SDK on top.
   const objectCall = (prompt: string) =>
@@ -73,15 +100,15 @@ export async function extract<T>(settings: LlmSettings, args: ExtractArgs<T>): P
     if (parsed.success) return parsed.data;
     validationDetail = parsed.error.message;
   } catch (error) {
-    if (!NoObjectGeneratedError.isInstance(error)) throw externalFailure(error);
-    validationDetail = error.message;
+    if (!malformedObjectError(error)) throw externalFailure(settings, error);
+    validationDetail = error instanceof Error ? error.message : validationDetail;
   }
   try {
     const result = await objectCall(repairPrompt(args, validationDetail));
     const parsed = args.schema.safeParse(result.object);
     if (parsed.success) return parsed.data;
   } catch (error) {
-    if (!NoObjectGeneratedError.isInstance(error)) throw externalFailure(error);
+    if (!malformedObjectError(error)) throw externalFailure(settings, error);
   }
   let plainText: string;
   try {
@@ -90,7 +117,7 @@ export async function extract<T>(settings: LlmSettings, args: ExtractArgs<T>): P
     );
     plainText = result.text;
   } catch (error) {
-    throw externalFailure(error);
+    throw externalFailure(settings, error);
   }
   try {
     const parsed = args.schema.safeParse(JSON.parse(unfence(plainText)));
@@ -103,4 +130,20 @@ export async function extract<T>(settings: LlmSettings, args: ExtractArgs<T>): P
     name: args.name,
   });
   return null;
+}
+
+export async function extract<T>(settings: LlmSettings, args: ExtractArgs<T>): Promise<T | null> {
+  const models = [settings.model];
+  if (settings.fallbackModel && settings.fallbackModel !== settings.model)
+    models.push(settings.fallbackModel);
+  let lastError: unknown;
+  for (const modelId of models) {
+    try {
+      return await extractWithModel(settings, args, modelId);
+    } catch (error) {
+      if (error instanceof ConfigError) throw error;
+      lastError = error;
+    }
+  }
+  throw lastError;
 }

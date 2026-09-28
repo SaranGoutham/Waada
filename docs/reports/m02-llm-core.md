@@ -9,8 +9,13 @@
 - `createLLM()` chat generation with one configured fallback-model retry.
 - Structured extraction with structured generation, one repair request (including
   validation detail and JSON schema), code-fenced plain-JSON recovery, and safe
-  malformed-output `null` behavior. Provider failures map to
+  malformed-output `null` behavior. Extraction now also tries the configured
+  fallback model after a provider failure; Groq's schema-validation 400 enters
+  the malformed-output recovery chain. Provider failures map to
   `ExternalServiceError`.
+- A 429 retry-after longer than 60 seconds skips waiting so chat and extraction
+  can try the fallback model. If Groq's fallback also fails, the user sees a
+  safe daily-limit message with an approximate wait time.
 - Groq/OpenAI transcription routing with a precise missing-configuration error.
 - An opt-in Groq live test, skipped without `GROQ_API_KEY`.
 

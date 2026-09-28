@@ -1,6 +1,7 @@
+import { APICallError } from "ai";
 import { beforeEach, describe, expect, it, vi } from "vitest";
 import { z } from "zod";
-import { ExternalServiceError } from "../src/errors.ts";
+import { ConfigError, ExternalServiceError } from "../src/errors.ts";
 
 const mocks = vi.hoisted(() => ({
   createLanguageModel: vi.fn(() => ({}) as never),
@@ -33,6 +34,17 @@ const args = {
   name: "item",
   description: "An extracted item.",
 };
+
+function invalidJsonSchemaError(): APICallError {
+  return new APICallError({
+    message: "Generated JSON does not match the expected schema",
+    url: "https://api.groq.com/openai/v1/chat/completions",
+    requestBodyValues: {},
+    statusCode: 400,
+    isRetryable: false,
+    data: { error: { code: "json_validate_failed" } },
+  });
+}
 
 describe("LLM extraction recovery", () => {
   beforeEach(() => {
@@ -69,6 +81,57 @@ describe("LLM extraction recovery", () => {
     await expect(extract(settings, args)).resolves.toEqual({ value: "green" });
     expect(mocks.generateObject).toHaveBeenCalledTimes(2);
     expect(mocks.generateText).toHaveBeenCalledTimes(1);
+  });
+
+  it("recovers from a provider's invalid-JSON schema 400", async () => {
+    mocks.generateObject
+      .mockRejectedValueOnce(invalidJsonSchemaError())
+      .mockResolvedValueOnce({ object: { value: "green" } });
+
+    await expect(extract(settings, args)).resolves.toEqual({ value: "green" });
+    expect(mocks.generateObject).toHaveBeenCalledTimes(2);
+    expect(mocks.generateText).not.toHaveBeenCalled();
+  });
+
+  it("recognizes the invalid-JSON code in a provider response body", async () => {
+    mocks.generateObject
+      .mockRejectedValueOnce(
+        new APICallError({
+          message: "bad request",
+          url: "https://api.groq.com/openai/v1/chat/completions",
+          requestBodyValues: {},
+          statusCode: 400,
+          isRetryable: false,
+          responseBody: JSON.stringify({ error: { code: "json_validate_failed" } }),
+        }),
+      )
+      .mockResolvedValueOnce({ object: { value: "green" } });
+
+    await expect(extract(settings, args)).resolves.toEqual({ value: "green" });
+  });
+
+  it("uses the fallback model after a primary provider failure", async () => {
+    mocks.generateObject
+      .mockRejectedValueOnce(new Error("primary unavailable"))
+      .mockResolvedValueOnce({ object: { value: "green" } });
+
+    await expect(extract({ ...settings, fallbackModel: "fallback-model" }, args)).resolves.toEqual({
+      value: "green",
+    });
+    const modelCalls = mocks.createLanguageModel.mock.calls as unknown as Array<[unknown, string]>;
+    expect(modelCalls.map((call) => call[1])).toEqual(["test-model", "fallback-model"]);
+  });
+
+  it("stops immediately for a configuration error", async () => {
+    mocks.createLanguageModel.mockImplementationOnce(() => {
+      throw new ConfigError("Add a Groq API key in Settings to use Groq.");
+    });
+
+    await expect(
+      extract({ ...settings, fallbackModel: "fallback-model" }, args),
+    ).rejects.toBeInstanceOf(ConfigError);
+    expect(mocks.createLanguageModel).toHaveBeenCalledTimes(1);
+    expect(mocks.generateObject).not.toHaveBeenCalled();
   });
 
   it("returns null for garbage after every recovery stage", async () => {

@@ -1,6 +1,7 @@
 import { mkdtemp, rm } from "node:fs/promises";
 import { tmpdir } from "node:os";
 import { join } from "node:path";
+import { APICallError } from "ai";
 import { afterEach, beforeEach, describe, expect, it, vi } from "vitest";
 import { ConfigError, ExternalServiceError } from "../src/errors.ts";
 
@@ -81,6 +82,23 @@ describe("LLM runtime", () => {
     const llm = await createLLM();
 
     await expect(llm.chat({ system: "s", user: "u" })).rejects.toBeInstanceOf(ExternalServiceError);
+  });
+
+  it("reports a friendly Groq daily-limit error after the fallback fails", async () => {
+    const dailyLimit = new APICallError({
+      message: "rate limited",
+      url: "https://api.groq.com/openai/v1/chat/completions",
+      requestBodyValues: {},
+      statusCode: 429,
+      responseHeaders: { "retry-after": "1800" },
+    });
+    mocks.generateText.mockRejectedValue(dailyLimit);
+    const llm = await createLLM();
+
+    await expect(llm.chat({ system: "s", user: "u" })).rejects.toThrow(
+      "Groq's free daily limit is used up. Try again in about 30 minutes, or add a paid key in Settings.",
+    );
+    expect(mocks.generateText).toHaveBeenCalledTimes(2);
   });
 
   it("uses the selected transcription model and returns its text", async () => {

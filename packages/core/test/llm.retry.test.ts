@@ -3,6 +3,7 @@
 import { APICallError } from "ai";
 import { describe, expect, it } from "vitest";
 import {
+  isLongRateLimitError,
   isRateLimitError,
   isTooLargeError,
   RATE_LIMIT_DEFAULT_DELAY_MS,
@@ -68,6 +69,11 @@ describe("retryAfterMs", () => {
     expect(retryAfterMs(rateLimit({ "retry-after": "600" }))).toBe(60_000);
   });
 
+  it("identifies retry-after values longer than the wait cap", () => {
+    expect(isLongRateLimitError(rateLimit({ "retry-after": "61" }))).toBe(true);
+    expect(isLongRateLimitError(rateLimit({ "retry-after": "60" }))).toBe(false);
+  });
+
   it("uses the default delay when the headers are missing or junk", () => {
     expect(retryAfterMs(rateLimit({}))).toBe(RATE_LIMIT_DEFAULT_DELAY_MS);
     expect(retryAfterMs(rateLimit({ "retry-after": "soon" }))).toBe(RATE_LIMIT_DEFAULT_DELAY_MS);
@@ -104,6 +110,22 @@ describe("withRateLimitRetry", () => {
         { sleep },
       ),
     ).rejects.toThrow("request too large");
+    expect(calls).toBe(1);
+    expect(waits).toEqual([]);
+  });
+
+  it("does not wait or retry a 429 whose retry-after exceeds the cap", async () => {
+    const { waits, sleep } = recorder();
+    let calls = 0;
+    await expect(
+      withRateLimitRetry(
+        () => {
+          calls += 1;
+          throw rateLimit({ "retry-after": "1800" });
+        },
+        { sleep },
+      ),
+    ).rejects.toThrow("too many tokens");
     expect(calls).toBe(1);
     expect(waits).toEqual([]);
   });

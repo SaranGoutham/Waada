@@ -21,6 +21,11 @@ Security rules:
   `[redacted]` and are never logged.
 - Provider failures are surfaced as friendly Waada errors without raw provider
   responses.
+- A Groq `429` with a `retry-after` over 60 seconds is treated as an exhausted
+  free-tier daily/window limit: Waada skips waiting, tries the configured
+  fallback model, then shows a friendly time estimate if both fail. A Groq
+  `json_validate_failed` structured-output `400` follows extraction's repair
+  and plain-JSON recovery path rather than surfacing raw provider output.
 
 Verification sources: installed `ai@7.0.116` provider types and the Groq/OpenAI
 provider package documentation. The Groq package declares transcription support;
