@@ -30,13 +30,13 @@ function BriefPage() {
       <SampleBanner active={mode.fakeCore} />
       <div className="flex items-end justify-between gap-4">
         <div>
-          <p className="text-xs font-bold tracking-[.16em] text-indigo-600">ACCOUNT BRIEF</p>
+          <p className="page-eyebrow">Account brief</p>
           <h1 className="mt-2 text-3xl font-semibold tracking-tight">Before you call {slug}</h1>
         </div>
         <button
           type="button"
           onClick={() => window.location.reload()}
-          className="inline-flex items-center gap-2 rounded-lg border border-slate-300 bg-white px-3 py-2 text-sm font-semibold shadow-sm dark:border-slate-700 dark:bg-[#171d2c]"
+          className="action-secondary inline-flex items-center gap-2 rounded-lg px-3 py-2 text-sm font-semibold shadow-sm"
         >
           <span aria-hidden="true">↻</span> Refresh
         </button>
@@ -53,7 +53,7 @@ function BriefPage() {
               return (
                 <article
                   key={item.source}
-                  className="rounded-2xl border border-rose-200 bg-white p-5 shadow-sm dark:border-rose-900/60 dark:bg-[#171d2c]"
+                  className="surface rounded-2xl border border-rose-200 p-5 shadow-sm dark:border-rose-900/60"
                 >
                   <div className="flex flex-wrap items-start justify-between gap-3">
                     <h3 className="max-w-3xl font-semibold">{item.text}</h3>
@@ -115,7 +115,7 @@ function BriefPage() {
 
 function BriefDetail({ title, text }: { title: string; text: string }) {
   return (
-    <article className="rounded-2xl border border-slate-200 bg-white p-5 dark:border-slate-800 dark:bg-[#171d2c]">
+    <article className="surface rounded-2xl border p-5">
       <h2 className="font-semibold">{title}</h2>
       <p className="mt-2 whitespace-pre-line text-sm leading-6 text-slate-600 dark:text-slate-300">
         {text.replace(/\*\*/g, "")}

@@ -54,7 +54,7 @@ function ImportPage() {
   return (
     <>
       <AccountNav account={slug} />
-      <p className="text-xs font-bold tracking-[.16em] text-indigo-600">ACCOUNT HISTORY</p>
+      <p className="page-eyebrow">Account history</p>
       <h1 className="mt-2 text-3xl font-semibold tracking-tight">Import account history</h1>
       <p className="mt-2 text-slate-600 dark:text-slate-300">
         Upload exported .eml, Slack JSON, transcript, or supported audio files. Files are reviewed
@@ -104,7 +104,7 @@ function ImportPage() {
               type="button"
               disabled={!files.length || busy}
               onClick={submit}
-              className="rounded-lg bg-indigo-600 px-4 py-2 font-semibold text-white disabled:opacity-60"
+              className="action-primary rounded-lg px-4 py-2 font-semibold disabled:opacity-60"
             >
               Import
             </button>

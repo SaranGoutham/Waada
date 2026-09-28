@@ -170,14 +170,19 @@ export const disconnectIntegration = createServerFn({ method: "POST" })
 export const getPipelineStats = createServerFn({ method: "GET" })
   .validator(AccountSlug)
   .handler(async ({ data }) => {
-    return invoke(async ({ Interaction, brief, readJson }) => {
-      const [interactions, accountBrief] = await Promise.all([
-        readJson(`interactions/${data.account}.json`, z.array(Interaction), []),
-        brief(data.account),
-      ]);
+    return invoke(async ({ Interaction, readJson }) => {
+      const interactions = await readJson(
+        `interactions/${data.account}.json`,
+        z.array(Interaction),
+        [],
+      );
+      const latestInteraction = interactions.reduce<string | undefined>(
+        (latest, item) => (!latest || item.date > latest ? item.date : latest),
+        undefined,
+      );
       return {
         interactions: interactions.length,
-        openCommitments: accountBrief.commitments.filter((item) => item.status === "open").length,
+        latestInteraction,
       };
     });
   });

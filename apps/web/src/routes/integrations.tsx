@@ -1,3 +1,13 @@
+import {
+  Brain,
+  Code,
+  GoogleLogo,
+  type Icon,
+  Microphone,
+  Plug,
+  SlackLogo,
+  SquaresFour,
+} from "@phosphor-icons/react";
 import { createFileRoute } from "@tanstack/react-router";
 import { useState } from "react";
 import { connectIntegration, disconnectIntegration, getIntegrations } from "../lib/server";
@@ -9,7 +19,7 @@ const connectorCards: Array<{
   name: Connection;
   title: string;
   description: string;
-  mark: string;
+  Icon: Icon;
   prompt: string;
   label: string;
 }> = [
@@ -17,7 +27,7 @@ const connectorCards: Array<{
     name: "gmail",
     title: "Gmail",
     description: "Bring selected account conversations into one handoff.",
-    mark: "G",
+    Icon: GoogleLogo,
     prompt: "Sign in with Google to connect Gmail.",
     label: "Google workspace",
   },
@@ -25,7 +35,7 @@ const connectorCards: Array<{
     name: "slack",
     title: "Slack",
     description: "Keep the decisions made between messages in view.",
-    mark: "S",
+    Icon: SlackLogo,
     prompt: "Add Waada to the Slack workspace.",
     label: "Slack workspace",
   },
@@ -33,7 +43,7 @@ const connectorCards: Array<{
     name: "hubspot",
     title: "HubSpot CRM",
     description: "Keep CRM context beside the account record.",
-    mark: "H",
+    Icon: SquaresFour,
     prompt: "Add a HubSpot private app token.",
     label: "HubSpot portal",
   },
@@ -41,7 +51,7 @@ const connectorCards: Array<{
     name: "meet",
     title: "Google Meet",
     description: "Capture meeting context through the Chrome extension.",
-    mark: "M",
+    Icon: Microphone,
     prompt: "Install the Chrome extension to capture meeting context.",
     label: "Chrome extension",
   },
@@ -49,7 +59,7 @@ const connectorCards: Array<{
     name: "mcp",
     title: "MCP server",
     description: "Make account context available inside Claude and Cursor.",
-    mark: "⌘",
+    Icon: Code,
     prompt: "Copy this MCP configuration into your client.",
     label: "MCP client",
   },
@@ -112,7 +122,7 @@ function Integrations() {
   return (
     <>
       <div className="max-w-3xl">
-        <p className="text-xs font-bold tracking-[.16em] text-indigo-600">WORKSPACE</p>
+        <p className="page-eyebrow">Workspace</p>
         <h1 className="mt-2 text-3xl font-semibold tracking-tight">Integrations</h1>
         <p className="mt-2 text-slate-600 dark:text-slate-300">
           Choose the tools that belong in your account handoff.
@@ -134,7 +144,7 @@ function Integrations() {
         <GroupTitle>Memory</GroupTitle>
         <div className="mt-3 grid gap-4 md:grid-cols-2">
           <StaticCard
-            mark="H"
+            Icon={Brain}
             title="Hindsight"
             description="A memory bank for every account, built for recall."
             status={data.hindsightConfigured ? "Connected" : "Set up"}
@@ -146,14 +156,14 @@ function Integrations() {
         <GroupTitle>AI model</GroupTitle>
         <div className="mt-3 grid gap-4 md:grid-cols-2">
           <StaticCard
-            mark="G"
+            Icon={Plug}
             title="Groq"
             description="Turns account history into an actionable handoff."
             status={data.groqConfigured ? "Connected" : "Set up"}
             action="Open settings"
           />
           <StaticCard
-            mark="AI"
+            Icon={Brain}
             title="Other providers"
             description="Choose OpenAI, Anthropic, Google, OpenRouter, or Ollama in Settings."
             status="Available"
@@ -165,7 +175,7 @@ function Integrations() {
         <GroupTitle>Surfaces</GroupTitle>
         <div className="mt-3 grid gap-4 md:grid-cols-2">
           <StaticCard
-            mark="W"
+            Icon={SquaresFour}
             title="Web app"
             description="Review account continuity from the Waada workspace."
             status="Active"
@@ -211,7 +221,7 @@ function Integrations() {
                 type="button"
                 disabled={busy}
                 onClick={connect}
-                className="rounded-lg bg-indigo-600 px-4 py-2 text-sm font-semibold text-white disabled:opacity-60"
+                className="action-primary rounded-lg px-4 py-2 text-sm font-semibold disabled:opacity-60"
               >
                 {busy ? "Saving" : "Connect"}
               </button>
@@ -231,29 +241,31 @@ function GroupTitle({ children }: { children: React.ReactNode }) {
 function Status({ value }: { value: string }) {
   return (
     <span
-      className={`rounded-full px-2.5 py-1 text-xs font-semibold ${value === "Connected" || value === "Active" ? "bg-emerald-100 text-emerald-800" : "bg-slate-100 text-slate-600 dark:bg-slate-800 dark:text-slate-300"}`}
+      className={`rounded-full px-2.5 py-1 text-xs font-semibold ${value === "Connected" || value === "Active" ? "bg-sky-100 text-sky-800 dark:bg-sky-950/60 dark:text-sky-200" : "surface-muted text-slate-700 dark:text-slate-200"}`}
     >
       {value}
     </span>
   );
 }
 function StaticCard({
-  mark,
+  Icon,
   title,
   description,
   status,
   action,
 }: {
-  mark: string;
+  Icon: Icon;
   title: string;
   description: string;
   status: string;
   action: string;
 }) {
   return (
-    <article className="rounded-2xl border border-slate-200 bg-white p-5 shadow-sm dark:border-slate-800 dark:bg-[#171d2c]">
+    <article className="surface rounded-2xl border p-5 shadow-sm">
       <div className="flex items-start gap-3">
-        <Mark>{mark}</Mark>
+        <Mark>
+          <Icon size={20} weight="duotone" aria-hidden="true" />
+        </Mark>
         <div className="min-w-0 flex-1">
           <div className="flex items-center justify-between gap-2">
             <h3 className="font-semibold">{title}</h3>
@@ -273,7 +285,7 @@ function StaticCard({
 }
 function Mark({ children }: { children: React.ReactNode }) {
   return (
-    <span className="grid size-9 shrink-0 place-items-center rounded-xl bg-indigo-50 text-sm font-bold text-indigo-700 dark:bg-indigo-500/15 dark:text-indigo-300">
+    <span className="grid size-9 shrink-0 place-items-center rounded-xl bg-sky-100 text-sky-800 dark:bg-sky-950/60 dark:text-sky-200">
       {children}
     </span>
   );
@@ -301,16 +313,15 @@ function IntegrationGroup({
           const connection = saved[item.name];
           const connected = connection?.connected;
           return (
-            <article
-              key={item.name}
-              className="rounded-2xl border border-slate-200 bg-white p-5 shadow-sm dark:border-slate-800 dark:bg-[#171d2c]"
-            >
+            <article key={item.name} className="surface rounded-2xl border p-5 shadow-sm">
               <div className="flex items-start gap-3">
-                <Mark>{item.mark}</Mark>
+                <Mark>
+                  <item.Icon size={20} weight="duotone" aria-hidden="true" />
+                </Mark>
                 <div className="min-w-0 flex-1">
                   <div className="flex items-center justify-between gap-2">
                     <h3 className="font-semibold">{item.title}</h3>
-                    <Status value={connected ? "Connected" : "Set up"} />
+                    <Status value={connected ? "Connected" : "Ready"} />
                   </div>
                   <p className="mt-1 text-sm leading-5 text-slate-600 dark:text-slate-300">
                     {item.description}
@@ -332,7 +343,7 @@ function IntegrationGroup({
                       type="button"
                       disabled={busy}
                       onClick={() => onConnect(item)}
-                      className="mt-4 text-sm font-semibold text-indigo-700 disabled:opacity-60 dark:text-indigo-300"
+                      className="action-primary mt-4 rounded-lg px-3 py-2 text-sm font-semibold disabled:opacity-60"
                     >
                       Connect
                     </button>

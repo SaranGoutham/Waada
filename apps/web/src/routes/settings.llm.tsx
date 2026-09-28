@@ -45,9 +45,9 @@ function Settings() {
   }
   return (
     <div className="max-w-2xl">
-      <p className="text-sm font-semibold text-teal-700">SETTINGS</p>
+      <p className="page-eyebrow">Settings</p>
       <h1 className="mt-2 text-3xl font-semibold">LLM connection</h1>
-      <p className="mt-2 text-slate-600">
+      <p className="mt-2 text-slate-700 dark:text-slate-200">
         Groq is the MVP provider. The API key is saved only in local Waada settings.
       </p>
       {settings.groqKeySource === "env" ? (
@@ -55,10 +55,7 @@ function Settings() {
           Groq key from .env is configured. Save a key here to override it.
         </p>
       ) : null}
-      <form
-        onSubmit={save}
-        className="mt-7 space-y-5 rounded-xl border border-slate-200 bg-white p-6"
-      >
+      <form onSubmit={save} className="surface mt-7 space-y-5 rounded-xl border p-6 shadow-sm">
         <label className="block font-medium" htmlFor="provider">
           Provider
           <select
@@ -111,7 +108,7 @@ function Settings() {
           <button
             type="submit"
             disabled={busy}
-            className="rounded-md bg-slate-900 px-4 py-2 font-semibold text-white disabled:opacity-60"
+            className="action-primary rounded-md px-4 py-2 font-semibold disabled:opacity-60"
           >
             Save settings
           </button>
@@ -119,7 +116,7 @@ function Settings() {
             type="button"
             disabled={busy}
             onClick={test}
-            className="rounded-md border border-slate-300 px-4 py-2 font-semibold disabled:opacity-60"
+            className="action-secondary rounded-md px-4 py-2 font-semibold disabled:opacity-60"
           >
             Test
           </button>

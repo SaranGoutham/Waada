@@ -26,7 +26,7 @@ function Compare() {
     <>
       <AccountNav account={slug} />
       <SampleBanner active={mode.fakeCore} />
-      <p className="text-xs font-bold tracking-[.16em] text-indigo-600">ACCOUNT CONTEXT</p>
+      <p className="page-eyebrow">Account context</p>
       <h1 className="mt-2 text-3xl font-semibold tracking-tight">Compare account views</h1>
       <div className="mt-6 grid gap-4 lg:grid-cols-3">
         {[
@@ -34,10 +34,7 @@ function Compare() {
           ["Summary only", "A compressed view of imported account history.", result.summary],
           ["Waada", "Commitments, landmines, and recall from account memory.", result.waada],
         ].map(([title, description, content]) => (
-          <article
-            key={title}
-            className="min-h-60 rounded-2xl border border-slate-200 bg-white p-5 shadow-sm dark:border-slate-800 dark:bg-[#171d2c]"
-          >
+          <article key={title} className="surface min-h-60 rounded-2xl border p-5 shadow-sm">
             <h2 className="font-semibold">{title}</h2>
             <p className="mt-1 text-xs text-slate-500 dark:text-slate-400">{description}</p>
             <p className="mt-4 whitespace-pre-wrap text-sm leading-6 text-slate-700 dark:text-slate-300">

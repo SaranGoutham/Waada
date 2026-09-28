@@ -12,8 +12,9 @@ body,
 
 body {
   margin: 0;
-  background: #f7f8fa;
-  color: #172033;
+  background: #f8fafc;
+  color: #0f172a;
+  font-family: "Segoe UI Variable", "Segoe UI", ui-sans-serif, system-ui, sans-serif;
 }
 
 button,
@@ -24,23 +25,99 @@ select {
 }
 
 :focus-visible {
-  outline: 3px solid #6d5dfc;
+  outline: 3px solid #0369a1;
   outline-offset: 2px;
+}
+
+.surface {
+  background: #ffffff;
+  border-color: #e2e8f0;
+}
+.surface-muted {
+  background: #f1f5f9;
+  border-color: #e2e8f0;
+}
+.page-eyebrow {
+  color: #0369a1;
+  font-size: 0.75rem;
+  font-weight: 700;
+  letter-spacing: 0.12em;
+  text-transform: uppercase;
+}
+.action-primary {
+  background: #0369a1;
+  color: #fff;
+  transition:
+    background-color 180ms ease,
+    transform 180ms ease;
+}
+.action-primary:hover {
+  background: #075985;
+}
+.action-primary:active {
+  transform: scale(0.98);
+}
+.action-secondary {
+  border: 1px solid #cbd5e1;
+  color: #1e293b;
+  background: #fff;
+  transition:
+    border-color 180ms ease,
+    color 180ms ease,
+    transform 180ms ease;
+}
+.action-secondary:hover {
+  border-color: #0369a1;
+  color: #075985;
+}
+.action-secondary:active {
+  transform: scale(0.98);
+}
+.skeleton {
+  animation: pulse 1.5s ease-in-out infinite;
+  background: #e2e8f0;
 }
 
 @media (prefers-color-scheme: dark) {
   body {
-    background: #111522;
-    color: #edf0f7;
+    background: #0b1220;
+    color: #f1f5f9;
+  }
+  .surface {
+    background: #111c2e;
+    border-color: #26354c;
+  }
+  .surface-muted {
+    background: #172338;
+    border-color: #26354c;
+  }
+  .page-eyebrow {
+    color: #7dd3fc;
+  }
+  .action-primary {
+    background: #0284c7;
+    color: #f8fafc;
+  }
+  .action-primary:hover {
+    background: #0ea5e9;
+  }
+  .action-secondary {
+    background: #111c2e;
+    border-color: #475569;
+    color: #e2e8f0;
+  }
+  .action-secondary:hover {
+    border-color: #7dd3fc;
+    color: #e0f2fe;
+  }
+  .skeleton {
+    background: #26354c;
   }
 }
 
 @media (prefers-reduced-motion: no-preference) {
   .flow-dot {
     animation: travel 3.5s ease-in-out infinite;
-  }
-  .spin {
-    animation: spin 0.8s linear infinite;
   }
 }
 
@@ -51,8 +128,8 @@ select {
   }
 }
 
-@keyframes spin {
-  to {
-    transform: rotate(360deg);
+@keyframes pulse {
+  50% {
+    opacity: 0.52;
   }
 }

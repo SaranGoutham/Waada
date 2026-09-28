@@ -26,11 +26,11 @@ function Home() {
   return (
     <div className="grid gap-10 lg:grid-cols-[1fr_20rem]">
       <section>
-        <p className="text-sm font-semibold text-teal-700">DEAL CONTINUITY</p>
+        <p className="page-eyebrow">Deal continuity</p>
         <h1 className="mt-2 text-4xl font-semibold tracking-tight">
           Pick up the account without dropping the thread.
         </h1>
-        <p className="mt-3 max-w-2xl text-slate-600">
+        <p className="mt-3 max-w-2xl text-slate-700 dark:text-slate-200">
           Open an account to surface commitments, settled objections, and the context a new owner
           needs.
         </p>
@@ -41,20 +41,20 @@ function Home() {
                 key={account.slug}
                 to="/accounts/$slug"
                 params={{ slug: account.slug }}
-                className="block rounded-xl border border-slate-200 bg-white p-5 shadow-sm hover:border-teal-400"
+                className="surface block rounded-xl border p-5 shadow-sm transition hover:-translate-y-0.5 hover:border-sky-600 hover:shadow-md"
               >
-                <p className="font-semibold">{account.name}</p>
-                <p className="mt-1 text-sm text-slate-500">/{account.slug}</p>
+                <p className="font-semibold text-slate-950 dark:text-slate-50">{account.name}</p>
+                <p className="mt-1 text-sm text-slate-600 dark:text-slate-300">/{account.slug}</p>
               </Link>
             ))
           ) : (
-            <p className="rounded-xl border border-dashed border-slate-300 p-6 text-slate-600">
+            <p className="rounded-xl border border-dashed border-slate-300 p-6 text-slate-700 dark:border-slate-600 dark:text-slate-200">
               No accounts yet. Create one to begin.
             </p>
           )}
         </div>
       </section>
-      <aside className="h-fit rounded-xl bg-slate-900 p-6 text-white">
+      <aside className="h-fit rounded-xl bg-slate-900 p-6 text-slate-50 shadow-lg shadow-slate-900/15">
         <h2 className="text-lg font-semibold">New account</h2>
         <form onSubmit={submit} className="mt-4 space-y-3">
           <label className="block text-sm" htmlFor="account-name">
@@ -70,7 +70,7 @@ function Home() {
           <button
             type="submit"
             disabled={busy}
-            className="w-full rounded-md bg-teal-300 px-3 py-2 font-semibold text-slate-950 disabled:opacity-60"
+            className="action-primary w-full rounded-md px-3 py-2 font-semibold disabled:opacity-60"
           >
             {busy ? "Creating…" : "Create account"}
           </button>

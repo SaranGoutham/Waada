@@ -24,7 +24,7 @@ function Commitments() {
       <SampleBanner active={mode.fakeCore} />
       <div className="flex flex-wrap items-end justify-between gap-4">
         <div>
-          <p className="text-xs font-bold tracking-[.16em] text-indigo-600">ACCOUNT LEDGER</p>
+          <p className="page-eyebrow">Account ledger</p>
           <h1 className="mt-2 text-3xl font-semibold tracking-tight">Commitments</h1>
         </div>
         <div className="flex gap-2">
@@ -52,9 +52,9 @@ function Commitments() {
           </button>
         </div>
       </div>
-      <div className="mt-6 overflow-x-auto rounded-2xl border border-slate-200 bg-white shadow-sm dark:border-slate-800 dark:bg-[#171d2c]">
+      <div className="surface mt-6 overflow-x-auto rounded-2xl border shadow-sm">
         <table className="w-full text-left text-sm">
-          <thead className="bg-slate-50">
+          <thead className="surface-muted">
             <tr>
               <th className="p-3">Status</th>
               <th className="p-3">Promise</th>

@@ -31,12 +31,9 @@ function Ask() {
     <>
       <AccountNav account={slug} />
       <SampleBanner active={mode.fakeCore} />
-      <p className="text-xs font-bold tracking-[.16em] text-indigo-600">ACCOUNT CONTEXT</p>
+      <p className="page-eyebrow">Account context</p>
       <h1 className="mt-2 text-3xl font-semibold tracking-tight">Ask about {slug}</h1>
-      <form
-        onSubmit={submit}
-        className="mt-6 max-w-3xl rounded-2xl border border-slate-200 bg-white p-5 shadow-sm dark:border-slate-800 dark:bg-[#171d2c]"
-      >
+      <form onSubmit={submit} className="surface mt-6 max-w-3xl rounded-2xl border p-5 shadow-sm">
         <label htmlFor="question" className="font-medium">
           Question
         </label>
@@ -62,7 +59,7 @@ function Ask() {
         <button
           type="submit"
           disabled={busy}
-          className="mt-4 rounded-lg bg-indigo-600 px-4 py-2 font-semibold text-white disabled:opacity-60"
+          className="action-primary mt-4 rounded-lg px-4 py-2 font-semibold disabled:opacity-60"
         >
           {busy ? "Finding context…" : "Ask Waada"}
         </button>
@@ -73,7 +70,7 @@ function Ask() {
         ) : null}
       </form>
       {answer ? (
-        <article className="mt-8 max-w-3xl rounded-2xl border border-slate-200 bg-white p-6 shadow-sm dark:border-slate-800 dark:bg-[#171d2c]">
+        <article className="surface mt-8 max-w-3xl rounded-2xl border p-6 shadow-sm">
           <p className="leading-7">{answer.text}</p>
           <h2 className="mt-5 text-sm font-semibold">Sources</h2>
           <div className="mt-2 flex flex-wrap gap-2">
