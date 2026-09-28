@@ -101,6 +101,6 @@ Honest verdict so far: on a free Groq key, the ledger is the weak point (judgeme
 | Pricing landmine + do-not-reopen | **pass** | fail | fail |
 | Q3 → Q4 (Waada: `ask`; baselines: their text) | fail | **pass** | fail |
 
-**On this run the summary-only baseline scored as well as Waada (2 vs 1+… : summary 2, Waada 1).** Said plainly, as the M05 brief requires. Conditions were degraded, so this is not yet a verdict on the approach:
+**On this run the summary-only baseline scored higher than Waada (2 checks vs 1).** Said plainly, as the M05 brief requires. Conditions were degraded, so this is not yet a verdict on the approach:
 - Ledger `extract` returned `null` again: `structured attempt 1: provider code json_validate_failed; structured attempt 2: provider code json_validate_failed; plain JSON attempt: invalid JSON`. Run A (default temperature, primary model) produced a ledger; since then card 010 set temperature 0, and the primary model's daily tokens ran out so calls fall back to `gpt-oss-20b`. Either may be the cause.
 - `ask` failed on the fallback model with 413 (`Requested 8517 > 8000 TPM`) even after card 012's cap: the chars/4 token estimate undercounts for these models.
