@@ -2,6 +2,14 @@
 
 Plain-language record of what happened, newest first. Written by the master (Claude Code) for the human.
 
+## 2026-09-28: UI redesign and first Vercel deployment
+
+- **UI (human decisions P-010, S22):** cards 015–018 built the product UI; after the human's feedback, card 018 made it **minimal and light**, with a separate **landing page** (`/`) and **dashboard** (`/app`), plus Integrations and Pipeline pages. Phosphor icons approved (S22).
+- **Core (P-009, card 014):** commitments get a due date and sort overdue first; chunked ledger pass; Hindsight retries. Evals E and F were spoiled by Hindsight Cloud outages (recorded in `evals.md`). Spare Groq keys are used only for dev/eval runs (P-008).
+- **Hosting (S23–S25):** Vercel via Nitro; Upstash Redis (free plan, auto-upgrade off, `waada-redis`) replaces `.waada/` files when deployed (card 019); `.vercelignore` keeps `.env` and local data out of uploads. Env vars: Hindsight + `Groq_Key5` (sensitive).
+- **Deployed:** project `waada` → `https://waada-one.vercel.app`. The first deploy became production, and Vercel's default protection left that domain **public for about 10 minutes**; the master set SSO protection to **all deployments**, and it now redirects to the Vercel login. No data was stored during that window; rotating `Groq_Key5` is advised.
+- **Checked behind the login:** landing page, dashboard (reads the empty Redis), Integrations (Hindsight and Groq connected).
+
 ## 2026-09-28: cards 011–013; first readable eval; paused for Groq's daily limit
 
 - **Card 011 (Codex):** `extract` repairs Groq's "invalid JSON" errors, falls back to `gpt-oss-20b`, and says in plain words when the free daily limit is used up (7afec1f). Codex lost its own connection to OpenAI for ~10 minutes mid-card, then finished.
