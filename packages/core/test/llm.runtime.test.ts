@@ -9,7 +9,9 @@ const mocks = vi.hoisted(() => ({
   createLanguageModel: vi.fn(() => ({}) as never),
   createTranscriptionModel: vi.fn(() => ({}) as never),
   generateText: vi.fn(),
+  info: vi.fn(),
   transcribe: vi.fn(),
+  warn: vi.fn(),
 }));
 
 vi.mock("ai", async (importOriginal) => ({
@@ -22,6 +24,10 @@ vi.mock("../src/llm/providers.ts", async (importOriginal) => ({
   ...(await importOriginal<typeof import("../src/llm/providers.ts")>()),
   createLanguageModel: mocks.createLanguageModel,
   createTranscriptionModel: mocks.createTranscriptionModel,
+}));
+
+vi.mock("../src/log.ts", () => ({
+  log: { info: mocks.info, warn: mocks.warn },
 }));
 
 import { createLLM } from "../src/llm/index.ts";
@@ -54,6 +60,10 @@ describe("LLM runtime", () => {
 
     await expect(llm.chat({ system: "s", user: "u" })).resolves.toBe("primary reply");
     expect(mocks.createLanguageModel).toHaveBeenCalledTimes(1);
+    expect(mocks.info).toHaveBeenCalledWith(
+      "LLM chat succeeded",
+      expect.objectContaining({ model: "primary" }),
+    );
   });
 
   it("retries chat exactly once with the configured fallback model", async () => {
@@ -65,6 +75,14 @@ describe("LLM runtime", () => {
     await expect(llm.chat({ system: "s", user: "u" })).resolves.toBe("fallback reply");
     const modelCalls = mocks.createLanguageModel.mock.calls as unknown as Array<[unknown, string]>;
     expect(modelCalls.map((call) => call[1])).toEqual(["primary", "fallback"]);
+    expect(mocks.warn).toHaveBeenCalledWith(
+      "LLM chat falling back to configured model",
+      expect.objectContaining({ model: "fallback", previousModel: "primary" }),
+    );
+    expect(mocks.info).toHaveBeenCalledWith(
+      "LLM chat succeeded",
+      expect.objectContaining({ model: "fallback" }),
+    );
   });
 
   it("preserves missing-provider configuration errors", async () => {

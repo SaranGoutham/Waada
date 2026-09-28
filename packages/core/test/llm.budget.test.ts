@@ -10,11 +10,11 @@ import {
 } from "../src/llm/budget.ts";
 
 describe("token budget", () => {
-  it("caps prompts at 5,000 input tokens via the chars/4 estimate", () => {
-    expect(CHARS_PER_TOKEN).toBe(4);
+  it("caps prompts at 5,000 input tokens via the conservative chars/2.5 estimate", () => {
+    expect(CHARS_PER_TOKEN).toBe(2.5);
     expect(MAX_INPUT_TOKENS).toBe(5_000);
-    expect(MAX_PROMPT_CHARS).toBe(20_000);
-    expect(estimateTokens("x".repeat(20_000))).toBe(5_000);
+    expect(MAX_PROMPT_CHARS).toBe(12_500);
+    expect(estimateTokens("x".repeat(12_500))).toBe(5_000);
   });
 
   it("keeps text within the budget unchanged", () => {

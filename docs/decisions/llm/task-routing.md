@@ -2,12 +2,19 @@
 
 All tasks go through the user's configured LLM settings (`.waada/llm.json`, Settings → LLM).
 Default provider: **Groq**, model `openai/gpt-oss-120b`, fallback `openai/gpt-oss-20b`.
-The commitment ledger uses temperature 0 to reduce run-to-run extraction variance;
-all other `chat`/`extract` calls use the SDK default temperature unless the call site says otherwise.
+All `chat`/`extract` calls use the SDK default temperature unless the call site says otherwise.
+Card 013 restored the ledger to that default: run D's structured output failed after
+the temperature-0 override was introduced, while run A worked before it. Model ids
+for successful chat/extract calls are logged at info; a fallback logs both model ids
+at warn, without prompt content or credentials.
+
+Prompt sizing uses 2.5 characters per token. Run D measured Groq requesting 8,517
+tokens for 20,000 characters (about 2.35 chars/token), so the 5,000-input-token cap
+now gives call sites a 12,500-character prompt budget instead of the unsafe 20,000.
 
 | Task | Function | LLM calls | Temperature | Notes |
 |---|---|---|---|---|
-| Commitment ledger | `commitmentLedger` | 1 × `extract` (`commitments`) | 0 | 4 high-budget recalls first; deterministic extraction reduces variance |
+| Commitment ledger | `commitmentLedger` | 1 × `extract` (`commitments`) | default | 4 high-budget recalls first; provider default restored after run-D structured-output failures |
 | Landmines | `landmines` | 1 × `extract` (`landmines`) | default | 3 high-budget recalls first |
 | Brief | `brief` | 1 × `chat` | default | ledger + landmines + 2 recalls in parallel |
 | Ask | `ask` | 1 × `chat` | default | single high-budget recall |

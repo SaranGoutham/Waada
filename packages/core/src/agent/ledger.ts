@@ -51,7 +51,6 @@ export async function commitmentLedger(account: string, deps?: AgentDeps): Promi
     schema: z.object({ commitments: z.array(Commitment) }),
     name: "commitments",
     description: "Commitments our team made to the customer",
-    temperature: 0,
   });
   if (!result) {
     log.warn("commitmentLedger: extract returned no valid object", { account });

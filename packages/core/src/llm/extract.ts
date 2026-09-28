@@ -121,7 +121,14 @@ async function extractWithModel<T>(
   try {
     const result = await objectCall(args.user);
     const parsed = args.schema.safeParse(result.object);
-    if (parsed.success) return parsed.data;
+    if (parsed.success) {
+      log.info("LLM structured extraction succeeded", {
+        provider: settings.provider,
+        model: modelId,
+        name: args.name,
+      });
+      return parsed.data;
+    }
     validationDetail = parsed.error.message;
     attemptReasons.push(`structured attempt 1: ${validationReason(parsed.error)}`);
   } catch (error) {
@@ -132,7 +139,14 @@ async function extractWithModel<T>(
   try {
     const result = await objectCall(repairPrompt(args, validationDetail));
     const parsed = args.schema.safeParse(result.object);
-    if (parsed.success) return parsed.data;
+    if (parsed.success) {
+      log.info("LLM structured extraction succeeded", {
+        provider: settings.provider,
+        model: modelId,
+        name: args.name,
+      });
+      return parsed.data;
+    }
     attemptReasons.push(`structured attempt 2: ${validationReason(parsed.error)}`);
   } catch (error) {
     if (!malformedObjectError(error)) throw externalFailure(settings, error);
@@ -149,7 +163,14 @@ async function extractWithModel<T>(
   }
   try {
     const parsed = args.schema.safeParse(JSON.parse(unfence(plainText)));
-    if (parsed.success) return parsed.data;
+    if (parsed.success) {
+      log.info("LLM structured extraction succeeded", {
+        provider: settings.provider,
+        model: modelId,
+        name: args.name,
+      });
+      return parsed.data;
+    }
     attemptReasons.push(`plain JSON attempt: ${validationReason(parsed.error)}`);
   } catch {
     // Bad plain JSON from the model is intentionally non-fatal for this contract.
@@ -168,12 +189,19 @@ export async function extract<T>(settings: LlmSettings, args: ExtractArgs<T>): P
   if (settings.fallbackModel && settings.fallbackModel !== settings.model)
     models.push(settings.fallbackModel);
   let lastError: unknown;
-  for (const modelId of models) {
+  for (const [index, modelId] of models.entries()) {
     try {
       return await extractWithModel(settings, args, modelId);
     } catch (error) {
       if (error instanceof ConfigError) throw error;
       lastError = error;
+      const fallbackModel = models[index + 1];
+      if (fallbackModel) {
+        log.warn("LLM structured extraction falling back to configured model", {
+          model: fallbackModel,
+          previousModel: modelId,
+        });
+      }
     }
   }
   throw lastError;

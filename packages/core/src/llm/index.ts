@@ -2,6 +2,7 @@
 import { generateText, transcribe as generateTranscript } from "ai";
 import type { z } from "zod";
 import { ConfigError, ExternalServiceError } from "../errors.ts";
+import { log } from "../log.ts";
 import { extract as extractObject } from "./extract.ts";
 import { createLanguageModel, createTranscriptionModel } from "./providers.ts";
 import { dailyLimitMessage, withRateLimitRetry } from "./retry.ts";
@@ -34,7 +35,7 @@ export async function createLLM(): Promise<LLM> {
       if (settings.fallbackModel && settings.fallbackModel !== settings.model)
         models.push(settings.fallbackModel);
       let lastError: unknown;
-      for (const modelId of models) {
+      for (const [index, modelId] of models.entries()) {
         try {
           // Single retry layer: the SDK default (maxRetries: 2) is disabled so
           // 429s are retried exactly as llm/retry.ts specifies (retry-after,
@@ -48,10 +49,18 @@ export async function createLLM(): Promise<LLM> {
               maxRetries: 0,
             }),
           );
+          log.info("LLM chat succeeded", { provider: settings.provider, model: modelId });
           return result.text;
         } catch (error) {
           if (error instanceof ConfigError) throw error;
           lastError = error;
+          const fallbackModel = models[index + 1];
+          if (fallbackModel) {
+            log.warn("LLM chat falling back to configured model", {
+              model: fallbackModel,
+              previousModel: modelId,
+            });
+          }
         }
       }
       throw new ExternalServiceError(

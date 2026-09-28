@@ -7,10 +7,11 @@
 // absorbed by waiting out `retry-after` (see `llm/retry.ts`), not by shrinking
 // below usefulness.
 //
-// Token estimate: chars / 4 for English prose (matches seed/acme: ~30,000
-// chars of raw text ≈ 8,000 tokens). This is a rough planning figure, not a
-// tokenizer guarantee, hence the headroom below.
-export const CHARS_PER_TOKEN = 4;
+// Run D measured Groq requesting 8,517 tokens for a 20,000-character prompt:
+// about 2.35 characters per requested token. Use 2.5 characters per token,
+// rather than the former optimistic chars/4 estimate, so the cap has room for
+// provider tokenization and structured-output overhead.
+export const CHARS_PER_TOKEN = 2.5;
 
 /** Rough input-token estimate for a prompt string. */
 export function estimateTokens(text: string): number {
@@ -27,8 +28,8 @@ export function estimateTokens(text: string): number {
  */
 export const MAX_INPUT_TOKENS = 5_000;
 
-/** Same budget in characters, via the chars/4 estimate. */
-export const MAX_PROMPT_CHARS = MAX_INPUT_TOKENS * CHARS_PER_TOKEN; // 20,000
+/** Same budget in characters, via the conservative chars/2.5 estimate. */
+export const MAX_PROMPT_CHARS = MAX_INPUT_TOKENS * CHARS_PER_TOKEN; // 12,500
 
 /**
  * Keeps the most recent `budget` characters and notes what was dropped.

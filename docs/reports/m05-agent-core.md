@@ -82,3 +82,10 @@ Summary-vs-Waada comparison: **not measurable yet** — stated plainly in
 - Failed structured extraction logs compact, safe per-attempt validation reasons.
 - The live eval writes its scorecard and a redacted ledger view to
   `.waada/eval/last-run.json` (or the configured data directory).
+
+## Card 013 follow-up — ledger temperature (offline)
+
+- Removed the ledger's explicit `temperature: 0`; it now uses the provider
+  default as it did in run A. Run D showed structured-output failures after the
+  override was added. The next live eval should use the LLM model-id logs to
+  identify whether the primary or fallback answered.

@@ -58,3 +58,15 @@ for the M00 owner per AGENTS.md §3 (don't fix another module's code).
   the implemented `createLLM()` behavior.
 - M02b: implement OpenRouter OAuth and the experimental ChatGPT adapter in the
   reserved settings slot.
+
+## Card 013 follow-up — token budget and model observability (offline)
+
+- The shared input estimate is now 2.5 characters per token and keeps the
+  5,000-token ceiling at 12,500 prompt characters. This is based on run D's
+  measured 20,000 characters requesting 8,517 Groq tokens (about 2.35
+  chars/token).
+- Successful `chat` and structured `extract` calls log their model id at info.
+  A switch to the configured fallback logs the new and prior model ids at warn.
+  These fields never include prompt content or credentials.
+- Unit tests cover the revised budget and primary/fallback model logs. No live
+  call was made for this follow-up.

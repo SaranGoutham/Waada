@@ -124,12 +124,12 @@ describe("commitmentLedger", () => {
     expect(system).toMatch(/no later interaction mentions it/i);
   });
 
-  it("uses deterministic extraction for the ledger", async () => {
+  it("uses the provider default extraction temperature for the ledger", async () => {
     const mem = await seededMemory();
     const llm = new FakeLLM({ extract: { commitments: [{ commitments: [] }] } });
     await commitmentLedger("acme", { memory: mem, llm });
     const extractCall = llm.calls.find((c) => c.method === "extract");
     if (!extractCall) throw new Error("expected an extract call");
-    expect((extractCall.args[0] as { temperature: number }).temperature).toBe(0);
+    expect((extractCall.args[0] as { temperature?: number }).temperature).toBeUndefined();
   });
 });

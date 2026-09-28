@@ -7,6 +7,7 @@ const mocks = vi.hoisted(() => ({
   createLanguageModel: vi.fn(() => ({}) as never),
   generateObject: vi.fn(),
   generateText: vi.fn(),
+  info: vi.fn(),
   warn: vi.fn(),
 }));
 
@@ -21,7 +22,7 @@ vi.mock("../src/llm/providers.ts", () => ({
 }));
 
 vi.mock("../src/log.ts", () => ({
-  log: { warn: mocks.warn },
+  log: { info: mocks.info, warn: mocks.warn },
 }));
 
 import { extract } from "../src/llm/extract.ts";
@@ -62,6 +63,10 @@ describe("LLM extraction recovery", () => {
     await expect(extract(settings, args)).resolves.toEqual({ value: "green" });
     expect(mocks.generateObject).toHaveBeenCalledTimes(1);
     expect(mocks.generateText).not.toHaveBeenCalled();
+    expect(mocks.info).toHaveBeenCalledWith(
+      "LLM structured extraction succeeded",
+      expect.objectContaining({ model: "test-model" }),
+    );
   });
 
   it("retries malformed structured output with validation details and schema", async () => {
@@ -125,6 +130,14 @@ describe("LLM extraction recovery", () => {
     });
     const modelCalls = mocks.createLanguageModel.mock.calls as unknown as Array<[unknown, string]>;
     expect(modelCalls.map((call) => call[1])).toEqual(["test-model", "fallback-model"]);
+    expect(mocks.warn).toHaveBeenCalledWith(
+      "LLM structured extraction falling back to configured model",
+      expect.objectContaining({ model: "fallback-model", previousModel: "test-model" }),
+    );
+    expect(mocks.info).toHaveBeenCalledWith(
+      "LLM structured extraction succeeded",
+      expect.objectContaining({ model: "fallback-model" }),
+    );
   });
 
   it("stops immediately for a configuration error", async () => {
