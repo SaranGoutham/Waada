@@ -1,140 +1,129 @@
 @import "tailwindcss";
-
 * {
   box-sizing: border-box;
 }
-
 html,
 body,
 #app {
   min-height: 100%;
 }
-
 body {
   margin: 0;
-  background: #f8fafc;
-  color: #0f172a;
-  font-family: "Segoe UI Variable", "Segoe UI", ui-sans-serif, system-ui, sans-serif;
+  background: #fbfbfa;
+  color: #171716;
+  font-family: "Segoe UI Variable", "Helvetica Neue", Arial, sans-serif;
+  line-height: 1.5;
 }
-
 button,
 input,
 textarea,
 select {
   font: inherit;
 }
-
 :focus-visible {
-  outline: 3px solid #0369a1;
-  outline-offset: 2px;
+  outline: 2px solid #171716;
+  outline-offset: 3px;
 }
-
 .surface {
-  background: #ffffff;
-  border-color: #e2e8f0;
+  background: #fff;
+  border-color: #eaeaea;
 }
 .surface-muted {
-  background: #f1f5f9;
-  border-color: #e2e8f0;
+  background: #f7f6f3;
+  border-color: #eaeaea;
 }
-.page-eyebrow {
-  color: #0369a1;
-  font-size: 0.75rem;
+.page-eyebrow,
+.nav-label {
+  color: #777774;
+  font-size: 0.7rem;
   font-weight: 700;
   letter-spacing: 0.12em;
   text-transform: uppercase;
 }
 .action-primary {
-  background: #0369a1;
+  background: #171716;
   color: #fff;
   transition:
     background-color 180ms ease,
     transform 180ms ease;
 }
 .action-primary:hover {
-  background: #075985;
+  background: #333331;
 }
 .action-primary:active {
   transform: scale(0.98);
 }
 .action-secondary {
-  border: 1px solid #cbd5e1;
-  color: #1e293b;
+  border: 1px solid #d8d8d5;
+  color: #171716;
   background: #fff;
   transition:
     border-color 180ms ease,
-    color 180ms ease,
     transform 180ms ease;
 }
 .action-secondary:hover {
-  border-color: #0369a1;
-  color: #075985;
+  border-color: #171716;
 }
 .action-secondary:active {
   transform: scale(0.98);
 }
+.app-frame,
+.app-sidebar,
+.app-header {
+  background: #fff;
+  border-color: #eaeaea;
+}
+.brand-mark {
+  background: #171716;
+  color: #fff;
+  border-radius: 4px;
+}
+.nav-link {
+  display: block;
+  border-radius: 4px;
+  padding: 0.45rem 0.6rem;
+  color: #5f5f5b;
+  font-size: 0.875rem;
+  transition:
+    background-color 160ms ease,
+    color 160ms ease;
+}
+.nav-link:hover {
+  background: #f7f6f3;
+  color: #171716;
+}
+.landing {
+  background: #fbfbfa;
+}
+.landing-nav {
+  border-bottom: 1px solid #eaeaea;
+}
+.landing-hero {
+  min-height: 34rem;
+}
+.landing-section {
+  border-top: 1px solid #eaeaea;
+}
+.landing-muted {
+  background: #f7f6f3;
+}
+.feature-cell {
+  background: #fff;
+}
+.flow-stage {
+  border-top: 1px solid #eaeaea;
+  padding-top: 1rem;
+}
+.account-row {
+  transition: background-color 160ms ease;
+}
+.account-row:hover {
+  background: #f7f6f3;
+}
 .skeleton {
   animation: pulse 1.5s ease-in-out infinite;
-  background: #e2e8f0;
+  background: #eaeaea;
 }
-
-@media (prefers-color-scheme: dark) {
-  body {
-    background: #0b1220;
-    color: #f1f5f9;
-  }
-  .surface {
-    background: #111c2e;
-    border-color: #26354c;
-  }
-  .surface-muted {
-    background: #172338;
-    border-color: #26354c;
-  }
-  .page-eyebrow {
-    color: #7dd3fc;
-  }
-  .action-primary {
-    background: #0284c7;
-    color: #f8fafc;
-  }
-  .action-primary:hover {
-    background: #0ea5e9;
-  }
-  .action-secondary {
-    background: #111c2e;
-    border-color: #475569;
-    color: #e2e8f0;
-  }
-  .action-secondary:hover {
-    border-color: #7dd3fc;
-    color: #e0f2fe;
-  }
-  .skeleton {
-    background: #26354c;
-  }
-}
-
-@media (prefers-reduced-motion: no-preference) {
-  .flow-connector::after {
-    position: absolute;
-    top: 50%;
-    width: 0.5rem;
-    height: 0.5rem;
-    border-radius: 999px;
-    background: #0284c7;
-    content: "";
-    animation: travel 2.4s ease-in-out infinite;
-  }
-}
-
-@keyframes travel {
-  50% {
-    transform: translateX(calc(100% - 0.5rem));
-    opacity: 0.45;
-  }
-}
-
 @keyframes pulse {
   50% {
     opacity: 0.52;

@@ -10,6 +10,7 @@
 
 import { Route as rootRouteImport } from './routes/__root'
 import { Route as IndexRouteImport } from './routes/index'
+import { Route as AppRouteImport } from './routes/app'
 import { Route as IntegrationsRouteImport } from './routes/integrations'
 import { Route as PipelineRouteImport } from './routes/pipeline'
 import { Route as AccountsSlugRouteImport } from './routes/accounts.$slug'
@@ -23,6 +24,11 @@ import { Route as AccountsSlugImportRouteImport } from './routes/accounts.$slug.
 const IndexRoute = IndexRouteImport.update({
   id: '/',
   path: '/',
+  getParentRoute: () => rootRouteImport,
+} as any)
+const AppRoute = AppRouteImport.update({
+  id: '/app',
+  path: '/app',
   getParentRoute: () => rootRouteImport,
 } as any)
 const IntegrationsRoute = IntegrationsRouteImport.update({
@@ -73,6 +79,7 @@ const AccountsSlugImportRoute = AccountsSlugImportRouteImport.update({
 
 export interface FileRoutesByFullPath {
   '/': typeof IndexRoute
+  '/app': typeof AppRoute
   '/integrations': typeof IntegrationsRoute
   '/pipeline': typeof PipelineRoute
   '/accounts/$slug': typeof AccountsSlugRouteWithChildren
@@ -85,6 +92,7 @@ export interface FileRoutesByFullPath {
 }
 export interface FileRoutesByTo {
   '/': typeof IndexRoute
+  '/app': typeof AppRoute
   '/integrations': typeof IntegrationsRoute
   '/pipeline': typeof PipelineRoute
   '/settings/llm': typeof SettingsLlmRoute
@@ -97,6 +105,7 @@ export interface FileRoutesByTo {
 export interface FileRoutesById {
   __root__: typeof rootRouteImport
   '/': typeof IndexRoute
+  '/app': typeof AppRoute
   '/integrations': typeof IntegrationsRoute
   '/pipeline': typeof PipelineRoute
   '/accounts/$slug': typeof AccountsSlugRouteWithChildren
@@ -111,6 +120,7 @@ export interface FileRouteTypes {
   fileRoutesByFullPath: FileRoutesByFullPath
   fullPaths:
     | '/'
+    | '/app'
     | '/integrations'
     | '/pipeline'
     | '/accounts/$slug'
@@ -123,6 +133,7 @@ export interface FileRouteTypes {
   fileRoutesByTo: FileRoutesByTo
   to:
     | '/'
+    | '/app'
     | '/integrations'
     | '/pipeline'
     | '/settings/llm'
@@ -134,6 +145,7 @@ export interface FileRouteTypes {
   id:
     | '__root__'
     | '/'
+    | '/app'
     | '/integrations'
     | '/pipeline'
     | '/accounts/$slug'
@@ -147,6 +159,7 @@ export interface FileRouteTypes {
 }
 export interface RootRouteChildren {
   IndexRoute: typeof IndexRoute
+  AppRoute: typeof AppRoute
   IntegrationsRoute: typeof IntegrationsRoute
   PipelineRoute: typeof PipelineRoute
   AccountsSlugRoute: typeof AccountsSlugRouteWithChildren
@@ -160,6 +173,13 @@ declare module '@tanstack/react-router' {
       path: '/'
       fullPath: '/'
       preLoaderRoute: typeof IndexRouteImport
+      parentRoute: typeof rootRouteImport
+    }
+    '/app': {
+      id: '/app'
+      path: '/app'
+      fullPath: '/app'
+      preLoaderRoute: typeof AppRouteImport
       parentRoute: typeof rootRouteImport
     }
     '/integrations': {
@@ -250,6 +270,7 @@ const AccountsSlugRouteWithChildren = AccountsSlugRoute._addFileChildren(
 
 const rootRouteChildren: RootRouteChildren = {
   IndexRoute: IndexRoute,
+  AppRoute: AppRoute,
   IntegrationsRoute: IntegrationsRoute,
   PipelineRoute: PipelineRoute,
   AccountsSlugRoute: AccountsSlugRouteWithChildren,
