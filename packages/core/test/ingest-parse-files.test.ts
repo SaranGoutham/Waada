@@ -123,7 +123,11 @@ describe("parseFiles", () => {
 
   it("keeps partial transcript metadata while filling missing fields", async () => {
     const llm = new FakeLLM({
-      extract: { "transcript-metadata": [{ date: "2026-08-20T10:00:00.000Z" }] },
+      extract: {
+        "transcript-metadata": [
+          { date: "2026-08-20T10:00:00.000Z", title: null, participants: [], type: null },
+        ],
+      },
     });
     const { interactions, errors } = await parseFiles(
       [await fixture("no-header.txt", "call-04-pilot-scoping.txt")],
