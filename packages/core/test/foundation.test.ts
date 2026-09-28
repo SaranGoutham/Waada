@@ -24,6 +24,20 @@ import {
 import { readJson, writeJson } from "../src/store.ts";
 import { FakeLLM, FakeMemory, sampleInteractions } from "./fakes.ts";
 
+const redisValues = new Map<string, unknown>();
+const redisGet = vi.fn(async <T>(key: string): Promise<T | undefined> => redisValues.get(key) as T);
+const redisSet = vi.fn(async (key: string, value: unknown): Promise<void> => {
+  redisValues.set(key, value);
+});
+
+vi.mock("@upstash/redis", () => ({
+  Redis: class FakeRedis {
+    static fromEnv = vi.fn(() => new FakeRedis());
+    get = redisGet;
+    set = redisSet;
+  },
+}));
+
 const validInteraction = {
   account: "acme",
   sourceId: "<abc@mail.acme.com>",
@@ -180,6 +194,20 @@ describe("config", () => {
     vi.stubEnv("GROQ_API_KEY", "");
     expect(getEnv().groqApiKey).toBeUndefined();
   });
+
+  it("does not throw when the project has no .env file", async () => {
+    const root = await mkdtemp(join(tmpdir(), "waada-no-dotenv-"));
+    const originalCwd = process.cwd();
+    await writeFile(join(root, "pnpm-workspace.yaml"), "packages: []\n");
+    try {
+      process.chdir(root);
+      expect(() => getEnv()).not.toThrow();
+      expect(getEnv().dataDir).toBe(join(root, ".waada"));
+    } finally {
+      process.chdir(originalCwd);
+      await rm(root, { recursive: true, force: true });
+    }
+  });
 });
 
 describe("log", () => {
@@ -213,6 +241,9 @@ describe("store", () => {
   beforeEach(async () => {
     dir = await mkdtemp(join(tmpdir(), "waada-store-"));
     vi.stubEnv("WAADA_DATA_DIR", dir);
+    redisValues.clear();
+    redisGet.mockClear();
+    redisSet.mockClear();
   });
   afterEach(async () => {
     vi.unstubAllEnvs();
@@ -257,6 +288,39 @@ describe("store", () => {
     await expect(readJson(join(dir, "abs.json"), Sync, { cursor: "", count: 0 })).rejects.toThrow(
       WaadaError,
     );
+  });
+
+  it("uses Redis when Upstash credentials are configured", async () => {
+    vi.stubEnv("UPSTASH_REDIS_REST_URL", "https://redis.example.test");
+    vi.stubEnv("UPSTASH_REDIS_REST_TOKEN", "test-token");
+    await writeJson("sync/slack.json", { cursor: "redis", count: 5 });
+    expect(redisSet).toHaveBeenCalledWith("waada:sync/slack.json", { cursor: "redis", count: 5 });
+    expect(await readJson("sync/slack.json", Sync, { cursor: "", count: 0 })).toEqual({
+      cursor: "redis",
+      count: 5,
+    });
+    expect(await readdir(dir)).toEqual([]);
+  });
+
+  it("uses the Redis fallback when stored data is missing or invalid", async () => {
+    vi.stubEnv("UPSTASH_REDIS_REST_URL", "https://redis.example.test");
+    vi.stubEnv("UPSTASH_REDIS_REST_TOKEN", "test-token");
+    expect(await readJson("missing.json", Sync, { cursor: "", count: 0 })).toEqual({
+      cursor: "",
+      count: 0,
+    });
+    redisValues.set("waada:invalid.json", { cursor: 1 });
+    expect(await readJson("invalid.json", Sync, { cursor: "", count: 0 })).toEqual({
+      cursor: "",
+      count: 0,
+    });
+  });
+
+  it("supports Vercel Marketplace KV credential aliases", async () => {
+    vi.stubEnv("KV_REST_API_URL", "https://redis.example.test");
+    vi.stubEnv("KV_REST_API_TOKEN", "test-token");
+    await writeJson("accounts.json", [{ slug: "acme" }]);
+    expect(redisSet).toHaveBeenCalledWith("waada:accounts.json", [{ slug: "acme" }]);
   });
 });
 

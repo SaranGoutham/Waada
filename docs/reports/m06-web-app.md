@@ -1,5 +1,9 @@
 # M06 web app report
 
+## Card 019 verification — 2026-09-28
+
+Vercel deployment support uses Nitro in the Vite plugin chain. The hosted data backend switches to Upstash Redis only when both configured credentials are present; local development continues to use atomic JSON-file writes. `vite build` generated `apps/web/.output/` (`public/`, `server/`, and `nitro.json`); that directory is ignored by `apps/web/.gitignore`.
+
 ## Card 004 verification — 2026-09-27
 
 The development server started at `http://127.0.0.1:3000`.

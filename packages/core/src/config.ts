@@ -41,6 +41,8 @@ export function getEnv(): {
   slackBotToken?: string;
   hubspotToken?: string;
   googleCredentialsPath?: string;
+  upstashRedisRestUrl?: string;
+  upstashRedisRestToken?: string;
   dataDir: string /* default ".waada", resolved to an absolute path under the project root */;
 } {
   const root = findProjectRoot();
@@ -53,6 +55,9 @@ export function getEnv(): {
     slackBotToken: get("SLACK_BOT_TOKEN"),
     hubspotToken: get("HUBSPOT_TOKEN"),
     googleCredentialsPath: get("GOOGLE_CREDENTIALS_PATH"),
+    // VERIFY: Vercel's Upstash Marketplace may expose these as KV_REST_API_*.
+    upstashRedisRestUrl: get("UPSTASH_REDIS_REST_URL") ?? get("KV_REST_API_URL"),
+    upstashRedisRestToken: get("UPSTASH_REDIS_REST_TOKEN") ?? get("KV_REST_API_TOKEN"),
     dataDir: isAbsolute(dataDir) ? dataDir : join(root, dataDir),
   };
 }
