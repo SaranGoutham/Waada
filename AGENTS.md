@@ -157,6 +157,7 @@ Notes for master: <anything the next card needs to know>
 | S19 | HubSpot SDK | `@hubspot/api-client` | Approved |
 | S20 | `.eml` parsing | `postal-mime` (P-001) | Approved |
 | S21 | Ollama connection | Ollama's OpenAI-compatible endpoint (`http://localhost:11434/v1`) via `@ai-sdk/openai-compatible` (P-002). Ollama calls this compatibility experimental; transcription is not supported on this route | Approved |
+| S22 | UI icons | **Phosphor Icons** (`@phosphor-icons/react`) in `apps/web` (human, 2026-09-28) | Approved |
 
 No open stack questions right now. New ones go to `docs/decisions/PROPOSALS.md`.
 
