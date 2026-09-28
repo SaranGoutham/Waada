@@ -104,3 +104,13 @@ Honest verdict so far: on a free Groq key, the ledger is the weak point (judgeme
 **On this run the summary-only baseline scored higher than Waada (2 checks vs 1).** Said plainly, as the M05 brief requires. Conditions were degraded, so this is not yet a verdict on the approach:
 - Ledger `extract` returned `null` again: `structured attempt 1: provider code json_validate_failed; structured attempt 2: provider code json_validate_failed; plain JSON attempt: invalid JSON`. Run A (default temperature, primary model) produced a ledger; since then card 010 set temperature 0, and the primary model's daily tokens ran out so calls fall back to `gpt-oss-20b`. Either may be the cause.
 - `ask` failed on the fallback model with 413 (`Requested 8517 > 8000 TPM`) even after card 012's cap: the chars/4 token estimate undercounts for these models.
+
+### Run E (2026-09-28 ~08:26 UTC) — after card 013, spare key `Groq_Key2` (fresh daily allowance)
+
+Scorecard (`.waada/eval/last-run.json`): Waada 1/4 (q3q4 ✓), summary-only 2/4 (SOC 2 first ✓, q3q4 ✓), CRM-only 0/4. **Contaminated by a Hindsight Cloud outage:** ingest took **43 minutes** and 6 of 33 items failed with "Couldn't reach Hindsight": Jul 30 recap, Aug 5 pilot proposal, Aug 13 pricing promise, Aug 12 pricing call (call-03), Slack Aug 5 and Aug 12 — i.e. the whole pricing story, which explains the missing pricing landmine and delivered proposal.
+
+What still counts as a finding:
+- Card 013 fixed the ledger's empty output: both ledger extracts succeeded on `gpt-oss-120b`.
+- The Sep 2 SOC 2 call **was** stored, yet the ledger did not list the SOC 2 promise: a single mention does not survive recall + the 12,500-char evidence cap.
+- Newest-first order puts a legitimate new promise first ("contact Priya on Sep 28", from the handover email), so SOC 2 cannot be first under P-007 even when found.
+- Ledger output varies between calls in the same run (the delivered pricing proposal appears in the saved ledger but not in EVAL-2's call).
