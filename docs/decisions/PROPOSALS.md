@@ -107,3 +107,12 @@ Agents **append** here when they need a stack addition (AGENTS.md rule 3), a con
 ## P-008 — Extra Groq keys: dev/eval only
 - Raised by: human, 2026-09-28 (five extra free Groq keys, each from a different organization; checked with Groq)
 - **Status:** approved: use them **only for the master's dev/eval runs** (set `GROQ_API_KEY` in the process environment per run; `config.ts` prefers the environment over `.env`). No in-app key rotation; the app stays one-key (MVP criterion 4).
+
+## P-009 — Overdue-first commitments (new `dueDate`) and a chunked ledger pass
+- Raised by: master, from eval run E · 2026-09-28
+- Findings: newest-first put a legitimate new promise (due Sep 28) above the overdue SOC 2 report (due Sep 4); the SOC 2 promise, mentioned once, was lost to recall + the evidence cap.
+- **Status:** approved: (1) `Commitment` gains `dueDate: string | null` (§6.1 updated; required-but-nullable for Groq strict output); open commitments sort **overdue first** (most overdue on top), then upcoming by due date, then undated. Supersedes P-007's newest-first. (2) **Chunked ledger pass**: split recalled evidence into budget-sized chunks, extract from each, merge and dedupe. Code: card 014.
+
+## P-010 — Simple MVP core + showcase UI with integrations and pipeline
+- Raised by: human · 2026-09-28
+- **Status:** approved: keep the core simple; build a neat UI/UX that includes an **Integrations** page (Gmail, Slack, HubSpot, Google Meet capture, MCP, Hindsight, Groq) and a **Pipeline** page, presented as product screens with no "coming soon / planned / later" wording. Connector back-ends stay post-MVP. Master's guardrail: briefs and answers only ever use real imported data; the UI never claims data was synced from a source that wasn't. AGENTS.md §1a tier table updated. Code: card 015.

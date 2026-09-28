@@ -31,6 +31,7 @@ A deal-continuity agent. Sales interactions (emails, Slack, call and meeting tra
 | **Must-have (the MVP)** | M00–M05 · **M06** limited to Import, Brief, Commitments, Ask, Compare, Settings→LLM (API key) · **M10** limited to MVP docs, e2e test and demo | Work on these first |
 | **Should-have** | **M07** MCP server · **M02b** OpenRouter sign-in · M05 `report()` with `reflect()` · M06 Report page | Only after every must-have module is `done` |
 | **Later (post-MVP)** | **M08a/b/c** connectors · **M09** Meet capture · M06 Connectors page · Slack `.zip` (P-003) · ChatGPT login (deferred, ADR 0001) | Don't start. Don't reserve. |
+| **Showcase UI (human, 2026-09-28, P-010)** | M06: Integrations page (Gmail, Slack, HubSpot, Google Meet, MCP, Hindsight, Groq) and Pipeline page, presented as product screens without "coming soon" labels. Connector back-ends stay post-MVP; briefs use only real imports | Build now (UI only) |
 
 Anything not needed for the success criteria is out of MVP scope, even inside a must-have module. When unsure, build the simpler version and note the fuller one as a follow-up in your report.
 
@@ -192,6 +193,7 @@ export const Commitment = z.object({   // a promise our team made ("Promise" wou
   madeBy: z.string(),
   madeTo: z.string(),
   date: z.string().datetime().nullable(),
+  dueDate: z.string().datetime().nullable(), // when it was due; null if no deadline was stated (human, 2026-09-28, P-009). Required-but-nullable: Groq strict structured output rejects optional keys
   status: CommitmentStatus,
   evidence: z.string(),             // why this status, citing the source
   source: z.string(),               // "Call #4 — Sep 2"
