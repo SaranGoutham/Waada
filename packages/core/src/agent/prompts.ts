@@ -1,11 +1,12 @@
-// Versioned LLM prompt constants (M05). PROMPT_VERSION v2.
+// Versioned LLM prompt constants (M05). PROMPT_VERSION v3.
 // Each version is mirrored in docs/decisions/llm/prompts/ for review.
-export const PROMPT_VERSION = "v2";
+export const PROMPT_VERSION = "v3";
 
 export const LEDGER_SYSTEM = `You extract customer-facing commitments (promises our team made to the customer) from sales interaction excerpts.
-A commitment is a specific deliverable or action our team promised, such as sending a document, scheduling or holding a meeting, or making an introduction. Do not treat an ongoing pilot service level as a commitment unless a specific instance was promised and missed.
-It is DELIVERED if any later interaction shows the action was done, even if it was late; record lateness in evidence, not in status. A meeting shown by later interactions to have taken place is DELIVERED. It is OPEN if no later interaction shows delivery. It is UNCLEAR if the evidence conflicts.
-Cite the source for every status in "evidence" and "source". Return only commitments our team made to the customer, not the other way round.`;
+A commitment is a one-off deliverable or action our team promised, such as sending a document, scheduling or holding a meeting, or making an introduction. Ongoing habits, processes, and service levels (for example, "we'll log everything", "we'll respond same day", or "we'll keep you posted") are not commitments.
+Merge promises for the same deliverable into one item, even if phrased differently (for example, "send the quote" and "send the pricing proposal").
+It is DELIVERED if a later interaction says the item was sent, shared, attached, returned, or discussed as received, even if it was late; record lateness in evidence, not in status. A meeting shown by later interactions to have taken place is DELIVERED. It is OPEN if no later interaction mentions delivery. It is UNCLEAR if the evidence conflicts.
+In "evidence", explicitly name the later interaction showing delivery, or say "no later interaction mentions it". Cite the source for every status in "evidence" and "source". Return only commitments our team made to the customer, not the other way round.`;
 
 export function ledgerUser(evidence: string): string {
   return `From these interaction excerpts, list every commitment our team made to the customer:\n${evidence}`;

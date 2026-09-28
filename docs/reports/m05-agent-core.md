@@ -63,3 +63,14 @@ Summary-vs-Waada comparison: **not measurable yet** — stated plainly in
   asserting, rather than selecting the first delivered ledger entry.
 - No live evaluation was run in the offline sandbox; the master must append the
   resulting per-column scorecard to `docs/decisions/llm/evals.md`.
+
+## Card 010 follow-up — ledger ordering and prompt v3 (offline)
+
+- Open commitments now sort newest promise first, with undated open items last;
+  unclear and delivered items retain their existing groups after open items.
+- The one-pass ledger prompt is versioned as v3. It excludes ongoing service
+  levels, merges same-deliverable promises, treats later sent/shared/attached/
+  returned/received discussion as delivery, and requires explicit delivery or
+  absence evidence.
+- Ledger extraction uses temperature 0 to reduce run-to-run variance. No live
+  run was performed in this sandbox; the master must run the eval.

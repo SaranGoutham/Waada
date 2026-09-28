@@ -23,6 +23,18 @@ const OPEN: Commitment = {
   source: "email — Security docs follow-up",
 };
 
+const OLDER_OPEN: Commitment = {
+  ...OPEN,
+  text: "Send implementation plan",
+  date: "2026-08-01T10:00:00.000Z",
+};
+
+const UNDATED_OPEN: Commitment = {
+  ...OPEN,
+  text: "Send deployment checklist",
+  date: null,
+};
+
 const UNCLEAR: Commitment = {
   text: "Loop in the onboarding lead",
   madeBy: "Alex Rivera",
@@ -56,14 +68,21 @@ describe("commitmentLedger", () => {
     for (const c of searchCalls(mem)) expect(c.opts).toMatchObject({ budget: "high" });
   });
 
-  it("sorts open (oldest first), then unclear, then delivered", async () => {
+  it("sorts open newest-first with undated items last, then unclear, then delivered", async () => {
     const mem = await seededMemory();
     const llm = new FakeLLM({
-      extract: { commitments: [{ commitments: [DELIVERED, UNCLEAR, OPEN] }] },
+      extract: {
+        commitments: [{ commitments: [DELIVERED, UNCLEAR, UNDATED_OPEN, OLDER_OPEN, OPEN] }],
+      },
     });
     const ledger = await commitmentLedger("acme", { memory: mem, llm });
-    expect(ledger.map((c) => c.status)).toEqual(["open", "unclear", "delivered"]);
-    expect(ledger[0]?.text).toBe("Send SOC 2 Type II report");
+    expect(ledger.map((c) => c.text)).toEqual([
+      OPEN.text,
+      OLDER_OPEN.text,
+      UNDATED_OPEN.text,
+      UNCLEAR.text,
+      DELIVERED.text,
+    ]);
   });
 
   it("dedupes recalled hits by text before asking the model", async () => {
@@ -91,7 +110,7 @@ describe("commitmentLedger", () => {
     expect(ledger).toEqual([]);
   });
 
-  it("tells the extractor that late delivery remains delivered", async () => {
+  it("gives the extractor the v3 commitment and delivery rules", async () => {
     const mem = await seededMemory();
     const llm = new FakeLLM({ extract: { commitments: [{ commitments: [] }] } });
     await commitmentLedger("acme", { memory: mem, llm });
@@ -99,5 +118,18 @@ describe("commitmentLedger", () => {
     if (!extractCall) throw new Error("expected an extract call");
     const system = (extractCall.args[0] as { system: string }).system;
     expect(system).toMatch(/even if.*late/i);
+    expect(system).toMatch(/ongoing habits, processes, and service levels.*not commitments/i);
+    expect(system).toMatch(/merge promises for the same deliverable/i);
+    expect(system).toMatch(/sent, shared, attached, returned/i);
+    expect(system).toMatch(/no later interaction mentions it/i);
+  });
+
+  it("uses deterministic extraction for the ledger", async () => {
+    const mem = await seededMemory();
+    const llm = new FakeLLM({ extract: { commitments: [{ commitments: [] }] } });
+    await commitmentLedger("acme", { memory: mem, llm });
+    const extractCall = llm.calls.find((c) => c.method === "extract");
+    if (!extractCall) throw new Error("expected an extract call");
+    expect((extractCall.args[0] as { temperature: number }).temperature).toBe(0);
   });
 });

@@ -30,7 +30,7 @@ function sortLedger(commitments: CommitmentT[]): CommitmentT[] {
         if (a.c.date === b.c.date) return a.index - b.index;
         if (a.c.date === null) return 1;
         if (b.c.date === null) return -1;
-        return a.c.date < b.c.date ? -1 : 1;
+        return a.c.date > b.c.date ? -1 : 1;
       }
       return a.index - b.index;
     })
@@ -51,6 +51,7 @@ export async function commitmentLedger(account: string, deps?: AgentDeps): Promi
     schema: z.object({ commitments: z.array(Commitment) }),
     name: "commitments",
     description: "Commitments our team made to the customer",
+    temperature: 0,
   });
   if (!result) {
     log.warn("commitmentLedger: extract returned no valid object", { account });

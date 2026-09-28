@@ -2,12 +2,12 @@
 
 All tasks go through the user's configured LLM settings (`.waada/llm.json`, Settings → LLM).
 Default provider: **Groq**, model `openai/gpt-oss-120b`, fallback `openai/gpt-oss-20b`.
-No task overrides the model or temperature in the MVP; `chat`/`extract` calls use the
-SDK default temperature unless the call site says otherwise.
+The commitment ledger uses temperature 0 to reduce run-to-run extraction variance;
+all other `chat`/`extract` calls use the SDK default temperature unless the call site says otherwise.
 
 | Task | Function | LLM calls | Temperature | Notes |
 |---|---|---|---|---|
-| Commitment ledger | `commitmentLedger` | 1 × `extract` (`commitments`) | default | 4 high-budget recalls first |
+| Commitment ledger | `commitmentLedger` | 1 × `extract` (`commitments`) | 0 | 4 high-budget recalls first; deterministic extraction reduces variance |
 | Landmines | `landmines` | 1 × `extract` (`landmines`) | default | 3 high-budget recalls first |
 | Brief | `brief` | 1 × `chat` | default | ledger + landmines + 2 recalls in parallel |
 | Ask | `ask` | 1 × `chat` | default | single high-budget recall |
@@ -18,5 +18,5 @@ SDK default temperature unless the call site says otherwise.
 
 ## Prompt versions
 
-Each task's system/user prompts are versioned under `prompts/` (ledger and brief v2, all others v1). A prompt
+Each task's system/user prompts are versioned under `prompts/` (ledger v3, brief v2, all others v1). A prompt
 change means a new `vN` file, never a silent edit.
