@@ -79,3 +79,15 @@ occurred as delivered. The EVAL-2 assertion now selects a delivered commitment
 only when its own text or evidence identifies the pricing proposal, avoiding a
 false match on another delivered item. The master must run the live harness and
 append its resulting Waada, summary-only, and CRM-only scorecard here.
+
+## 2026-09-27/28 — master's runs after cards 008, 010, 011 (free Groq key)
+
+| Run | Code state | Result | What failed and why |
+|---|---|---|---|
+| A | card 008 (ledger v2) + transcript fix | 4/6 | EVAL-1: first open item was "log all account history" (a habit); ledger also listed "same-day SSO response" and already-sent DPA redlines as open; oldest-first sort put SOC 2 4th. EVAL-2: no delivered pricing proposal that run (a manual run minutes later did mark it delivered: run-to-run variance) |
+| B | card 010 (ledger v3, newest open first, temperature 0) | 2/6, **not meaningful** | Groq **daily** cap hit: `tokens per day (TPD): Limit 200000, Used 198502`; plus one invalid-JSON 400 that `extract` didn't repair (fixed in card 011) |
+| C | card 011 (extract repair + fallback model) | 3/6 | Ledger `extract` returned no valid object twice (all three attempts failed schema validation; reason not logged). EVAL-4 (ask) failed: primary model failed, fallback `gpt-oss-20b` got HTTP 413 (Ask prompt 9,252 tokens > 8,000 TPM; Ask's evidence isn't capped) |
+
+Passing in C: ingest 33/33 (transcript dates now correct), EVAL-3 pricing landmine, EVAL-5 compare fills all three columns. Per-column baseline scores still not captured (live mode suppresses console output; next harness change should write the scorecard to a file).
+
+Honest verdict so far: on a free Groq key, the ledger is the weak point (judgement and valid structured output), and each full eval uses ~40–50k of the 200k daily tokens, which limits how many prompt iterations fit in a day.
