@@ -14,7 +14,7 @@ now gives call sites a 12,500-character prompt budget instead of the unsafe 20,0
 
 | Task | Function | LLM calls | Temperature | Notes |
 |---|---|---|---|---|
-| Commitment ledger | `commitmentLedger` | 1 × `extract` (`commitments`) | default | 4 high-budget recalls first; provider default restored after run-D structured-output failures |
+| Commitment ledger | `commitmentLedger` | up to 4 × `extract` (`commitments`), one per evidence chunk, sequential | default | 4 high-budget recalls first, chunked so a single tail mention survives; per-chunk results merged (same deliverable = normalised text + recipient, delivered wins); provider default restored after run-D structured-output failures |
 | Landmines | `landmines` | 1 × `extract` (`landmines`) | default | 3 high-budget recalls first |
 | Brief | `brief` | 1 × `chat` | default | ledger + landmines + 2 recalls in parallel |
 | Ask | `ask` | 1 × `chat` | default | single high-budget recall |
@@ -25,5 +25,5 @@ now gives call sites a 12,500-character prompt budget instead of the unsafe 20,0
 
 ## Prompt versions
 
-Each task's system/user prompts are versioned under `prompts/` (ledger v3, brief v2, all others v1). A prompt
+Each task's system/user prompts are versioned under `prompts/` (ledger v4, brief v2, all others v1). A prompt
 change means a new `vN` file, never a silent edit.

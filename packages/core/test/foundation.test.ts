@@ -54,12 +54,31 @@ describe("models", () => {
       madeBy: "Sam",
       madeTo: "Dana",
       date: null,
+      dueDate: "2026-09-04T00:00:00.000Z",
       status: "open",
       evidence: "No later email contains the report",
       source: "Call #4 — Sep 2",
     };
     expect(Commitment.parse(c)).toEqual(c);
     expect(Commitment.safeParse({ ...c, status: "done" }).success).toBe(false);
+  });
+
+  it("requires Commitment.dueDate (required-but-nullable for strict structured output)", () => {
+    const c = {
+      text: "Send SOC 2 Type II report",
+      madeBy: "Sam",
+      madeTo: "Dana",
+      date: "2026-09-02T15:30:00.000Z",
+      dueDate: "2026-09-04T00:00:00.000Z",
+      status: "open",
+      evidence: "No later email contains the report",
+      source: "Call #4 — Sep 2",
+    };
+    expect(Commitment.parse(c)).toEqual(c);
+    expect(Commitment.safeParse({ ...c, dueDate: null }).success).toBe(true);
+    expect(Commitment.safeParse({ ...c, dueDate: "Sep 4" }).success).toBe(false);
+    const { dueDate: _omit, ...noDueDate } = c;
+    expect(Commitment.safeParse(noDueDate).success).toBe(false);
   });
 
   it("parses Landmine, MemoryHit, Answer, Brief and IngestReport", () => {

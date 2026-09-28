@@ -42,6 +42,9 @@ export const Commitment = z.object({
   madeBy: z.string(),
   madeTo: z.string(),
   date: z.string().datetime().nullable(),
+  // Deadline stated in the promise itself (null when none was stated).
+  // Required-but-nullable: Groq strict structured output rejects optional keys (P-009).
+  dueDate: z.string().datetime().nullable(),
   status: CommitmentStatus,
   evidence: z.string(), // why this status, citing the source
   source: z.string(), // "Call #4 — Sep 2"

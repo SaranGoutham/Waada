@@ -89,3 +89,26 @@ Summary-vs-Waada comparison: **not measurable yet** — stated plainly in
   default as it did in run A. Run D showed structured-output failures after the
   override was added. The next live eval should use the LLM model-id logs to
   identify whether the primary or fallback answered.
+
+## Card 014 follow-up — overdue-first ledger, chunked pass, v4 prompt (offline)
+
+- `Commitment` gains required-but-nullable `dueDate` (P-009; Groq strict
+  output rejects optional keys). Ledger prompt v4 asks for the deadline stated
+  in the promise itself, `null` when none (`docs/decisions/llm/prompts/v4-ledger.md`).
+- Open items sort overdue-first (most overdue on top), then upcoming
+  soonest-first, then undated newest-first; unclear and delivered follow.
+  `commitmentLedger` takes an optional `now` (additive, backwards-compatible)
+  so tests don't depend on the wall clock. On `seed/acme` this puts the
+  overdue Sep 2 SOC 2 report (due Sep 4) above the Sep 28 "contact Priya" item.
+- Chunked pass: `chunkEvidence()` (`agent/evidence.ts`) packs deduped recall
+  lines into 8,000-char chunks (cap 4, dropped hits logged); the ledger
+  extracts from each chunk sequentially and `mergeCommitments()` dedupes by
+  normalised text + recipient, with delivered winning and `dueDate`
+  backfilled. Unit tests: a single-mention promise in the last chunk survives;
+  merge rules; the 4-chunk cap.
+- The brief's markdown prompt now shows each open commitment's due date
+  (`due <ISO>` or "no stated deadline").
+- No live run in this sandbox; the master runs the eval with a spare key.
+- Known cross-module note: `apps/web/src/lib/fake-agent.ts` builds a
+  `Commitment` literal without `dueDate` and will fail `pnpm check` until card
+  015 adds it. Not touched (card 015 owns `apps/`).

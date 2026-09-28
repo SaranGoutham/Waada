@@ -9,6 +9,7 @@ const OPEN: Commitment = {
   madeBy: "Alex Rivera",
   madeTo: "Meenakshi Rao",
   date: "2026-09-02T15:30:00.000Z",
+  dueDate: "2026-09-04T00:00:00.000Z",
   status: "open",
   evidence: "No later interaction shows delivery",
   source: "email — Security docs follow-up",
@@ -19,6 +20,7 @@ const DELIVERED: Commitment = {
   madeBy: "Alex Rivera",
   madeTo: "Priya Nair",
   date: "2026-08-13T10:00:00.000Z",
+  dueDate: "2026-08-14T00:00:00.000Z",
   status: "delivered",
   evidence: "Sent after the original deadline",
   source: "email — Pricing proposal",
@@ -93,6 +95,15 @@ describe("brief", () => {
     expect(openSection).toContain(OPEN.text);
     expect(openSection).not.toContain(DELIVERED.text);
     expect(user).toMatch(/exactly and only the supplied items in their order/i);
+  });
+
+  it("shows each open commitment's due date in the markdown prompt", async () => {
+    const llm = makeLlm("# Acme brief");
+    await brief("acme", { memory: await seededMemory(), llm });
+    const chatCall = llm.calls.find((c) => c.method === "chat");
+    if (!chatCall) throw new Error("expected a chat call");
+    const user = (chatCall.args[0] as { user: string }).user;
+    expect(user).toContain("2026-09-04");
   });
 
   it("keeps the newest recent-change evidence when context is capped", async () => {
