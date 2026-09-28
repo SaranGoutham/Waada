@@ -183,6 +183,12 @@ export const getPipelineStats = createServerFn({ method: "GET" })
       return {
         interactions: interactions.length,
         latestInteraction,
+        sources: Object.fromEntries(
+          ["email", "slack", "call", "meeting", "note"].map((type) => [
+            type,
+            interactions.filter((item) => item.type === type).length,
+          ]),
+        ),
       };
     });
   });

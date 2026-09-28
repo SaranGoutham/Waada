@@ -1,4 +1,6 @@
+import { Chats, EnvelopeSimple, FileText, type Icon, Phone } from "@phosphor-icons/react";
 import { Link } from "@tanstack/react-router";
+import { sourceDisplay } from "../lib/format";
 
 export function AccountNav({ account }: { account: string }) {
   return (
@@ -55,5 +57,24 @@ export function SampleBanner({ active }: { active: boolean }) {
       Sample data is active. Brief, Ask, and Compare use deterministic examples until the agent core
       is available.
     </p>
+  );
+}
+
+const sourceIcons: Record<ReturnType<typeof sourceDisplay>["type"], Icon> = {
+  email: EnvelopeSimple,
+  slack: Chats,
+  call: Phone,
+  note: FileText,
+};
+
+export function SourceChip({ source }: { source: string }) {
+  const detail = sourceDisplay(source);
+  const Icon = sourceIcons[detail.type];
+  return (
+    <span className="inline-flex max-w-full items-center gap-1.5 rounded-full bg-slate-100 px-2.5 py-1 text-xs font-medium text-slate-600 dark:bg-slate-800 dark:text-slate-300">
+      <Icon size={14} weight="bold" aria-hidden="true" />
+      {detail.date ? <span>{detail.date}</span> : null}
+      <span className="truncate">{detail.title}</span>
+    </span>
   );
 }

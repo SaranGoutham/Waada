@@ -1,11 +1,28 @@
+import { ArrowRight, ChatCircleText, FileArrowUp, Sparkle } from "@phosphor-icons/react";
 import { createFileRoute, Link } from "@tanstack/react-router";
 import { useState } from "react";
-import { createAccount, getAccounts } from "../lib/server";
+import { formatDate } from "../lib/format";
+import { createAccount, getAccounts, getPipelineStats } from "../lib/server";
 
-export const Route = createFileRoute("/")({ loader: () => getAccounts(), component: Home });
+export const Route = createFileRoute("/")({
+  loader: async () => {
+    const accounts = await getAccounts();
+    return {
+      accounts,
+      stats: await Promise.all(
+        accounts.map(
+          async (account) =>
+            [account.slug, await getPipelineStats({ data: { account: account.slug } })] as const,
+        ),
+      ),
+    };
+  },
+  component: Home,
+});
 
 function Home() {
-  const accounts = Route.useLoaderData();
+  const { accounts, stats } = Route.useLoaderData();
+  const statsByAccount = Object.fromEntries(stats);
   const [name, setName] = useState("");
   const [error, setError] = useState("");
   const [busy, setBusy] = useState(false);
@@ -34,6 +51,32 @@ function Home() {
           Open an account to surface commitments, settled objections, and the context a new owner
           needs.
         </p>
+        <div className="mt-6 grid gap-3 sm:grid-cols-3">
+          {[
+            [FileArrowUp, "Import", "Bring the departed rep's history together."],
+            [Sparkle, "Brief", "Start with promises and landmines."],
+            [ChatCircleText, "Ask", "Retrieve the context behind a change."],
+          ].map(([Icon, title, detail]) => {
+            const StepIcon = Icon as typeof FileArrowUp;
+            return (
+              <div
+                key={title as string}
+                className="rounded-xl border border-slate-200 bg-white p-4 dark:border-slate-800 dark:bg-[#111c2e]"
+              >
+                <StepIcon
+                  size={20}
+                  weight="duotone"
+                  className="text-sky-700 dark:text-sky-300"
+                  aria-hidden="true"
+                />
+                <p className="mt-2 font-semibold">{title as string}</p>
+                <p className="mt-1 text-sm text-slate-600 dark:text-slate-300">
+                  {detail as string}
+                </p>
+              </div>
+            );
+          })}
+        </div>
         <div className="mt-8 space-y-3">
           {accounts.length ? (
             accounts.map((account) => (
@@ -43,8 +86,22 @@ function Home() {
                 params={{ slug: account.slug }}
                 className="surface block rounded-xl border p-5 shadow-sm transition hover:-translate-y-0.5 hover:border-sky-600 hover:shadow-md"
               >
-                <p className="font-semibold text-slate-950 dark:text-slate-50">{account.name}</p>
-                <p className="mt-1 text-sm text-slate-600 dark:text-slate-300">/{account.slug}</p>
+                <div className="flex items-center justify-between gap-3">
+                  <div>
+                    <p className="font-semibold text-slate-950 dark:text-slate-50">
+                      {account.name}
+                    </p>
+                    <p className="mt-1 text-sm text-slate-600 dark:text-slate-300">
+                      {statsByAccount[account.slug]?.interactions ?? 0} interactions imported · Last
+                      import {formatDate(statsByAccount[account.slug]?.latestInteraction ?? null)}
+                    </p>
+                  </div>
+                  <ArrowRight
+                    size={20}
+                    aria-hidden="true"
+                    className="shrink-0 text-sky-700 dark:text-sky-300"
+                  />
+                </div>
               </Link>
             ))
           ) : (

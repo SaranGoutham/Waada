@@ -116,15 +116,22 @@ select {
 }
 
 @media (prefers-reduced-motion: no-preference) {
-  .flow-dot {
-    animation: travel 3.5s ease-in-out infinite;
+  .flow-connector::after {
+    position: absolute;
+    top: 50%;
+    width: 0.5rem;
+    height: 0.5rem;
+    border-radius: 999px;
+    background: #0284c7;
+    content: "";
+    animation: travel 2.4s ease-in-out infinite;
   }
 }
 
 @keyframes travel {
   50% {
-    transform: translateX(10px);
-    opacity: 0.35;
+    transform: translateX(calc(100% - 0.5rem));
+    opacity: 0.45;
   }
 }
 

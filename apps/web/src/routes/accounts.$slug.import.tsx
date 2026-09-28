@@ -2,12 +2,16 @@ import { createFileRoute } from "@tanstack/react-router";
 import { useState } from "react";
 import { AccountNav } from "../components/account-nav";
 import { importPreviewRow } from "../lib/format";
-import { previewImport, runImport } from "../lib/server";
+import { getAccounts, previewImport, runImport } from "../lib/server";
 
 type Upload = { name: string; data: Uint8Array<ArrayBuffer> };
-export const Route = createFileRoute("/accounts/$slug/import")({ component: ImportPage });
+export const Route = createFileRoute("/accounts/$slug/import")({
+  loader: () => getAccounts(),
+  component: ImportPage,
+});
 function ImportPage() {
   const { slug } = Route.useParams();
+  const accountName = Route.useLoaderData().find((account) => account.slug === slug)?.name ?? slug;
   const [files, setFiles] = useState<Upload[]>([]);
   const [preview, setPreview] = useState<Awaited<ReturnType<typeof previewImport>>>();
   const [message, setMessage] = useState("");
@@ -55,7 +59,9 @@ function ImportPage() {
     <>
       <AccountNav account={slug} />
       <p className="page-eyebrow">Account history</p>
-      <h1 className="mt-2 text-3xl font-semibold tracking-tight">Import account history</h1>
+      <h1 className="mt-2 text-3xl font-semibold tracking-tight">
+        Import history for {accountName}
+      </h1>
       <p className="mt-2 text-slate-600 dark:text-slate-300">
         Upload exported .eml, Slack JSON, transcript, or supported audio files. Files are reviewed
         before import.

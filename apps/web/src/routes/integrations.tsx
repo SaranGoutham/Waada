@@ -84,6 +84,7 @@ function Integrations() {
   const [data, setData] = useState(initial);
   const [dialog, setDialog] = useState<DialogState>();
   const [label, setLabel] = useState("");
+  const [token, setToken] = useState("");
   const [error, setError] = useState("");
   const [busy, setBusy] = useState(false);
   const saved = data.saved;
@@ -135,6 +136,7 @@ function Integrations() {
         saved={saved}
         onConnect={(item) => {
           setLabel(item.label);
+          setToken("");
           setDialog(item);
         }}
         onDisconnect={disconnect}
@@ -199,7 +201,32 @@ function Integrations() {
             </h2>
             <p className="mt-2 text-sm text-slate-600 dark:text-slate-300">{dialog.prompt}</p>
             {dialog.name === "mcp" ? (
-              <pre className="mt-4 overflow-auto rounded-lg bg-slate-950 p-3 text-xs text-slate-100">{`{ "mcpServers": { "waada": { "command": "waada-mcp" } } }`}</pre>
+              <div className="mt-4">
+                <pre className="overflow-auto rounded-lg bg-slate-950 p-3 text-xs text-slate-100">{`{ "mcpServers": { "waada": { "command": "waada-mcp" } } }`}</pre>
+                <button
+                  type="button"
+                  onClick={() =>
+                    navigator.clipboard.writeText(
+                      '{ "mcpServers": { "waada": { "command": "waada-mcp" } } }',
+                    )
+                  }
+                  className="action-secondary mt-3 rounded-lg px-3 py-2 text-sm font-semibold"
+                >
+                  Copy config
+                </button>
+              </div>
+            ) : null}
+            {dialog.name === "hubspot" ? (
+              <label className="mt-5 block text-sm font-medium">
+                Private app token
+                <input
+                  type="password"
+                  value={token}
+                  onChange={(event) => setToken(event.target.value)}
+                  autoComplete="off"
+                  className="mt-2 w-full rounded-lg border border-slate-300 bg-white px-3 py-2 dark:border-slate-700 dark:bg-slate-900"
+                />
+              </label>
             ) : null}
             <label className="mt-5 block text-sm font-medium">
               Connection label
@@ -221,9 +248,19 @@ function Integrations() {
                 type="button"
                 disabled={busy}
                 onClick={connect}
-                className="action-primary rounded-lg px-4 py-2 text-sm font-semibold disabled:opacity-60"
+                className={
+                  dialog.name === "gmail" || dialog.name === "meet"
+                    ? "inline-flex items-center gap-2 rounded-lg border border-slate-300 bg-white px-4 py-2 text-sm font-semibold text-slate-800 shadow-sm disabled:opacity-60"
+                    : "action-primary rounded-lg px-4 py-2 text-sm font-semibold disabled:opacity-60"
+                }
               >
-                {busy ? "Saving" : "Connect"}
+                {busy
+                  ? "Saving"
+                  : dialog.name === "gmail" || dialog.name === "meet"
+                    ? "Sign in with Google"
+                    : dialog.name === "slack"
+                      ? "Add to Slack"
+                      : "Connect"}
               </button>
             </div>
           </section>
@@ -321,14 +358,17 @@ function IntegrationGroup({
                 <div className="min-w-0 flex-1">
                   <div className="flex items-center justify-between gap-2">
                     <h3 className="font-semibold">{item.title}</h3>
-                    <Status value={connected ? "Connected" : "Ready"} />
+                    {connected ? (
+                      <Status value={`Connected · ${connection.label ?? item.label}`} />
+                    ) : (
+                      <Status value="Ready" />
+                    )}
                   </div>
                   <p className="mt-1 text-sm leading-5 text-slate-600 dark:text-slate-300">
                     {item.description}
                   </p>
                   {connected ? (
                     <div className="mt-4 flex items-center gap-3">
-                      <span className="text-sm text-slate-500">{connection.label}</span>
                       <button
                         type="button"
                         disabled={busy}

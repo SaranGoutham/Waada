@@ -1,5 +1,5 @@
 import { describe, expect, it } from "vitest";
-import { commitmentRow, importPreviewRow } from "./format";
+import { briefSections, commitmentRow, importPreviewRow, sourceDisplay } from "./format";
 
 describe("display rows", () => {
   it("keeps an open commitment's source and people visible", () => {
@@ -29,5 +29,42 @@ describe("display rows", () => {
         source: "eml",
       }).participants,
     ).toBe("Alex, Meenakshi");
+  });
+});
+
+describe("brief sections", () => {
+  it("splits conventional Markdown headings", () => {
+    expect(briefSections("## People\n\nAsha\n\n## Deal story\n\nIn procurement")).toEqual({
+      people: "Asha",
+      "deal story": "In procurement",
+    });
+  });
+  it("splits plain, bold, and colon-ended headings without case sensitivity", () => {
+    expect(
+      briefSections(
+        "open commitments\nPromise\n\n**LANDMINES**\nPricing\n\nRecent Changes:\nMoved to Q4",
+      ),
+    ).toEqual({
+      "open commitments": "Promise",
+      landmines: "Pricing",
+      "recent changes": "Moved to Q4",
+    });
+  });
+});
+
+describe("source display", () => {
+  it("turns raw timestamped Slack context into a short source", () => {
+    expect(sourceDisplay("2026-09-19T00:00:00.020Z (slack — renewal thread)")).toEqual({
+      date: "Sep 19, 2026",
+      type: "slack",
+      title: "renewal thread",
+    });
+  });
+  it("handles bracketed timestamps", () => {
+    expect(sourceDisplay("[2026-08-12T09:00:00.010Z] Call — security review")).toEqual({
+      date: "Aug 12, 2026",
+      type: "call",
+      title: "security review",
+    });
   });
 });

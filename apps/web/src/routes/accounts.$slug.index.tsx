@@ -1,13 +1,14 @@
 import { createFileRoute } from "@tanstack/react-router";
-import { AccountNav, SampleBanner } from "../components/account-nav";
+import { AccountNav, SampleBanner, SourceChip } from "../components/account-nav";
 import { routeErrorMessage } from "../lib/error";
-import { formatDate } from "../lib/format";
-import { getAppMode, getBrief } from "../lib/server";
+import { briefSections, formatDate } from "../lib/format";
+import { getAccounts, getAppMode, getBrief } from "../lib/server";
 
 export const Route = createFileRoute("/accounts/$slug/")({
   loader: async ({ params }) => ({
     brief: await getBrief({ data: { account: params.slug } }),
     mode: await getAppMode(),
+    accounts: await getAccounts(),
   }),
   component: BriefPage,
   errorComponent: ({ error }) => <RouteError error={error} />,
@@ -22,8 +23,10 @@ function RouteError({ error }: { error: unknown }) {
 }
 
 function BriefPage() {
-  const { brief, mode } = Route.useLoaderData();
+  const { brief, mode, accounts } = Route.useLoaderData();
   const { slug } = Route.useParams();
+  const accountName = accounts.find((account) => account.slug === slug)?.name ?? slug;
+  const sections = briefSections(brief.markdown);
   return (
     <>
       <AccountNav account={slug} />
@@ -31,7 +34,9 @@ function BriefPage() {
       <div className="flex items-end justify-between gap-4">
         <div>
           <p className="page-eyebrow">Account brief</p>
-          <h1 className="mt-2 text-3xl font-semibold tracking-tight">Before you call {slug}</h1>
+          <h1 className="mt-2 text-3xl font-semibold tracking-tight">
+            Before you call {accountName}
+          </h1>
         </div>
         <button
           type="button"
@@ -65,11 +70,12 @@ function BriefPage() {
                   </div>
                   <p className="mt-3 text-sm text-slate-600 dark:text-slate-300">
                     {item.madeBy} <span aria-hidden="true">→</span> {item.madeTo} · Made{" "}
-                    {formatDate(item.date)} · Due {formatDate(item.dueDate ?? null)}
+                    {formatDate(item.date)}
+                    {item.dueDate ? ` · Due ${formatDate(item.dueDate)}` : ""}
                   </p>
                   <p className="mt-3 text-sm text-slate-500 dark:text-slate-400">{item.evidence}</p>
-                  <span className="mt-4 inline-block rounded-full bg-slate-100 px-2.5 py-1 text-xs font-medium text-slate-600 dark:bg-slate-800 dark:text-slate-300">
-                    {item.source}
+                  <span className="mt-4 inline-block">
+                    <SourceChip source={item.source} />
                   </span>
                 </article>
               );
@@ -89,25 +95,17 @@ function BriefPage() {
                 Don’t re-open: {item.guidance}
               </p>
               <p className="mt-3 text-sm text-slate-600 dark:text-slate-300">{item.whatHappened}</p>
-              <p className="mt-3 text-xs text-slate-600 dark:text-slate-400">{item.source}</p>
+              <div className="mt-3">
+                <SourceChip source={item.source} />
+              </div>
             </article>
           ))}
         </div>
       </section>
       <section className="mt-8 grid gap-4 md:grid-cols-2">
-        <BriefDetail
-          title="People"
-          text="The people named across this account’s imported history."
-        />
-        <BriefDetail title="Deal story" text={brief.markdown} />
-        <BriefDetail
-          title="Recent changes"
-          text="Review the open commitments above before your next conversation."
-        />
-        <BriefDetail
-          title="Customer words"
-          text="Quoted context appears here when it is present in the account history."
-        />
+        {(["people", "deal story", "recent changes", "customer words"] as const).map((title) =>
+          sections[title] ? <BriefDetail key={title} title={title} text={sections[title]} /> : null,
+        )}
       </section>
     </>
   );
@@ -116,7 +114,7 @@ function BriefPage() {
 function BriefDetail({ title, text }: { title: string; text: string }) {
   return (
     <article className="surface rounded-2xl border p-5">
-      <h2 className="font-semibold">{title}</h2>
+      <h2 className="font-semibold capitalize">{title}</h2>
       <p className="mt-2 whitespace-pre-line text-sm leading-6 text-slate-600 dark:text-slate-300">
         {text.replace(/\*\*/g, "")}
       </p>

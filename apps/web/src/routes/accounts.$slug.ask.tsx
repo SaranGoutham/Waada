@@ -1,14 +1,15 @@
 import { createFileRoute } from "@tanstack/react-router";
 import { useState } from "react";
-import { AccountNav, SampleBanner } from "../components/account-nav";
-import { getAnswer, getAppMode } from "../lib/server";
+import { AccountNav, SampleBanner, SourceChip } from "../components/account-nav";
+import { getAccounts, getAnswer, getAppMode } from "../lib/server";
 export const Route = createFileRoute("/accounts/$slug/ask")({
-  loader: () => getAppMode(),
+  loader: async () => ({ mode: await getAppMode(), accounts: await getAccounts() }),
   component: Ask,
 });
 function Ask() {
-  const mode = Route.useLoaderData();
+  const { mode, accounts } = Route.useLoaderData();
   const { slug } = Route.useParams();
+  const accountName = accounts.find((account) => account.slug === slug)?.name ?? slug;
   const [question, setQuestion] = useState("");
   const [answer, setAnswer] = useState<{ text: string; citations: string[] }>();
   const [error, setError] = useState("");
@@ -32,7 +33,7 @@ function Ask() {
       <AccountNav account={slug} />
       <SampleBanner active={mode.fakeCore} />
       <p className="page-eyebrow">Account context</p>
-      <h1 className="mt-2 text-3xl font-semibold tracking-tight">Ask about {slug}</h1>
+      <h1 className="mt-2 text-3xl font-semibold tracking-tight">Ask about {accountName}</h1>
       <form onSubmit={submit} className="surface mt-6 max-w-3xl rounded-2xl border p-5 shadow-sm">
         <label htmlFor="question" className="font-medium">
           Question
@@ -75,12 +76,7 @@ function Ask() {
           <h2 className="mt-5 text-sm font-semibold">Sources</h2>
           <div className="mt-2 flex flex-wrap gap-2">
             {[...new Set(answer.citations)].map((citation) => (
-              <span
-                key={citation}
-                className="rounded-full bg-slate-100 px-2.5 py-1 text-xs text-slate-600 dark:bg-slate-800 dark:text-slate-300"
-              >
-                {citation}
-              </span>
+              <SourceChip key={citation} source={citation} />
             ))}
           </div>
         </article>

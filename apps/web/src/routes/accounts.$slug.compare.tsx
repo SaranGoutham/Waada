@@ -1,11 +1,12 @@
 import { createFileRoute } from "@tanstack/react-router";
 import { AccountNav, SampleBanner } from "../components/account-nav";
 import { routeErrorMessage } from "../lib/error";
-import { getAppMode, getCompare } from "../lib/server";
+import { getAccounts, getAppMode, getCompare } from "../lib/server";
 export const Route = createFileRoute("/accounts/$slug/compare")({
   loader: async ({ params }) => ({
     result: await getCompare({ data: { account: params.slug } }),
     mode: await getAppMode(),
+    accounts: await getAccounts(),
   }),
   component: Compare,
   errorComponent: ({ error }) => <RouteError error={error} />,
@@ -20,14 +21,17 @@ function RouteError({ error }: { error: unknown }) {
 }
 
 function Compare() {
-  const { result, mode } = Route.useLoaderData();
+  const { result, mode, accounts } = Route.useLoaderData();
   const { slug } = Route.useParams();
+  const accountName = accounts.find((account) => account.slug === slug)?.name ?? slug;
   return (
     <>
       <AccountNav account={slug} />
       <SampleBanner active={mode.fakeCore} />
       <p className="page-eyebrow">Account context</p>
-      <h1 className="mt-2 text-3xl font-semibold tracking-tight">Compare account views</h1>
+      <h1 className="mt-2 text-3xl font-semibold tracking-tight">
+        Compare views for {accountName}
+      </h1>
       <div className="mt-6 grid gap-4 lg:grid-cols-3">
         {[
           ["CRM only", "The CRM record, without conversation history.", result.crm],

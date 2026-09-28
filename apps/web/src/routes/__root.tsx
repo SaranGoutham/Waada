@@ -1,3 +1,4 @@
+import { ChartLineUp, Gear, Plugs, Plus } from "@phosphor-icons/react";
 import {
   createRootRoute,
   HeadContent,
@@ -69,9 +70,9 @@ function RootDocument({ children }: { children: React.ReactNode }) {
               ))}
               <Link
                 to="/"
-                className="block rounded-lg px-3 py-2 text-sm font-medium text-sky-800 transition hover:bg-sky-50 dark:text-sky-200"
+                className="flex items-center gap-2 rounded-lg px-3 py-2 text-sm font-medium text-sky-800 transition hover:bg-sky-50 dark:text-sky-200"
               >
-                + New account
+                <Plus size={16} aria-hidden="true" /> New account
               </Link>
             </nav>
             <p className="mt-7 text-[11px] font-bold uppercase tracking-[0.14em] text-slate-400">
@@ -80,21 +81,21 @@ function RootDocument({ children }: { children: React.ReactNode }) {
             <nav className="mt-2 space-y-1" aria-label="Workspace">
               <Link
                 to="/integrations"
-                className="block rounded-lg px-3 py-2 text-sm font-medium text-slate-700 transition hover:bg-sky-50 hover:text-sky-800 dark:text-slate-200 dark:hover:bg-slate-800 dark:hover:text-sky-200"
+                className="flex items-center gap-2 rounded-lg px-3 py-2 text-sm font-medium text-slate-700 transition hover:bg-sky-50 hover:text-sky-800 dark:text-slate-200 dark:hover:bg-slate-800 dark:hover:text-sky-200"
               >
-                Integrations
+                <Plugs size={16} aria-hidden="true" /> Integrations
               </Link>
               <Link
                 to="/pipeline"
-                className="block rounded-lg px-3 py-2 text-sm font-medium text-slate-700 transition hover:bg-sky-50 hover:text-sky-800 dark:text-slate-200 dark:hover:bg-slate-800 dark:hover:text-sky-200"
+                className="flex items-center gap-2 rounded-lg px-3 py-2 text-sm font-medium text-slate-700 transition hover:bg-sky-50 hover:text-sky-800 dark:text-slate-200 dark:hover:bg-slate-800 dark:hover:text-sky-200"
               >
-                Pipeline
+                <ChartLineUp size={16} aria-hidden="true" /> Pipeline
               </Link>
               <Link
                 to="/settings/llm"
-                className="block rounded-lg px-3 py-2 text-sm font-medium text-slate-700 transition hover:bg-sky-50 hover:text-sky-800 dark:text-slate-200 dark:hover:bg-slate-800 dark:hover:text-sky-200"
+                className="flex items-center gap-2 rounded-lg px-3 py-2 text-sm font-medium text-slate-700 transition hover:bg-sky-50 hover:text-sky-800 dark:text-slate-200 dark:hover:bg-slate-800 dark:hover:text-sky-200"
               >
-                Settings
+                <Gear size={16} aria-hidden="true" /> Settings
               </Link>
             </nav>
           </aside>
