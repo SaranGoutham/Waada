@@ -158,6 +158,9 @@ Notes for master: <anything the next card needs to know>
 | S20 | `.eml` parsing | `postal-mime` (P-001) | Approved |
 | S21 | Ollama connection | Ollama's OpenAI-compatible endpoint (`http://localhost:11434/v1`) via `@ai-sdk/openai-compatible` (P-002). Ollama calls this compatibility experimental; transcription is not supported on this route | Approved |
 | S22 | UI icons | **Phosphor Icons** (`@phosphor-icons/react`) in `apps/web` (human, 2026-09-28) | Approved |
+| S23 | Hosting | **Vercel**, via the Nitro Vite plugin (`nitro`, v3 beta, as the Vercel and TanStack docs prescribe) in `apps/web` (human, 2026-09-28) | Approved |
+| S24 | Hosted storage | **Upstash Redis** (`@upstash/redis`, via the Vercel Marketplace) replaces `.waada/` JSON files when deployed; local dev keeps the JSON files (human, 2026-09-28) | Approved |
+| S25 | Hosted access | **Vercel deployment protection** guards the hosted app (S15 "no auth" still holds for local dev) (human, 2026-09-28) | Approved |
 
 No open stack questions right now. New ones go to `docs/decisions/PROPOSALS.md`.
 
