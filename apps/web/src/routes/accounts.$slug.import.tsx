@@ -1,17 +1,37 @@
+import { Chats, EnvelopeSimple, FileText, type Icon, Phone } from "@phosphor-icons/react";
 import { createFileRoute } from "@tanstack/react-router";
 import { useState } from "react";
-import { AccountNav } from "../components/account-nav";
+import { AccountHeader, AccountNav } from "../components/account-nav";
 import { importPreviewRow } from "../lib/format";
-import { getAccounts, previewImport, runImport } from "../lib/server";
+import {
+  getAccounts,
+  getImportedInteractions,
+  getPipelineStats,
+  previewImport,
+  runImport,
+} from "../lib/server";
+
+const typeIcons: Record<string, Icon> = {
+  email: EnvelopeSimple,
+  slack: Chats,
+  call: Phone,
+  meeting: Phone,
+  note: FileText,
+};
 
 type Upload = { name: string; data: Uint8Array<ArrayBuffer> };
 export const Route = createFileRoute("/accounts/$slug/import")({
-  loader: () => getAccounts(),
+  loader: async ({ params }) => ({
+    accounts: await getAccounts(),
+    stats: await getPipelineStats({ data: { account: params.slug } }),
+    interactions: await getImportedInteractions({ data: { account: params.slug } }),
+  }),
   component: ImportPage,
 });
 function ImportPage() {
   const { slug } = Route.useParams();
-  const accountName = Route.useLoaderData().find((account) => account.slug === slug)?.name ?? slug;
+  const { accounts, interactions, stats } = Route.useLoaderData();
+  const accountName = accounts.find((account) => account.slug === slug)?.name ?? slug;
   const [files, setFiles] = useState<Upload[]>([]);
   const [preview, setPreview] = useState<Awaited<ReturnType<typeof previewImport>>>();
   const [message, setMessage] = useState("");
@@ -58,20 +78,33 @@ function ImportPage() {
   return (
     <>
       <AccountNav account={slug} />
-      <p className="page-eyebrow">Account history</p>
-      <h1 className="mt-2 text-3xl font-semibold tracking-tight">
-        Import history for {accountName}
-      </h1>
-      <p className="mt-2 text-slate-600 dark:text-slate-300">
-        Upload exported .eml, Slack JSON, transcript, or supported audio files. Files are reviewed
-        before import.
-      </p>
+      <AccountHeader
+        account={accountName}
+        interactions={stats.interactions}
+        latestInteraction={stats.latestInteraction}
+        action={
+          <label
+            htmlFor="files"
+            className="action-primary cursor-pointer rounded-md px-3 py-2 text-sm font-semibold"
+          >
+            Add files
+          </label>
+        }
+      />
+      <h2 className="text-xl font-semibold">Sources</h2>
+      {!interactions.length ? (
+        <p className="mt-2 text-[#5f5f5b]">
+          Add the departed rep&apos;s emails, Slack exports and call transcripts to build the brief.
+        </p>
+      ) : null}
       <label
         htmlFor="files"
-        className="mt-6 flex cursor-pointer flex-col items-center rounded-2xl border-2 border-dashed border-indigo-300 bg-indigo-50 px-6 py-12 text-center transition hover:border-indigo-500 dark:border-indigo-500/50 dark:bg-indigo-500/10"
+        className="mt-6 flex cursor-pointer flex-col items-center rounded-lg border-2 border-dashed border-[#d8d8d5] bg-[#f7f6f3] px-6 py-12 text-center transition hover:border-[#171716]"
       >
         <span className="font-semibold">Drop files here or choose files</span>
-        <span className="mt-1 text-sm text-slate-600">Your source files stay local.</span>
+        <span className="mt-1 text-sm text-[#5f5f5b]">
+          Drop emails (.eml), Slack exports (.json), call transcripts (.txt, .vtt) or crm.json
+        </span>
         <input
           id="files"
           type="file"
@@ -84,19 +117,16 @@ function ImportPage() {
         <div
           role="status"
           aria-label="Processing files"
-          className="mt-4 h-3 w-48 animate-pulse rounded-full bg-slate-200 dark:bg-slate-700"
+          className="mt-4 h-3 w-48 animate-pulse rounded bg-[#eaeaea]"
         />
       ) : null}
       {error ? (
-        <p
-          role="alert"
-          className="mt-4 rounded-xl border border-rose-200 bg-rose-50 p-3 text-rose-700"
-        >
+        <p role="alert" className="mt-4 border border-[#fdebec] bg-[#fdebec] p-3 text-[#9f2f2d]">
           {error}
         </p>
       ) : null}
       {message ? (
-        <p role="status" className="mt-4 rounded-xl bg-emerald-50 p-3 text-emerald-900">
+        <p role="status" className="mt-4 bg-[#edf3ec] p-3 text-[#346538]">
           {message}
         </p>
       ) : null}
@@ -110,7 +140,7 @@ function ImportPage() {
               type="button"
               disabled={!files.length || busy}
               onClick={submit}
-              className="action-primary rounded-lg px-4 py-2 font-semibold disabled:opacity-60"
+              className="action-secondary rounded-md px-4 py-2 font-semibold disabled:opacity-60"
             >
               Import
             </button>
@@ -120,9 +150,9 @@ function ImportPage() {
               {preview.errors.join(" ")}
             </p>
           ) : null}
-          <div className="mt-4 overflow-x-auto rounded-2xl border border-slate-200 bg-white shadow-sm dark:border-slate-800 dark:bg-[#171d2c]">
+          <div className="mt-4 overflow-x-auto rounded-lg border border-[#eaeaea] bg-white">
             <table className="w-full text-left text-sm">
-              <thead className="bg-slate-50">
+              <thead className="bg-[#f7f6f3]">
                 <tr>
                   <th className="p-3">Date</th>
                   <th className="p-3">Type</th>
@@ -138,12 +168,37 @@ function ImportPage() {
                       <td className="p-3">{row.date}</td>
                       <td className="p-3 capitalize">{row.type}</td>
                       <td className="p-3 font-medium">{row.title}</td>
-                      <td className="p-3 text-slate-600">{row.participants}</td>
+                      <td className="p-3 text-[#5f5f5b]">{row.participants}</td>
                     </tr>
                   );
                 })}
               </tbody>
             </table>
+          </div>
+        </section>
+      ) : null}
+      {interactions.length ? (
+        <section className="mt-8">
+          <h2 className="text-xl font-semibold">Already imported</h2>
+          <div className="mt-3 divide-y border-y border-[#eaeaea]">
+            {interactions.map((interaction) => {
+              const Icon = typeIcons[interaction.type] ?? FileText;
+              return (
+                <article
+                  key={interaction.sourceId}
+                  className="flex items-center gap-3 py-3 text-sm"
+                >
+                  <Icon size={17} weight="bold" aria-hidden="true" />
+                  <span className="w-24 shrink-0 text-[#5f5f5b]">
+                    {importPreviewRow(interaction).date}
+                  </span>
+                  <span className="w-16 shrink-0 capitalize text-[#5f5f5b]">
+                    {interaction.type}
+                  </span>
+                  <span className="font-medium">{interaction.title}</span>
+                </article>
+              );
+            })}
           </div>
         </section>
       ) : null}

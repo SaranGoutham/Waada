@@ -1,4 +1,4 @@
-import { ChartLineUp, Gear, Plugs, Plus } from "@phosphor-icons/react";
+import { Gear, Plugs, Plus } from "@phosphor-icons/react";
 import {
   createRootRoute,
   HeadContent,
@@ -25,8 +25,6 @@ export const Route = createRootRoute({
 function RootDocument({ children }: { children: React.ReactNode }) {
   const accounts = Route.useLoaderData();
   const pathname = useRouterState({ select: (state) => state.location.pathname });
-  const activeSlug = pathname.match(/^\/accounts\/([^/]+)/)?.[1];
-  const activeAccount = accounts.find((account) => account.slug === activeSlug);
   const isLanding = pathname === "/";
   return (
     <html lang="en">
@@ -64,25 +62,16 @@ function RootDocument({ children }: { children: React.ReactNode }) {
                   <Plus size={15} aria-hidden="true" /> New account
                 </Link>
               </nav>
-              <p className="nav-label mt-8">Workspace</p>
-              <nav className="mt-2 space-y-1" aria-label="Workspace">
+              <nav className="mt-8 space-y-1" aria-label="Workspace">
                 <Link to="/integrations" className="nav-link inline-flex items-center gap-2">
                   <Plugs size={15} aria-hidden="true" /> Integrations
-                </Link>
-                <Link to="/pipeline" className="nav-link inline-flex items-center gap-2">
-                  <ChartLineUp size={15} aria-hidden="true" /> Pipeline
                 </Link>
                 <Link to="/settings/llm" className="nav-link inline-flex items-center gap-2">
                   <Gear size={15} aria-hidden="true" /> Settings
                 </Link>
               </nav>
             </aside>
-            <div className="min-w-0">
-              <header className="app-header flex min-h-16 items-center border-b px-6 sm:px-8">
-                <p className="font-medium">{activeAccount?.name ?? "Workspace"}</p>
-              </header>
-              <main className="mx-auto max-w-6xl px-6 py-10 sm:px-10">{children}</main>
-            </div>
+            <main className="min-w-0 px-6 py-10 sm:px-10">{children}</main>
           </div>
         )}
         <Scripts />

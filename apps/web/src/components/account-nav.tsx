@@ -5,9 +5,9 @@ import { sourceDisplay } from "../lib/format";
 export function AccountNav({ account }: { account: string }) {
   const links = [
     ["Brief", "/accounts/$slug"],
-    ["Commitments", "/accounts/$slug/commitments"],
-    ["Import", "/accounts/$slug/import"],
+    ["Promises", "/accounts/$slug/commitments"],
     ["Ask", "/accounts/$slug/ask"],
+    ["Sources", "/accounts/$slug/import"],
     ["Compare", "/accounts/$slug/compare"],
   ] as const;
   return (
@@ -21,11 +21,39 @@ export function AccountNav({ account }: { account: string }) {
           to={to}
           params={{ slug: account }}
           className="border-b-2 border-transparent py-3 text-[#5f5f5b] transition hover:border-[#171716] hover:text-[#171716]"
+          activeProps={{ className: "border-[#171716] font-semibold text-[#171716]" }}
         >
           {label}
         </Link>
       ))}
     </nav>
+  );
+}
+
+export function AccountHeader({
+  account,
+  interactions,
+  latestInteraction,
+  action,
+}: {
+  account: string;
+  interactions: number;
+  latestInteraction?: string;
+  action?: React.ReactNode;
+}) {
+  const summary = interactions
+    ? `${interactions} ${interactions === 1 ? "item" : "items"} · last import ${
+        sourceDisplay(latestInteraction ?? "").date ?? "—"
+      }`
+    : "No files yet";
+  return (
+    <header className="mb-6 flex flex-wrap items-end justify-between gap-4">
+      <div>
+        <h1 className="text-3xl font-semibold tracking-tight">{account}</h1>
+        <p className="mt-2 text-sm text-[#5f5f5b]">{summary}</p>
+      </div>
+      {action}
+    </header>
   );
 }
 export function SampleBanner({ active }: { active: boolean }) {

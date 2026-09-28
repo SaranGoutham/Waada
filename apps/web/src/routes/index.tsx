@@ -3,9 +3,9 @@ import { createFileRoute, Link } from "@tanstack/react-router";
 
 export const Route = createFileRoute("/")({ component: Landing });
 const features = [
-  ["Commitment ledger", "Open, overdue, and delivered promises with the evidence behind each one."],
-  ["Landmines", "Settled objections the next owner should not reopen."],
-  ["Handover brief", "A focused starting point before the next customer conversation."],
+  ["Promise ledger", "Open, overdue, and delivered promises with the evidence behind each one."],
+  ["Don't reopen", "Settled objections the next owner should not reopen."],
+  ["Brief", "A focused starting point before the next customer conversation."],
   ["Ask with sources", "Trace a change or decision back to the original account history."],
   ["Compare", "Read Waada alongside CRM-only and summary-only views."],
   ["Per-account memory", "Hindsight keeps each account's context separate and recallable."],

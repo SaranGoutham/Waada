@@ -1,13 +1,17 @@
 import { createFileRoute } from "@tanstack/react-router";
 import { useState } from "react";
-import { AccountNav, SampleBanner, SourceChip } from "../components/account-nav";
-import { getAccounts, getAnswer, getAppMode } from "../lib/server";
+import { AccountHeader, AccountNav, SampleBanner, SourceChip } from "../components/account-nav";
+import { getAccounts, getAnswer, getAppMode, getPipelineStats } from "../lib/server";
 export const Route = createFileRoute("/accounts/$slug/ask")({
-  loader: async () => ({ mode: await getAppMode(), accounts: await getAccounts() }),
+  loader: async ({ params }) => ({
+    mode: await getAppMode(),
+    accounts: await getAccounts(),
+    stats: await getPipelineStats({ data: { account: params.slug } }),
+  }),
   component: Ask,
 });
 function Ask() {
-  const { mode, accounts } = Route.useLoaderData();
+  const { mode, accounts, stats } = Route.useLoaderData();
   const { slug } = Route.useParams();
   const accountName = accounts.find((account) => account.slug === slug)?.name ?? slug;
   const [question, setQuestion] = useState("");
@@ -32,9 +36,13 @@ function Ask() {
     <>
       <AccountNav account={slug} />
       <SampleBanner active={mode.fakeCore} />
-      <p className="page-eyebrow">Account context</p>
-      <h1 className="mt-2 text-3xl font-semibold tracking-tight">Ask about {accountName}</h1>
-      <form onSubmit={submit} className="surface mt-6 max-w-3xl rounded-2xl border p-5 shadow-sm">
+      <AccountHeader
+        account={accountName}
+        interactions={stats.interactions}
+        latestInteraction={stats.latestInteraction}
+      />
+      <h2 className="text-xl font-semibold">Ask</h2>
+      <form onSubmit={submit} className="surface mt-6 max-w-3xl rounded-lg border p-5">
         <label htmlFor="question" className="font-medium">
           Question
         </label>
@@ -42,7 +50,7 @@ function Ask() {
           id="question"
           value={question}
           onChange={(e) => setQuestion(e.target.value)}
-          className="mt-2 min-h-28 w-full rounded-xl border border-slate-300 bg-white p-3 dark:border-slate-700 dark:bg-slate-900"
+          className="mt-2 min-h-28 w-full rounded-md border border-[#d8d8d5] bg-white p-3"
           required
         />
         <div className="mt-3 flex flex-wrap gap-2">
@@ -51,7 +59,7 @@ function Ask() {
               type="button"
               key={suggestion}
               onClick={() => setQuestion(suggestion)}
-              className="rounded-full border border-slate-300 px-3 py-1 text-sm hover:border-indigo-400 hover:text-indigo-700 dark:border-slate-700"
+              className="rounded-full border border-[#d8d8d5] px-3 py-1 text-sm hover:border-[#171716]"
             >
               {suggestion}
             </button>
@@ -71,7 +79,7 @@ function Ask() {
         ) : null}
       </form>
       {answer ? (
-        <article className="surface mt-8 max-w-3xl rounded-2xl border p-6 shadow-sm">
+        <article className="surface mt-8 max-w-3xl rounded-lg border p-6">
           <p className="leading-7">{answer.text}</p>
           <h2 className="mt-5 text-sm font-semibold">Sources</h2>
           <div className="mt-2 flex flex-wrap gap-2">

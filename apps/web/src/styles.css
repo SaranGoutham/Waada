@@ -68,8 +68,7 @@ select {
   transform: scale(0.98);
 }
 .app-frame,
-.app-sidebar,
-.app-header {
+.app-sidebar {
   background: #fff;
   border-color: #eaeaea;
 }

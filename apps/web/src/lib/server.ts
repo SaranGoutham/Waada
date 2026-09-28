@@ -192,3 +192,11 @@ export const getPipelineStats = createServerFn({ method: "GET" })
       };
     });
   });
+
+export const getImportedInteractions = createServerFn({ method: "GET" })
+  .validator(AccountSlug)
+  .handler(async ({ data }) => {
+    return invoke(async ({ Interaction, readJson }) =>
+      readJson(`interactions/${data.account}.json`, z.array(Interaction), []),
+    );
+  });

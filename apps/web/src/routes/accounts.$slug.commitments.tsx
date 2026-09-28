@@ -1,18 +1,21 @@
 import { createFileRoute } from "@tanstack/react-router";
 import { useState } from "react";
-import { AccountNav, SampleBanner } from "../components/account-nav";
+import { AccountHeader, AccountNav, SampleBanner } from "../components/account-nav";
 import { commitmentRow } from "../lib/format";
-import { getAppMode, getBrief } from "../lib/server";
+import { getAccounts, getAppMode, getBrief, getPipelineStats } from "../lib/server";
 export const Route = createFileRoute("/accounts/$slug/commitments")({
   loader: async ({ params }) => ({
     brief: await getBrief({ data: { account: params.slug } }),
     mode: await getAppMode(),
+    accounts: await getAccounts(),
+    stats: await getPipelineStats({ data: { account: params.slug } }),
   }),
   component: Commitments,
 });
 function Commitments() {
-  const { brief, mode } = Route.useLoaderData();
+  const { brief, mode, accounts, stats } = Route.useLoaderData();
   const { slug } = Route.useParams();
+  const accountName = accounts.find((account) => account.slug === slug)?.name ?? slug;
   const [filter, setFilter] = useState("all");
   const [dueOnly, setDueOnly] = useState(false);
   const items = brief.commitments.filter(
@@ -22,11 +25,13 @@ function Commitments() {
     <>
       <AccountNav account={slug} />
       <SampleBanner active={mode.fakeCore} />
+      <AccountHeader
+        account={accountName}
+        interactions={stats.interactions}
+        latestInteraction={stats.latestInteraction}
+      />
       <div className="flex flex-wrap items-end justify-between gap-4">
-        <div>
-          <p className="page-eyebrow">Account ledger</p>
-          <h1 className="mt-2 text-3xl font-semibold tracking-tight">Commitments</h1>
-        </div>
+        <h2 className="text-xl font-semibold">Promises</h2>
         <div className="flex gap-2">
           <label className="sr-only" htmlFor="status-filter">
             Status
@@ -52,7 +57,7 @@ function Commitments() {
           </button>
         </div>
       </div>
-      <div className="surface mt-6 overflow-x-auto rounded-2xl border shadow-sm">
+      <div className="surface mt-6 overflow-x-auto rounded-lg border">
         <table className="w-full text-left text-sm">
           <thead className="surface-muted">
             <tr>
