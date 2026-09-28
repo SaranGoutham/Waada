@@ -14,8 +14,15 @@ const TranscriptMeta = z.object({
   type: InteractionType,
 });
 type TranscriptMeta = z.infer<typeof TranscriptMeta>;
-const TranscriptMetaPartial = TranscriptMeta.partial();
-type TranscriptMetaPartial = z.infer<typeof TranscriptMetaPartial>;
+// Every key required but nullable: Groq's strict structured output rejects
+// schemas with optional keys (HTTP 400 "`required` … every key in properties").
+export const TranscriptMetaExtract = z.object({
+  date: z.string().datetime().nullable(),
+  title: z.string().min(1).nullable(),
+  participants: z.array(z.string()),
+  type: InteractionType.nullable(),
+});
+type TranscriptMetaPartial = Partial<{ [K in keyof TranscriptMeta]: TranscriptMeta[K] | null }>;
 const log = createLogger("ingest");
 
 export type TranscriptResult = {
@@ -118,10 +125,12 @@ export async function parseTranscript(
     body = header.body;
   } else {
     const extracted = await deps?.llm?.extract({
-      system:
+      system: [
         "Extract meeting metadata as JSON with keys date (UTC ISO-8601), title, participants (names), type (call, meeting, email, slack or note).",
+        `Today is ${new Date().toISOString().slice(0, 10)}. If the transcript names a month and day but no year, use the most recent year in which that date is not after today. Use null for date only if no day is mentioned.`,
+      ].join("\n"),
       user: text.slice(0, 2000),
-      schema: TranscriptMetaPartial,
+      schema: TranscriptMetaExtract,
       name: "transcript-metadata",
       description: "Date, title, participants and type of a sales transcript",
     });

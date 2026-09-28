@@ -3,6 +3,7 @@ import { readFile } from "node:fs/promises";
 import { dirname, join } from "node:path";
 import { fileURLToPath } from "node:url";
 import { describe, expect, it } from "vitest";
+import { z } from "zod";
 import { parseTranscript } from "../src/ingest/transcript.ts";
 import type { FileInput } from "../src/models.ts";
 import { FakeLLM } from "./fakes.ts";
@@ -54,6 +55,30 @@ describe("parseTranscript", () => {
     expect(interactions[0]?.participants).toEqual(["Priya Nair", "Alex Rivera"]);
     expect(interactions[0]?.content).toContain("forty seats");
     expect(llm.calls.filter((c) => c.method === "extract")).toHaveLength(1);
+  });
+
+  it("asks for a schema with every key required (Groq strict structured output)", async () => {
+    const llm = new FakeLLM({ extract: { "transcript-metadata": [{ ...META }] } });
+    await parseTranscript(await fixture("no-header.txt"), "acme", { llm });
+    const call = llm.calls.find((c) => c.method === "extract");
+    const schema = z.toJSONSchema((call?.args[0] as { schema: z.ZodType }).schema) as {
+      properties: Record<string, unknown>;
+      required?: string[];
+    };
+    expect([...(schema.required ?? [])].sort()).toEqual(Object.keys(schema.properties).sort());
+  });
+
+  it("keeps the extracted title when the model returns a null date", async () => {
+    const llm = new FakeLLM({
+      extract: { "transcript-metadata": [{ ...META, date: null }] },
+    });
+    const { interactions, warnings } = await parseTranscript(
+      await fixture("no-header.txt"),
+      "acme",
+      { llm },
+    );
+    expect(interactions[0]?.title).toBe("Pilot scoping session");
+    expect(warnings).toHaveLength(1);
   });
 
   it("uses filename plus now with a warning when extraction returns null", async () => {
