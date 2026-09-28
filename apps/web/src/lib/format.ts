@@ -13,6 +13,12 @@ export function commitmentRow(commitment: Commitment) {
     promise: commitment.text,
     people: `${commitment.madeBy} → ${commitment.madeTo}`,
     date: formatDate(commitment.date),
+    dueDate: formatDate(commitment.dueDate ?? null),
+    overdue: Boolean(
+      commitment.status === "open" &&
+        commitment.dueDate &&
+        new Date(commitment.dueDate).getTime() < Date.now(),
+    ),
     evidence: commitment.evidence,
     source: commitment.source,
   };

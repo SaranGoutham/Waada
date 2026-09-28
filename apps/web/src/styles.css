@@ -12,4 +12,47 @@ body,
 
 body {
   margin: 0;
+  background: #f7f8fa;
+  color: #172033;
+}
+
+button,
+input,
+textarea,
+select {
+  font: inherit;
+}
+
+:focus-visible {
+  outline: 3px solid #6d5dfc;
+  outline-offset: 2px;
+}
+
+@media (prefers-color-scheme: dark) {
+  body {
+    background: #111522;
+    color: #edf0f7;
+  }
+}
+
+@media (prefers-reduced-motion: no-preference) {
+  .flow-dot {
+    animation: travel 3.5s ease-in-out infinite;
+  }
+  .spin {
+    animation: spin 0.8s linear infinite;
+  }
+}
+
+@keyframes travel {
+  50% {
+    transform: translateX(10px);
+    opacity: 0.35;
+  }
+}
+
+@keyframes spin {
+  to {
+    transform: rotate(360deg);
+  }
 }

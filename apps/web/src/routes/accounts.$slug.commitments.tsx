@@ -1,4 +1,5 @@
 import { createFileRoute } from "@tanstack/react-router";
+import { useState } from "react";
 import { AccountNav, SampleBanner } from "../components/account-nav";
 import { commitmentRow } from "../lib/format";
 import { getAppMode, getBrief } from "../lib/server";
@@ -12,12 +13,46 @@ export const Route = createFileRoute("/accounts/$slug/commitments")({
 function Commitments() {
   const { brief, mode } = Route.useLoaderData();
   const { slug } = Route.useParams();
+  const [filter, setFilter] = useState("all");
+  const [dueOnly, setDueOnly] = useState(false);
+  const items = brief.commitments.filter(
+    (item) => (filter === "all" || item.status === filter) && (!dueOnly || item.dueDate),
+  );
   return (
     <>
       <AccountNav account={slug} />
       <SampleBanner active={mode.fakeCore} />
-      <h1 className="text-3xl font-semibold">Commitment ledger</h1>
-      <div className="mt-6 overflow-x-auto rounded-xl border border-slate-200 bg-white">
+      <div className="flex flex-wrap items-end justify-between gap-4">
+        <div>
+          <p className="text-xs font-bold tracking-[.16em] text-indigo-600">ACCOUNT LEDGER</p>
+          <h1 className="mt-2 text-3xl font-semibold tracking-tight">Commitments</h1>
+        </div>
+        <div className="flex gap-2">
+          <label className="sr-only" htmlFor="status-filter">
+            Status
+          </label>
+          <select
+            id="status-filter"
+            value={filter}
+            onChange={(event) => setFilter(event.target.value)}
+            className="rounded-lg border border-slate-300 bg-white px-3 py-2 text-sm dark:border-slate-700 dark:bg-[#171d2c]"
+          >
+            <option value="all">All statuses</option>
+            <option value="open">Open</option>
+            <option value="unclear">Unclear</option>
+            <option value="delivered">Delivered</option>
+          </select>
+          <button
+            type="button"
+            aria-pressed={dueOnly}
+            onClick={() => setDueOnly((value) => !value)}
+            className="rounded-lg border border-slate-300 px-3 py-2 text-sm font-semibold dark:border-slate-700"
+          >
+            Has due date
+          </button>
+        </div>
+      </div>
+      <div className="mt-6 overflow-x-auto rounded-2xl border border-slate-200 bg-white shadow-sm dark:border-slate-800 dark:bg-[#171d2c]">
         <table className="w-full text-left text-sm">
           <thead className="bg-slate-50">
             <tr>
@@ -25,23 +60,32 @@ function Commitments() {
               <th className="p-3">Promise</th>
               <th className="p-3">Made by → to</th>
               <th className="p-3">Date</th>
+              <th className="p-3">Due date</th>
               <th className="p-3">Evidence</th>
               <th className="p-3">Source</th>
             </tr>
           </thead>
           <tbody>
-            {brief.commitments.map((item) => {
+            {items.map((item) => {
               const row = commitmentRow(item);
               return (
                 <tr key={`${row.source}-${row.promise}`} className="border-t">
                   <td className="p-3">
-                    <span className="rounded-full bg-rose-100 px-2 py-1 text-xs font-semibold text-rose-800">
+                    <span className="rounded-full bg-slate-100 px-2 py-1 text-xs font-semibold text-slate-700 dark:bg-slate-800 dark:text-slate-200">
                       {row.status}
                     </span>
                   </td>
                   <td className="p-3 font-medium">{row.promise}</td>
                   <td className="p-3">{row.people}</td>
                   <td className="p-3">{row.date}</td>
+                  <td className="p-3">
+                    {row.dueDate}
+                    {row.overdue ? (
+                      <span className="ml-2 rounded-full bg-rose-100 px-2 py-1 text-xs font-semibold text-rose-800">
+                        Overdue
+                      </span>
+                    ) : null}
+                  </td>
                   <td className="p-3">{row.evidence}</td>
                   <td className="p-3">{row.source}</td>
                 </tr>

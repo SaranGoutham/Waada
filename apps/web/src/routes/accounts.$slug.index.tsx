@@ -28,62 +28,98 @@ function BriefPage() {
     <>
       <AccountNav account={slug} />
       <SampleBanner active={mode.fakeCore} />
-      <div className="flex items-end justify-between">
+      <div className="flex items-end justify-between gap-4">
         <div>
-          <p className="text-sm font-semibold text-teal-700">ACCOUNT BRIEF</p>
-          <h1 className="text-3xl font-semibold">{slug}</h1>
+          <p className="text-xs font-bold tracking-[.16em] text-indigo-600">ACCOUNT BRIEF</p>
+          <h1 className="mt-2 text-3xl font-semibold tracking-tight">Before you call {slug}</h1>
         </div>
         <button
           type="button"
           onClick={() => window.location.reload()}
-          className="rounded-md border border-slate-300 bg-white px-3 py-2 text-sm font-medium"
+          className="inline-flex items-center gap-2 rounded-lg border border-slate-300 bg-white px-3 py-2 text-sm font-semibold shadow-sm dark:border-slate-700 dark:bg-[#171d2c]"
         >
-          Refresh
+          <span aria-hidden="true">↻</span> Refresh
         </button>
       </div>
       <section className="mt-7">
-        <h2 className="text-xl font-semibold">🚩 Open commitments</h2>
-        <div className="mt-3 overflow-x-auto rounded-xl border border-rose-200 bg-white">
-          <table className="w-full text-left text-sm">
-            <thead className="bg-rose-50 text-slate-600">
-              <tr>
-                <th className="p-3">Promise</th>
-                <th className="p-3">Due / made</th>
-                <th className="p-3">Evidence</th>
-              </tr>
-            </thead>
-            <tbody>
-              {brief.commitments
-                .filter((item) => item.status === "open")
-                .map((item) => (
-                  <tr key={item.source} className="border-t border-slate-100">
-                    <td className="p-3 font-medium">{item.text}</td>
-                    <td className="p-3">{formatDate(item.date)}</td>
-                    <td className="p-3 text-slate-600">{item.evidence}</td>
-                  </tr>
-                ))}
-            </tbody>
-          </table>
+        <h2 className="text-xl font-semibold">Open commitments</h2>
+        <div className="mt-3 grid gap-3">
+          {brief.commitments
+            .filter((item) => item.status === "open")
+            .map((item) => {
+              const overdue = Boolean(
+                item.dueDate && new Date(item.dueDate).getTime() < Date.now(),
+              );
+              return (
+                <article
+                  key={item.source}
+                  className="rounded-2xl border border-rose-200 bg-white p-5 shadow-sm dark:border-rose-900/60 dark:bg-[#171d2c]"
+                >
+                  <div className="flex flex-wrap items-start justify-between gap-3">
+                    <h3 className="max-w-3xl font-semibold">{item.text}</h3>
+                    {overdue ? (
+                      <span className="rounded-full bg-rose-100 px-2.5 py-1 text-xs font-bold text-rose-800">
+                        Overdue
+                      </span>
+                    ) : null}
+                  </div>
+                  <p className="mt-3 text-sm text-slate-600 dark:text-slate-300">
+                    {item.madeBy} <span aria-hidden="true">→</span> {item.madeTo} · Made{" "}
+                    {formatDate(item.date)} · Due {formatDate(item.dueDate ?? null)}
+                  </p>
+                  <p className="mt-3 text-sm text-slate-500 dark:text-slate-400">{item.evidence}</p>
+                  <span className="mt-4 inline-block rounded-full bg-slate-100 px-2.5 py-1 text-xs font-medium text-slate-600 dark:bg-slate-800 dark:text-slate-300">
+                    {item.source}
+                  </span>
+                </article>
+              );
+            })}
         </div>
       </section>
       <section className="mt-8">
-        <h2 className="text-xl font-semibold">⚠️ Landmines</h2>
+        <h2 className="text-xl font-semibold">Landmines</h2>
         <div className="mt-3 grid gap-3 md:grid-cols-2">
           {brief.landmines.map((item) => (
             <article
               key={item.topic}
-              className="rounded-xl border border-amber-200 bg-amber-50 p-4"
+              className="rounded-2xl border border-amber-200 bg-amber-50 p-5 dark:border-amber-900/60 dark:bg-amber-950/20"
             >
               <h3 className="font-semibold">{item.topic}</h3>
-              <p className="mt-2 text-sm">{item.guidance}</p>
-              <p className="mt-2 text-xs text-slate-600">{item.source}</p>
+              <p className="mt-3 text-sm font-semibold text-amber-950 dark:text-amber-100">
+                Don’t re-open: {item.guidance}
+              </p>
+              <p className="mt-3 text-sm text-slate-600 dark:text-slate-300">{item.whatHappened}</p>
+              <p className="mt-3 text-xs text-slate-600 dark:text-slate-400">{item.source}</p>
             </article>
           ))}
         </div>
       </section>
-      <article className="mt-8 whitespace-pre-wrap rounded-xl border border-slate-200 bg-white p-6 text-slate-700">
-        {brief.markdown}
-      </article>
+      <section className="mt-8 grid gap-4 md:grid-cols-2">
+        <BriefDetail
+          title="People"
+          text="The people named across this account’s imported history."
+        />
+        <BriefDetail title="Deal story" text={brief.markdown} />
+        <BriefDetail
+          title="Recent changes"
+          text="Review the open commitments above before your next conversation."
+        />
+        <BriefDetail
+          title="Customer words"
+          text="Quoted context appears here when it is present in the account history."
+        />
+      </section>
     </>
+  );
+}
+
+function BriefDetail({ title, text }: { title: string; text: string }) {
+  return (
+    <article className="rounded-2xl border border-slate-200 bg-white p-5 dark:border-slate-800 dark:bg-[#171d2c]">
+      <h2 className="font-semibold">{title}</h2>
+      <p className="mt-2 whitespace-pre-line text-sm leading-6 text-slate-600 dark:text-slate-300">
+        {text.replace(/\*\*/g, "")}
+      </p>
+    </article>
   );
 }

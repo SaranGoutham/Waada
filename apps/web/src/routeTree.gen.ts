@@ -10,6 +10,8 @@
 
 import { Route as rootRouteImport } from './routes/__root'
 import { Route as IndexRouteImport } from './routes/index'
+import { Route as IntegrationsRouteImport } from './routes/integrations'
+import { Route as PipelineRouteImport } from './routes/pipeline'
 import { Route as AccountsSlugRouteImport } from './routes/accounts.$slug'
 import { Route as SettingsLlmRouteImport } from './routes/settings.llm'
 import { Route as AccountsSlugIndexRouteImport } from './routes/accounts.$slug.index'
@@ -21,6 +23,16 @@ import { Route as AccountsSlugImportRouteImport } from './routes/accounts.$slug.
 const IndexRoute = IndexRouteImport.update({
   id: '/',
   path: '/',
+  getParentRoute: () => rootRouteImport,
+} as any)
+const IntegrationsRoute = IntegrationsRouteImport.update({
+  id: '/integrations',
+  path: '/integrations',
+  getParentRoute: () => rootRouteImport,
+} as any)
+const PipelineRoute = PipelineRouteImport.update({
+  id: '/pipeline',
+  path: '/pipeline',
   getParentRoute: () => rootRouteImport,
 } as any)
 const AccountsSlugRoute = AccountsSlugRouteImport.update({
@@ -61,6 +73,8 @@ const AccountsSlugImportRoute = AccountsSlugImportRouteImport.update({
 
 export interface FileRoutesByFullPath {
   '/': typeof IndexRoute
+  '/integrations': typeof IntegrationsRoute
+  '/pipeline': typeof PipelineRoute
   '/accounts/$slug': typeof AccountsSlugRouteWithChildren
   '/settings/llm': typeof SettingsLlmRoute
   '/accounts/$slug/ask': typeof AccountsSlugAskRoute
@@ -71,6 +85,8 @@ export interface FileRoutesByFullPath {
 }
 export interface FileRoutesByTo {
   '/': typeof IndexRoute
+  '/integrations': typeof IntegrationsRoute
+  '/pipeline': typeof PipelineRoute
   '/settings/llm': typeof SettingsLlmRoute
   '/accounts/$slug/ask': typeof AccountsSlugAskRoute
   '/accounts/$slug/commitments': typeof AccountsSlugCommitmentsRoute
@@ -81,6 +97,8 @@ export interface FileRoutesByTo {
 export interface FileRoutesById {
   __root__: typeof rootRouteImport
   '/': typeof IndexRoute
+  '/integrations': typeof IntegrationsRoute
+  '/pipeline': typeof PipelineRoute
   '/accounts/$slug': typeof AccountsSlugRouteWithChildren
   '/settings/llm': typeof SettingsLlmRoute
   '/accounts/$slug/ask': typeof AccountsSlugAskRoute
@@ -93,6 +111,8 @@ export interface FileRouteTypes {
   fileRoutesByFullPath: FileRoutesByFullPath
   fullPaths:
     | '/'
+    | '/integrations'
+    | '/pipeline'
     | '/accounts/$slug'
     | '/settings/llm'
     | '/accounts/$slug/ask'
@@ -103,6 +123,8 @@ export interface FileRouteTypes {
   fileRoutesByTo: FileRoutesByTo
   to:
     | '/'
+    | '/integrations'
+    | '/pipeline'
     | '/settings/llm'
     | '/accounts/$slug/ask'
     | '/accounts/$slug/commitments'
@@ -112,6 +134,8 @@ export interface FileRouteTypes {
   id:
     | '__root__'
     | '/'
+    | '/integrations'
+    | '/pipeline'
     | '/accounts/$slug'
     | '/settings/llm'
     | '/accounts/$slug/ask'
@@ -123,6 +147,8 @@ export interface FileRouteTypes {
 }
 export interface RootRouteChildren {
   IndexRoute: typeof IndexRoute
+  IntegrationsRoute: typeof IntegrationsRoute
+  PipelineRoute: typeof PipelineRoute
   AccountsSlugRoute: typeof AccountsSlugRouteWithChildren
   SettingsLlmRoute: typeof SettingsLlmRoute
 }
@@ -134,6 +160,20 @@ declare module '@tanstack/react-router' {
       path: '/'
       fullPath: '/'
       preLoaderRoute: typeof IndexRouteImport
+      parentRoute: typeof rootRouteImport
+    }
+    '/integrations': {
+      id: '/integrations'
+      path: '/integrations'
+      fullPath: '/integrations'
+      preLoaderRoute: typeof IntegrationsRouteImport
+      parentRoute: typeof rootRouteImport
+    }
+    '/pipeline': {
+      id: '/pipeline'
+      path: '/pipeline'
+      fullPath: '/pipeline'
+      preLoaderRoute: typeof PipelineRouteImport
       parentRoute: typeof rootRouteImport
     }
     '/accounts/$slug': {
@@ -210,6 +250,8 @@ const AccountsSlugRouteWithChildren = AccountsSlugRoute._addFileChildren(
 
 const rootRouteChildren: RootRouteChildren = {
   IndexRoute: IndexRoute,
+  IntegrationsRoute: IntegrationsRoute,
+  PipelineRoute: PipelineRoute,
   AccountsSlugRoute: AccountsSlugRouteWithChildren,
   SettingsLlmRoute: SettingsLlmRoute,
 }

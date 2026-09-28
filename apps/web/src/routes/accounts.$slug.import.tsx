@@ -54,14 +54,15 @@ function ImportPage() {
   return (
     <>
       <AccountNav account={slug} />
-      <h1 className="text-3xl font-semibold">Import account history</h1>
-      <p className="mt-2 text-slate-600">
+      <p className="text-xs font-bold tracking-[.16em] text-indigo-600">ACCOUNT HISTORY</p>
+      <h1 className="mt-2 text-3xl font-semibold tracking-tight">Import account history</h1>
+      <p className="mt-2 text-slate-600 dark:text-slate-300">
         Upload exported .eml, Slack JSON, transcript, or supported audio files. Files are reviewed
         before import.
       </p>
       <label
         htmlFor="files"
-        className="mt-6 flex cursor-pointer flex-col items-center rounded-xl border-2 border-dashed border-teal-300 bg-teal-50 px-6 py-12 text-center"
+        className="mt-6 flex cursor-pointer flex-col items-center rounded-2xl border-2 border-dashed border-indigo-300 bg-indigo-50 px-6 py-12 text-center transition hover:border-indigo-500 dark:border-indigo-500/50 dark:bg-indigo-500/10"
       >
         <span className="font-semibold">Drop files here or choose files</span>
         <span className="mt-1 text-sm text-slate-600">Your source files stay local.</span>
@@ -74,17 +75,22 @@ function ImportPage() {
         />
       </label>
       {busy ? (
-        <p role="status" className="mt-4">
-          Working…
-        </p>
+        <div
+          role="status"
+          aria-label="Processing files"
+          className="mt-4 h-3 w-48 animate-pulse rounded-full bg-slate-200 dark:bg-slate-700"
+        />
       ) : null}
       {error ? (
-        <p role="alert" className="mt-4 text-rose-700">
+        <p
+          role="alert"
+          className="mt-4 rounded-xl border border-rose-200 bg-rose-50 p-3 text-rose-700"
+        >
           {error}
         </p>
       ) : null}
       {message ? (
-        <p role="status" className="mt-4 rounded-md bg-emerald-50 p-3 text-emerald-900">
+        <p role="status" className="mt-4 rounded-xl bg-emerald-50 p-3 text-emerald-900">
           {message}
         </p>
       ) : null}
@@ -98,15 +104,17 @@ function ImportPage() {
               type="button"
               disabled={!files.length || busy}
               onClick={submit}
-              className="rounded-md bg-slate-900 px-4 py-2 font-semibold text-white disabled:opacity-60"
+              className="rounded-lg bg-indigo-600 px-4 py-2 font-semibold text-white disabled:opacity-60"
             >
               Import
             </button>
           </div>
           {preview.errors.length ? (
-            <p className="mt-3 text-sm text-amber-800">{preview.errors.join(" ")}</p>
+            <p className="mt-3 rounded-xl border border-amber-200 bg-amber-50 p-3 text-sm text-amber-800">
+              {preview.errors.join(" ")}
+            </p>
           ) : null}
-          <div className="mt-4 overflow-x-auto rounded-xl border border-slate-200 bg-white">
+          <div className="mt-4 overflow-x-auto rounded-2xl border border-slate-200 bg-white shadow-sm dark:border-slate-800 dark:bg-[#171d2c]">
             <table className="w-full text-left text-sm">
               <thead className="bg-slate-50">
                 <tr>

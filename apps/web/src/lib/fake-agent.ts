@@ -5,6 +5,7 @@ const commitment: Commitment = {
   madeBy: "Alex Rivera",
   madeTo: "Meenakshi Rao",
   date: "2026-09-02T15:30:00.000Z",
+  dueDate: "2026-09-12T23:59:59.000Z",
   status: "open",
   evidence: "Alex promised the report before Acme's procurement deadline.",
   source: "Security docs follow-up — Sep 2",

@@ -9,6 +9,7 @@ describe("display rows", () => {
         madeBy: "Alex",
         madeTo: "Meenakshi",
         date: "2026-09-02T15:30:00.000Z",
+        dueDate: null,
         status: "open",
         evidence: "Promised",
         source: "Sep 2 email",

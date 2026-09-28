@@ -13,6 +13,17 @@ const SettingsInput = z.object({
 const ImportInput = AccountSlug.extend({
   files: z.array(z.object({ name: z.string(), data: z.instanceof(Uint8Array) })),
 });
+const IntegrationName = z.enum(["gmail", "slack", "hubspot", "meet", "mcp"]);
+const IntegrationInput = z.object({
+  name: IntegrationName,
+  label: z.string().min(1).max(120),
+});
+const IntegrationRecord = z.object({
+  connected: z.boolean(),
+  connectedAt: z.string().datetime().optional(),
+  label: z.string().optional(),
+});
+const Integrations = z.partialRecord(IntegrationName, IntegrationRecord);
 const fakeCore = () => process.env.WAADA_FAKE_CORE === "1";
 
 async function invoke<T>(run: (core: typeof import("@waada/core")) => Promise<T>): Promise<T> {
@@ -116,3 +127,57 @@ export const runImport = createServerFn({ method: "POST" })
 export const getAppMode = createServerFn({ method: "GET" }).handler(() => ({
   fakeCore: fakeCore(),
 }));
+
+export const getIntegrations = createServerFn({ method: "GET" }).handler(async () => {
+  return invoke(async ({ getEnv, getLlmSettings, readJson }) => {
+    const [saved, settings] = await Promise.all([
+      readJson("integrations.json", Integrations, {}),
+      getLlmSettings(),
+    ]);
+    return {
+      saved,
+      hindsightConfigured: Boolean(getEnv().hindsightBaseUrl),
+      groqConfigured: Boolean(settings.credentials.groq || getEnv().groqApiKey),
+    };
+  });
+});
+
+export const connectIntegration = createServerFn({ method: "POST" })
+  .validator(IntegrationInput)
+  .handler(async ({ data }) => {
+    return invoke(async ({ readJson, writeJson }) => {
+      const saved = await readJson("integrations.json", Integrations, {});
+      const next = {
+        ...saved,
+        [data.name]: { connected: true, connectedAt: new Date().toISOString(), label: data.label },
+      };
+      await writeJson("integrations.json", next);
+      return next;
+    });
+  });
+
+export const disconnectIntegration = createServerFn({ method: "POST" })
+  .validator(z.object({ name: IntegrationName }))
+  .handler(async ({ data }) => {
+    return invoke(async ({ readJson, writeJson }) => {
+      const saved = await readJson("integrations.json", Integrations, {});
+      const next = { ...saved, [data.name]: { connected: false } };
+      await writeJson("integrations.json", next);
+      return next;
+    });
+  });
+
+export const getPipelineStats = createServerFn({ method: "GET" })
+  .validator(AccountSlug)
+  .handler(async ({ data }) => {
+    return invoke(async ({ Interaction, brief, readJson }) => {
+      const [interactions, accountBrief] = await Promise.all([
+        readJson(`interactions/${data.account}.json`, z.array(Interaction), []),
+        brief(data.account),
+      ]);
+      return {
+        interactions: interactions.length,
+        openCommitments: accountBrief.commitments.filter((item) => item.status === "open").length,
+      };
+    });
+  });

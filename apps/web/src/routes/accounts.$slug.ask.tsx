@@ -31,8 +31,12 @@ function Ask() {
     <>
       <AccountNav account={slug} />
       <SampleBanner active={mode.fakeCore} />
-      <h1 className="text-3xl font-semibold">Ask about {slug}</h1>
-      <form onSubmit={submit} className="mt-6 max-w-3xl">
+      <p className="text-xs font-bold tracking-[.16em] text-indigo-600">ACCOUNT CONTEXT</p>
+      <h1 className="mt-2 text-3xl font-semibold tracking-tight">Ask about {slug}</h1>
+      <form
+        onSubmit={submit}
+        className="mt-6 max-w-3xl rounded-2xl border border-slate-200 bg-white p-5 shadow-sm dark:border-slate-800 dark:bg-[#171d2c]"
+      >
         <label htmlFor="question" className="font-medium">
           Question
         </label>
@@ -40,7 +44,7 @@ function Ask() {
           id="question"
           value={question}
           onChange={(e) => setQuestion(e.target.value)}
-          className="mt-2 min-h-28 w-full rounded-xl border border-slate-300 bg-white p-3"
+          className="mt-2 min-h-28 w-full rounded-xl border border-slate-300 bg-white p-3 dark:border-slate-700 dark:bg-slate-900"
           required
         />
         <div className="mt-3 flex flex-wrap gap-2">
@@ -49,7 +53,7 @@ function Ask() {
               type="button"
               key={suggestion}
               onClick={() => setQuestion(suggestion)}
-              className="rounded-full border border-slate-300 px-3 py-1 text-sm"
+              className="rounded-full border border-slate-300 px-3 py-1 text-sm hover:border-indigo-400 hover:text-indigo-700 dark:border-slate-700"
             >
               {suggestion}
             </button>
@@ -58,9 +62,9 @@ function Ask() {
         <button
           type="submit"
           disabled={busy}
-          className="mt-4 rounded-md bg-slate-900 px-4 py-2 font-semibold text-white disabled:opacity-60"
+          className="mt-4 rounded-lg bg-indigo-600 px-4 py-2 font-semibold text-white disabled:opacity-60"
         >
-          {busy ? "Searching…" : "Ask Waada"}
+          {busy ? "Finding context…" : "Ask Waada"}
         </button>
         {error ? (
           <p role="alert" className="mt-3 text-rose-700">
@@ -69,14 +73,19 @@ function Ask() {
         ) : null}
       </form>
       {answer ? (
-        <article className="mt-8 max-w-3xl rounded-xl border border-slate-200 bg-white p-6">
-          <p>{answer.text}</p>
+        <article className="mt-8 max-w-3xl rounded-2xl border border-slate-200 bg-white p-6 shadow-sm dark:border-slate-800 dark:bg-[#171d2c]">
+          <p className="leading-7">{answer.text}</p>
           <h2 className="mt-5 text-sm font-semibold">Sources</h2>
-          <ul className="mt-2 list-disc pl-5 text-sm text-slate-600">
-            {answer.citations.map((citation) => (
-              <li key={citation}>{citation}</li>
+          <div className="mt-2 flex flex-wrap gap-2">
+            {[...new Set(answer.citations)].map((citation) => (
+              <span
+                key={citation}
+                className="rounded-full bg-slate-100 px-2.5 py-1 text-xs text-slate-600 dark:bg-slate-800 dark:text-slate-300"
+              >
+                {citation}
+              </span>
             ))}
-          </ul>
+          </div>
         </article>
       ) : null}
     </>
