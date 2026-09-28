@@ -2,6 +2,15 @@
 
 Plain-language record of what happened, newest first. Written by the master (Claude Code) for the human.
 
+## 2026-09-27: cards 008 and 010 (ledger), transcript fix; Groq daily limit reached
+
+- **Card 008 (Codex):** ledger prompt v2, brief keeps the newest changes and lists only open items (9860d44).
+- **Transcript dates, real fix (master, 3b32891 + follow-ups):** Groq rejected card 009's metadata schema (all fields optional) with HTTP 400. Now every field is required but may be empty, and the model infers a missing year from today's date. Checked live: Aug 20 and Sep 11 come out right.
+- **Master mistake:** two pushes to `dev` failed check/tests (3b32891, 0b5b900) because a pipe hid the exit code; fixed minutes later (33180bf). The master now commits only after reading real exit codes.
+- **Live eval after card 008: 4 of 6.** The ledger listed habits ("log everything", "same-day SSO response") and already-sent DPA redlines as open, and sorted oldest first, so SOC 2 came 4th.
+- **Human decision P-007:** keep one ledger pass with a tighter prompt; show **newest open promise first**. Card 010 (Codex) did both (300d20c).
+- **Live eval after card 010: not meaningful.** Groq's free tier also has a **daily** cap (200,000 tokens for `gpt-oss-120b`), and today's eval runs used it up. The run also showed that `extract` throws on Groq's "invalid JSON" 400 and never tries the fallback model. Card 011 (Codex, running) fixes both and gives a plain-words message when the daily limit is hit.
+
 ## 2026-09-27: card 009 done (baselines use imported data)
 
 - **Card 009 (Codex): done**, committed by the master (3f8d568, 8681453, 2da7139). Import now saves what was imported (and `crm.json`) under `.waada/`, and Compare's baselines read that. Slack items get a real channel name. **Root cause of the wrong transcript dates:** the Import page never gave the parser an LLM; now it does.
