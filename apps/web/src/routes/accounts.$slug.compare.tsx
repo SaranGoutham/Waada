@@ -27,13 +27,13 @@ function Compare() {
   const accountName = accounts.find((account) => account.slug === slug)?.name ?? slug;
   return (
     <>
-      <AccountNav account={slug} />
       <SampleBanner active={mode.fakeCore} />
       <AccountHeader
         account={accountName}
         interactions={stats.interactions}
         latestInteraction={stats.latestInteraction}
       />
+      <AccountNav account={slug} />
       <h2 className="text-xl font-semibold">Compare</h2>
       <p className="mt-2 text-sm text-[#5f5f5b]">
         Compare the CRM record, a plain summary, and Waada&apos;s memory-based brief side by side.

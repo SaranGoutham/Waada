@@ -21,6 +21,7 @@ export function AccountNav({ account }: { account: string }) {
           to={to}
           params={{ slug: account }}
           className="border-b-2 border-transparent py-3 text-[#5f5f5b] transition hover:border-[#171716] hover:text-[#171716]"
+          activeOptions={{ exact: true }}
           activeProps={{ className: "border-[#171716] font-semibold text-[#171716]" }}
         >
           {label}

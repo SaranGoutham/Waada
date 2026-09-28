@@ -36,7 +36,6 @@ function BriefPage() {
   const sections = briefSections(brief.markdown);
   return (
     <>
-      <AccountNav account={slug} />
       <SampleBanner active={mode.fakeCore} />
       <AccountHeader
         account={accountName}
@@ -52,6 +51,7 @@ function BriefPage() {
           </button>
         }
       />
+      <AccountNav account={slug} />
       <section className="mt-7">
         <h2 className="text-xl font-semibold">Open promises</h2>
         <div className="mt-3 grid gap-3">

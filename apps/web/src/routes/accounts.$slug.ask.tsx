@@ -34,13 +34,13 @@ function Ask() {
   }
   return (
     <>
-      <AccountNav account={slug} />
       <SampleBanner active={mode.fakeCore} />
       <AccountHeader
         account={accountName}
         interactions={stats.interactions}
         latestInteraction={stats.latestInteraction}
       />
+      <AccountNav account={slug} />
       <h2 className="text-xl font-semibold">Ask</h2>
       <form onSubmit={submit} className="surface mt-6 max-w-3xl rounded-lg border p-5">
         <label htmlFor="question" className="font-medium">

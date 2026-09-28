@@ -23,13 +23,13 @@ function Commitments() {
   );
   return (
     <>
-      <AccountNav account={slug} />
       <SampleBanner active={mode.fakeCore} />
       <AccountHeader
         account={accountName}
         interactions={stats.interactions}
         latestInteraction={stats.latestInteraction}
       />
+      <AccountNav account={slug} />
       <div className="flex flex-wrap items-end justify-between gap-4">
         <h2 className="text-xl font-semibold">Promises</h2>
         <div className="flex gap-2">

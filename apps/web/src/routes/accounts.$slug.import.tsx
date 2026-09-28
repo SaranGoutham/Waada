@@ -77,7 +77,6 @@ function ImportPage() {
   }
   return (
     <>
-      <AccountNav account={slug} />
       <AccountHeader
         account={accountName}
         interactions={stats.interactions}
@@ -91,6 +90,7 @@ function ImportPage() {
           </label>
         }
       />
+      <AccountNav account={slug} />
       <h2 className="text-xl font-semibold">Sources</h2>
       {!interactions.length ? (
         <p className="mt-2 text-[#5f5f5b]">
